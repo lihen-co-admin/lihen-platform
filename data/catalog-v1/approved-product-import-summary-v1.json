@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.21.5",
+  "scope": "HUMAN_APPROVED_IMPORT_SUBSET",
+  "businessLine": "BEAUTY_CARE",
+  "candidateRunId": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "importRunId": "388a459d-f3f9-4709-88b5-b025dac28ba2",
+  "humanApproved": 136,
+  "rejectedExcluded": 6,
+  "deferredExcluded": 45,
+  "readyCandidatesOutsideScope": 816,
+  "staged": 136,
+  "dryRunReady": 136,
+  "dryRunConflicts": 0,
+  "publicProducts": 0,
+  "skuPolicy": {
+    "status": "RESERVED_IMPORT_RANGE",
+    "range": "BC-10000..BC-10135",
+    "note": "Reserved for this DEV cutover foundation; not asserted as historical SKU identity."
+  },
+  "catalogCodePolicy": {
+    "status": "GENERATED_CANONICAL_SOURCE_CODE",
+    "range": "BCV5-0001..BCV5-0136"
+  },
+  "slugPolicy": {
+    "status": "DETERMINISTIC_CANONICAL",
+    "prefix": "beauty-care-",
+    "duplicatesSuffix": "-pNNN-slot"
+  },
+  "legacyAdminProAudit": {
+    "knownSeedBeautyRows": 74,
+    "exactNameBrandMatches": 0,
+    "matches": []
+  },
+  "gates": {
+    "executeImport": false,
+    "authenticatedRpcExecute": false,
+    "fullBeautyCareCutover": false,
+    "reason": "816 READY_CANDIDATE remain outside human-approved subset policy."
+  }
+}

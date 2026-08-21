@@ -1,0 +1,37 @@
+[
+  {
+    "path": "database/migrations/20260821173232_product_candidate_review_resolution_foundation.sql",
+    "sha256": "69cd83aacaccbb2fcbf6a92df262e91ac1e6042b2bb1a7081e3a5d42d4637edd",
+    "bytes": 11478
+  },
+  {
+    "path": "database/migrations/20260821173318_harden_product_identity_resolution_multi_member_only.sql",
+    "sha256": "30b6ea364fb217582ac60f82f005703308c93cf8f451352aa9d4f3baef4fdb91",
+    "bytes": 3808
+  },
+  {
+    "path": "database/validation/021_product_candidate_review_resolution_foundation.sql",
+    "sha256": "bda4da2a6d263e94d67d796ef918ad5ce78b01fd020a8717d3c09bb7667e6404",
+    "bytes": 1042
+  },
+  {
+    "path": "packages/products/src/domain/product-candidate-review-resolution.ts",
+    "sha256": "4b41d41aed90f3ed3302d1fb22f4415688536bded744f89f7496e9d88f35131b",
+    "bytes": 1617
+  },
+  {
+    "path": "packages/products/tests/product-candidate-review-resolution.test.ts",
+    "sha256": "72b71cf0d74cdf434b287ab5659414231e82c88ab481ada68d7321e10e1f3f62",
+    "bytes": 1235
+  },
+  {
+    "path": "docs/reconciliation/FASE_1_21_2_PRODUCT_CANDIDATE_REVIEW_RESOLUTION_FOUNDATION.md",
+    "sha256": "f5ce2e15ed83941a3e8e2280f80f3edef8d507580890bedeee56210dad6bed44",
+    "bytes": 1374
+  },
+  {
+    "path": "docs/reconciliation/FASE_1_21_2_DEV_EVIDENCE.md",
+    "sha256": "b304795af242678896de6ce6ff340c1577cf8978a748f6d8f89cca878588c37c",
+    "bytes": 933
+  }
+]

@@ -1,0 +1,20 @@
+# LIHEN Platform — Supabase local/project configuration
+# FASE 1.17.1 — Storage Bucket Provisioning
+#
+# This file is the reproducible source specification for the product-image
+# Storage buckets. Remote bucket lifecycle must be executed through supported
+# Supabase Storage mechanisms (Dashboard/API/CLI), never by mutating
+# storage.objects directly.
+
+[storage]
+enabled = true
+
+[storage.buckets.lihen-product-originals]
+public = false
+file_size_limit = "12MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
+
+[storage.buckets.lihen-product-web]
+public = true
+file_size_limit = "3MiB"
+allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]

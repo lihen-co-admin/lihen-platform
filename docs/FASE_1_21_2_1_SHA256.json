@@ -1,0 +1,67 @@
+[
+  {
+    "file": "database/migrations/20260821175837_business_line_dual_catalog_architecture_hardening.sql",
+    "sha256": "bed4ba05a911142bcb8fdf5255df2005a15f41aed411a4dc7f66f252f7e6b6d6",
+    "bytes": 11574
+  },
+  {
+    "file": "database/migrations/20260821175856_controlled_product_business_line_contract_hardening.sql",
+    "sha256": "922bae9c23c58166428e407ed72ea85acd2cf5a2c0dca14152fb25392f8903c7",
+    "bytes": 7682
+  },
+  {
+    "file": "database/migrations/20260821180713_business_line_identity_scope_hardening.sql",
+    "sha256": "0548fc591c4cafbb78d005491decbfbef308bd44bf662a9bf59d4252d11958a3",
+    "bytes": 2797
+  },
+  {
+    "file": "database/migrations/20260821180823_business_line_relational_integrity_hardening.sql",
+    "sha256": "5f5e794c9cdfcd686ec33ba89ce4aae5cffbfe8cae8c9717919a25c476d8a9d9",
+    "bytes": 1124
+  },
+  {
+    "file": "database/validation/022_business_line_dual_catalog_architecture.sql",
+    "sha256": "53d0bc8751e05b74466021972837c84a1665a60eafb188ad0b3f0b22051a24ca",
+    "bytes": 1649
+  },
+  {
+    "file": "docs/architecture/FASE_1_21_2_1_BUSINESS_LINE_DUAL_CATALOG_ARCHITECTURE_HARDENING.md",
+    "sha256": "e9c6c063275a485e82b527f991a4d26d788561f616daaf3555fcdf364fd18422",
+    "bytes": 2026
+  },
+  {
+    "file": "data/catalog-v1/business-line-dual-catalog-architecture-v1.json",
+    "sha256": "d0d46fee50819e8936387acbdb2ffa18d82adba2a3cc1f04aa096749e15825b4",
+    "bytes": 1647
+  },
+  {
+    "file": "data/catalog-v1/business-line-dual-catalog-dev-evidence-v1.json",
+    "sha256": "e36350e418a073cc9a806faf6599289454321731c3f9994b6b2938f7e15f0ed0",
+    "bytes": 1023
+  },
+  {
+    "file": "packages/products/src/domain/business-line.ts",
+    "sha256": "544c22f027324d760f651934f908321896fe263c610235d05b16385ba1794d78",
+    "bytes": 599
+  },
+  {
+    "file": "packages/products/src/domain/product.ts",
+    "sha256": "651a4e7743ced3a0387e43d23bfc077b5fd6ff8c9b12b3185d77cd9f25f5c947",
+    "bytes": 1291
+  },
+  {
+    "file": "packages/products/src/domain/category.ts",
+    "sha256": "90da78a84defc461c5b6fb2bcfbc9618a2a0760c22378187dd9ab3c853b916c9",
+    "bytes": 978
+  },
+  {
+    "file": "packages/products/src/domain/product-import-candidate.ts",
+    "sha256": "58b23de670066e8de5a0f12e96a4cba1c30890258fd47ded00b5295ee4efef6e",
+    "bytes": 2147
+  },
+  {
+    "file": "packages/products/src/infrastructure/supabase-product-repository.ts",
+    "sha256": "a139cc7158ad3451950e11b90536aafd1148c0df5962456ea1feb459f4e84658",
+    "bytes": 12178
+  }
+]

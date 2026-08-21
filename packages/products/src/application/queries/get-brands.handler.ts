@@ -1,0 +1,2 @@
+import type { BrandRepository } from '../../ports/brand-repository'; import type { BrandDTO } from '../dto/brand.dto'; import type { GetBrandsQuery } from './get-brands.query';
+export class GetBrandsHandler { public constructor(private readonly brands:BrandRepository){} public async execute(_query:GetBrandsQuery):Promise<readonly BrandDTO[]>{ return (await this.brands.findAll()).map(x=>({id:x.id,name:x.name,normalizedName:x.normalizedName,status:x.status})); } }

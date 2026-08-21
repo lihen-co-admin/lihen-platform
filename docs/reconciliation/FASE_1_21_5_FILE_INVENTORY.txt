@@ -1,0 +1,13 @@
+data/catalog-v1/approved-product-import-candidates-v1.json
+data/catalog-v1/approved-product-import-candidates-v1.csv
+data/catalog-v1/approved-product-import-summary-v1.json
+database/migrations/20260821185721_approved_product_import_candidates_foundation.sql
+database/migrations/20260821185859_approved_product_import_cutover_foundation.sql
+database/validation/024_approved_product_import_candidates_foundation.sql
+docs/reconciliation/FASE_1_21_5_APPROVED_PRODUCT_IMPORT_CANDIDATES_FOUNDATION.md
+docs/reconciliation/FASE_1_21_5_DEV_EVIDENCE.md
+packages/products/src/domain/approved-product-import.ts
+packages/products/src/domain/product.ts
+packages/products/src/infrastructure/supabase-product-repository.ts
+README.md
+docs/reconciliation/FASE_1_21_5_SHA256.json

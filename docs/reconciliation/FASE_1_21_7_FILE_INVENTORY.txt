@@ -1,0 +1,11 @@
+README.md
+data/catalog-v1/full-canonical-product-import-dev-cutover-summary-v1.json
+data/catalog-v1/full-canonical-product-import-dev-cutover-v1.csv
+data/catalog-v1/full-canonical-product-import-dev-cutover-v1.json
+database/migrations/20260821192659_fix_full_canonical_product_import_idempotency.sql
+database/migrations/20260821192725_enable_full_canonical_product_import_dev_cutover.sql
+database/migrations/20260821192821_disable_full_canonical_product_import_after_dev_cutover.sql
+database/validation/027_full_canonical_product_import_dev_cutover.sql
+docs/reconciliation/FASE_1_21_7_DEV_EVIDENCE.md
+docs/reconciliation/FASE_1_21_7_FULL_CANONICAL_PRODUCT_IMPORT_DEV_CUTOVER.md
+docs/reconciliation/FASE_1_21_7_SHA256.json

@@ -1,0 +1,12 @@
+{
+  "README.md": "0ec0d9c6338753ed6dd620efecaaa9cf48ff3012ff3d2f47bafb5a742ac83feb",
+  "data/catalog-v1/full-canonical-product-import-dev-cutover-summary-v1.json": "a84d858bf94fdc2be8ee293e2180789ed8b9d341fc630c7f724dad99a3f61b92",
+  "data/catalog-v1/full-canonical-product-import-dev-cutover-v1.csv": "70f245824342ae97cc3fb422bda1a60b3f4defb3e8f46999788f7b650c5a5d6a",
+  "data/catalog-v1/full-canonical-product-import-dev-cutover-v1.json": "d551b643488fe8f33f4cd404fb81e048a57e43d68e626a8e41487baca09094fd",
+  "database/migrations/20260821192659_fix_full_canonical_product_import_idempotency.sql": "99cf9807a3d4c5f27baf782725dab2803df6ab9457df5126438e29df563b941d",
+  "database/migrations/20260821192725_enable_full_canonical_product_import_dev_cutover.sql": "194dd35e871540c8ee1147aae674630cfb87be3915c59fcc2cc89c0732632d1f",
+  "database/migrations/20260821192821_disable_full_canonical_product_import_after_dev_cutover.sql": "656c502afd0bc8fd4101028f61123fe450a5640eba3f658d1bc84415e2dd46db",
+  "database/validation/027_full_canonical_product_import_dev_cutover.sql": "ac03b90b5afdf28d19b4af35879748b90998831ab30cab7f0106a96efde3923b",
+  "docs/reconciliation/FASE_1_21_7_DEV_EVIDENCE.md": "ca8c375b8d8c958406c0dace47d5a4e9ff89a3d1206a8066671ba0e73fe667e5",
+  "docs/reconciliation/FASE_1_21_7_FULL_CANONICAL_PRODUCT_IMPORT_DEV_CUTOVER.md": "0922536083ce61f3f70272a501d5db95687cf80be2f2f8c515707233cdcea941"
+}

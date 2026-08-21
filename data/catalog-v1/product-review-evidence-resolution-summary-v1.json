@@ -1,0 +1,31 @@
+{
+  "phase": "1.21.3",
+  "evidence_run_id": "18d95c4a-d9f2-4dd6-8cde-1ff0b27c51d9",
+  "candidate_run_id": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "unresolved_candidates": 187,
+  "current_identity_groups": 37,
+  "identity_group_members": 79,
+  "individual_cases": 108,
+  "identity_proposals": {
+    "VARIANT_SET": 22,
+    "DUPLICATE_REFERENCE": 9,
+    "DEFER": 6
+  },
+  "candidate_proposals": {
+    "APPROVE_CREATE": 104,
+    "WAIT_IDENTITY_RESOLUTION": 79,
+    "DEFER": 4
+  },
+  "human_candidate_decisions": 0,
+  "human_identity_resolutions": 0,
+  "products_rows": 0,
+  "product_images_rows": 0,
+  "storage_objects_rows": 0,
+  "authority_note": "Proposals are evidence-based recommendations only. They are not human decisions and cannot create products.",
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ],
+  "business_line_alignment_migration": "20260821181449_review_evidence_business_line_alignment"
+}

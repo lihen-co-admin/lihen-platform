@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.21.4",
+  "businessLine": "BEAUTY_CARE",
+  "candidateRunId": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "identityResolutionCounts": {
+    "VARIANT_SET": 17,
+    "DEFER": 3,
+    "DISTINCT_PRODUCTS": 12,
+    "DUPLICATE_REFERENCE": 5
+  },
+  "candidateDecisionCounts": {
+    "APPROVE_CREATE": 136,
+    "DEFER": 45,
+    "REJECT": 6
+  },
+  "identityResolutions": 37,
+  "candidateDecisions": 187,
+  "reviewOperations": 224,
+  "productsWritten": 0,
+  "productImagesWritten": 0,
+  "storageObjectsWritten": 0,
+  "reviewRpcsEnabledAfterClose": false,
+  "humanReviewMethod": "VISUAL_CATALOG_EVIDENCE_PLUS_STAGED_METADATA"
+}

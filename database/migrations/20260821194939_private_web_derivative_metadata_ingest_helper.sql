@@ -1,0 +1,2 @@
+-- Temporary private helper used only during 1.22.1 metadata preparation. Never granted to browser roles.
+-- Retired by 20260821195130 after the final design selected LOCAL_VERSIONED_MANIFEST authority.

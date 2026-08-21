@@ -1,0 +1,35 @@
+{
+  "sourceKey": "CATALOGO_LIHEN_V5_ACTL_V1",
+  "evidenceCount": 1003,
+  "unresolvedProduct": 1003,
+  "catalogAuditReview": 113,
+  "catalogAuditOk": 890,
+  "uniqueEvidenceSha256": 1002,
+  "duplicateEvidenceSha256Occurrences": 1,
+  "storageUploads": 0,
+  "productImageWrites": 0,
+  "duplicateEvidenceGroups": 1,
+  "duplicateEvidenceRows": 2,
+  "duplicateEvidenceExamples": [
+    {
+      "sha256": "2985b0d6afdacb2aa37f0b93be93f69a7d4061c3c6ab67b91dcbd3fe4cccd939",
+      "evidence": [
+        {
+          "evidenceId": "CATV1-P163-R3L",
+          "page": 163,
+          "productName": "POLVO MAJIKAL"
+        },
+        {
+          "evidenceId": "CATV1-P164-R3L",
+          "page": 164,
+          "productName": "POLVO MAJIKAL MINI"
+        }
+      ]
+    }
+  ],
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ]
+}

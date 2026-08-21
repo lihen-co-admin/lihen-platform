@@ -1,0 +1,10 @@
+database/migrations/20260821191204_ready_candidate_canonical_approval_policy_foundation.sql
+database/migrations/20260821191236_enable_ready_candidate_policy_approval_dev_cutover.sql
+database/migrations/20260821191311_disable_ready_candidate_policy_approval_after_dev_cutover.sql
+database/validation/025_ready_candidate_canonical_approval_policy.sql
+packages/products/src/domain/ready-candidate-approval-policy.ts
+docs/reconciliation/FASE_1_21_5_1_READY_CANDIDATE_CANONICAL_APPROVAL_POLICY.md
+docs/reconciliation/FASE_1_21_5_1_DEV_EVIDENCE.md
+data/catalog-v1/canonical-product-approvals-v1.json
+data/catalog-v1/canonical-product-approvals-v1.csv
+data/catalog-v1/ready-candidate-canonical-approval-policy-summary-v1.json

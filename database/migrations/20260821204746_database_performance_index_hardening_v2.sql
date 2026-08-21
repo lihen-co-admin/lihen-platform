@@ -1,0 +1,13 @@
+alter table lihen_private.product_candidate_evidence_proposals drop constraint if exists product_candidate_evidence_proposals_candidate_line_fkey;
+alter table lihen_private.product_import_candidates drop constraint if exists product_import_candidates_run_line_fkey;
+alter table lihen_private.product_review_evidence_runs drop constraint if exists product_review_evidence_runs_candidate_line_fkey;
+drop index if exists lihen_private.product_import_candidate_runs_id_business_line_uidx;
+alter table lihen_private.product_candidate_evidence_proposals add constraint product_candidate_evidence_proposals_candidate_line_fkey foreign key (candidate_run_id,business_line) references lihen_private.product_import_candidate_runs(id,business_line) on delete restrict;
+alter table lihen_private.product_import_candidates add constraint product_import_candidates_run_line_fkey foreign key (run_id,business_line) references lihen_private.product_import_candidate_runs(id,business_line) on delete restrict;
+alter table lihen_private.product_review_evidence_runs add constraint product_review_evidence_runs_candidate_line_fkey foreign key (candidate_run_id,business_line) references lihen_private.product_import_candidate_runs(id,business_line) on delete restrict;
+create index if not exists categories_business_line_idx on public.categories(business_line);
+create index if not exists categories_parent_business_line_idx on public.categories(parent_id,business_line) where parent_id is not null;
+create index if not exists product_sale_price_history_actor_id_idx on public.product_sale_price_history(actor_id) where actor_id is not null;
+create index if not exists products_business_line_idx on public.products(business_line);
+create index if not exists products_category_business_line_idx on public.products(category_id,business_line) where category_id is not null;
+create index if not exists profiles_approved_by_idx on public.profiles(approved_by) where approved_by is not null;

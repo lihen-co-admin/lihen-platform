@@ -1,0 +1,11 @@
+{
+  "database/migrations/20260821192014_full_canonical_product_import_foundation.sql": "277fe50ceba57cf59780e9295211777b19f7b12c0adeccd7c4f26a2db9d87cfe",
+  "database/validation/026_full_canonical_product_import_foundation.sql": "4fa0e5f0a4a7c25b4b9a550fd81dd89e222bd6984d225984439dc99993758d67",
+  "packages/products/src/domain/full-canonical-product-import.ts": "cd09fa18c6ca601efd0be0274c3357c5eb06b04fe65d557816c3324b7e0e832b",
+  "data/catalog-v1/full-canonical-product-import-candidates-v1.json": "12d6a297e30631f135f80d99d859cb76ab01b6aa9cb0584eb31301359cb9cb03",
+  "data/catalog-v1/full-canonical-product-import-candidates-v1.csv": "db7bb46e64309217c94d01b6f414f2ddc0b063f380d236893ccc5ab53836e129",
+  "data/catalog-v1/full-canonical-product-import-summary-v1.json": "aef67655edc2b11017c53961e31dc8c05b3ff689897248263ced422f1b951920",
+  "docs/reconciliation/FASE_1_21_6_FULL_CANONICAL_PRODUCT_IMPORT_FOUNDATION.md": "79abe43723bcc4c71a0b98457cbba4f674244055cedaae212db5c76e282d3e85",
+  "docs/reconciliation/FASE_1_21_6_DEV_EVIDENCE.md": "99872eb88446f43d8eb8918ee14334b077d4ee95221a2180560426e20b8b4deb",
+  "docs/reconciliation/FASE_1_21_6_FILE_INVENTORY.txt": "ccdf3f37fac7a803c96ea6e4ad60aa718122e7abb863f15a81d87f4065b4091b"
+}

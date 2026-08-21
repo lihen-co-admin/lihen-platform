@@ -1,0 +1,14 @@
+{
+  "data/catalog-v1/approved-product-import-candidates-v1.json": "0af8391d382d6939f9cb1e6ac12bb226d6ace9fefa2a6d8900d3b8982bdd92bc",
+  "data/catalog-v1/approved-product-import-candidates-v1.csv": "9c4fb03584464a185592411213c4fe01c11cea9ca2644db63f20eafb6511ce81",
+  "data/catalog-v1/approved-product-import-summary-v1.json": "ca67f8ceb009b23b4546b31d2e93beec051648ced27dd15ae19b48909ea9b4db",
+  "database/migrations/20260821185721_approved_product_import_candidates_foundation.sql": "162c67d0b833fbea1eb53e012bb8d4a5d1152ffc72a5d42b432821158345a530",
+  "database/migrations/20260821185859_approved_product_import_cutover_foundation.sql": "e271c23c15d3706c1925befac346b7508cfa9db75d74e3de6e0350313a1db084",
+  "database/validation/024_approved_product_import_candidates_foundation.sql": "164c422a69482d1bd520408dc68313f493148d3d43bc5fc147be4b2afe5aa8ff",
+  "docs/reconciliation/FASE_1_21_5_APPROVED_PRODUCT_IMPORT_CANDIDATES_FOUNDATION.md": "e85bf090fa5063d20837f96ea5b5490d36b29ed6fc1b1fedae47f634f8b029f6",
+  "docs/reconciliation/FASE_1_21_5_DEV_EVIDENCE.md": "8ba622a62c76969353e1b592ceee379228dd6cd8329b308c89182219c7a30f24",
+  "packages/products/src/domain/approved-product-import.ts": "fd38ca534163d519c25db977e9d96cda30b42c0c04bf6d047a90016e7cd8e6ed",
+  "packages/products/src/domain/product.ts": "dab2f3e85441ca4ea9013f495f68f17accc0d02dce5dda7de2937b17d02ba895",
+  "packages/products/src/infrastructure/supabase-product-repository.ts": "b4f625b0c1590921ae0042fd0ebf7fb3a33696362a1e7c3d53f9ed28d4449395",
+  "README.md": "37d32717f58a2e0e444a23236debe570db7e90643023df79e5501342287ea31e"
+}

@@ -1,0 +1,31 @@
+{
+  "phase": "1.21.1",
+  "run_id": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "source_key": "CANONICAL_CATALOG_V1_PRODUCT_CANDIDATES_2026_08_21",
+  "status": "COMPLETED",
+  "candidate_rows": 1003,
+  "ready_candidate": 816,
+  "conflict": 74,
+  "review_required": 113,
+  "review_queue_rows": 187,
+  "review_queue_conflict_priority_1": 74,
+  "review_queue_review_required_priority_2": 113,
+  "review_decisions": 0,
+  "brand_anchored": 877,
+  "category_anchored": 126,
+  "valid_image_sha256": 1003,
+  "missing_image_sha256": 0,
+  "auto_insert_true": 0,
+  "public_products_rows": 0,
+  "product_images_rows": 0,
+  "storage_objects_rows": 0,
+  "temporary_staging_helper_removed": true,
+  "temporary_hash_backfill_helper_removed": true,
+  "security_new_findings": 0,
+  "remaining_security_warning": "auth_leaked_password_protection",
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ]
+}

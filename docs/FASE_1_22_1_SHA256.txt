@@ -1,0 +1,6 @@
+1e88664e633eeba67ad451d46a8384bc00d0bbf7d665fcc29a8cce6c3719c844  data/catalog-v1/web-image-derivatives-v1.json
+768997aa9bb1781173396306ead918c06b14a27ab1ef2204d40791e15e8e68c4  data/catalog-v1/web-image-derivatives-v1.csv
+ed77733a06e7d50adf232f933f3f9812c39917452c569bd6f05c5e1f64800c1e  data/catalog-v1/web-image-storage-upload-dry-run-v1.json
+a848da19e7da5c3f191a65e002ae66c63f267b4ff7781fc64ff0bd1c1880c52d  data/catalog-v1/web-image-storage-upload-dry-run-v1.csv
+dcd6120c43d06b3dd4c2b8704e5999f36874e49511343948958bfded87e59f21  data/catalog-v1/web-image-derivative-dry-run-summary-v1.json
+1ba3ff6b6e4a56a54367cf1066ee17ad209cc6eba85f6ef86c39bbb751670b3b  data/catalog-v1/web-image-derivative-dev-evidence-v1.json

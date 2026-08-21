@@ -1,0 +1,2 @@
+import type { Brand } from '../domain/brand'; import type { BrandRepository } from '../ports/brand-repository';
+export class InMemoryBrandRepository implements BrandRepository { public constructor(private readonly brands:readonly Brand[]=[]){ } public async findAll(){ return [...this.brands]; } public async findById(id:string){ return this.brands.find(x=>x.id===id)??null; } public async findByNormalizedName(value:string){ const n=value.trim().toLowerCase(); return this.brands.find(x=>x.normalizedName.toLowerCase()===n)??null; } }

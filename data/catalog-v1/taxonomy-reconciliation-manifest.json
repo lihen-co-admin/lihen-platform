@@ -1,0 +1,410 @@
+[
+  {
+    "referenceId": "CATV1-BRAND-P005",
+    "entityType": "BRAND",
+    "displayName": "Kaba",
+    "sourcePage": 5,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P010",
+    "entityType": "BRAND",
+    "displayName": "CBD - logo circular (nombre exacto por confirmar)",
+    "sourcePage": 10,
+    "sourceConfidence": "LOW",
+    "sourceReviewRequired": true
+  },
+  {
+    "referenceId": "CATV1-BRAND-P013",
+    "entityType": "BRAND",
+    "displayName": "D'L...? - logo caballito de mar (nombre exacto por confirmar)",
+    "sourcePage": 13,
+    "sourceConfidence": "LOW",
+    "sourceReviewRequired": true
+  },
+  {
+    "referenceId": "CATV1-BRAND-P016",
+    "entityType": "BRAND",
+    "displayName": "Anyeluz",
+    "sourcePage": 16,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P026",
+    "entityType": "BRAND",
+    "displayName": "Milagros",
+    "sourcePage": 26,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P036",
+    "entityType": "BRAND",
+    "displayName": "Click Hair",
+    "sourcePage": 36,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P041",
+    "entityType": "BRAND",
+    "displayName": "Poción",
+    "sourcePage": 41,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P046",
+    "entityType": "BRAND",
+    "displayName": "Ritual Botánico",
+    "sourcePage": 46,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P050",
+    "entityType": "BRAND",
+    "displayName": "Olé Capilar",
+    "sourcePage": 50,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P057",
+    "entityType": "BRAND",
+    "displayName": "Sense",
+    "sourcePage": 57,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P059",
+    "entityType": "BRAND",
+    "displayName": "Leche Pal Pelo",
+    "sourcePage": 59,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P065",
+    "entityType": "BRAND",
+    "displayName": "Mariana Zapata",
+    "sourcePage": 65,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P067",
+    "entityType": "BRAND",
+    "displayName": "Karseell",
+    "sourcePage": 67,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P069",
+    "entityType": "BRAND",
+    "displayName": "Recomend Professional",
+    "sourcePage": 69,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P071",
+    "entityType": "BRAND",
+    "displayName": "Cosmos",
+    "sourcePage": 71,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P077",
+    "entityType": "BRAND",
+    "displayName": "Vive Beauty",
+    "sourcePage": 77,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P083",
+    "entityType": "BRAND",
+    "displayName": "Fem",
+    "sourcePage": 83,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P088",
+    "entityType": "BRAND",
+    "displayName": "Araña",
+    "sourcePage": 88,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P090",
+    "entityType": "BRAND",
+    "displayName": "Trully",
+    "sourcePage": 90,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P092",
+    "entityType": "BRAND",
+    "displayName": "Lluvia de Estrellas",
+    "sourcePage": 92,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P096",
+    "entityType": "BRAND",
+    "displayName": "Victoria's Secret",
+    "sourcePage": 96,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P098",
+    "entityType": "BRAND",
+    "displayName": "Ollie",
+    "sourcePage": 98,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P100",
+    "entityType": "BRAND",
+    "displayName": "Dr. Althea",
+    "sourcePage": 100,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P102",
+    "entityType": "BRAND",
+    "displayName": "Tocobo",
+    "sourcePage": 102,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P105",
+    "entityType": "BRAND",
+    "displayName": "Anua",
+    "sourcePage": 105,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P108",
+    "entityType": "BRAND",
+    "displayName": "Mixsoon",
+    "sourcePage": 108,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P110",
+    "entityType": "BRAND",
+    "displayName": "Medicube",
+    "sourcePage": 110,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P115",
+    "entityType": "BRAND",
+    "displayName": "Madagascar Centella",
+    "sourcePage": 115,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P118",
+    "entityType": "BRAND",
+    "displayName": "Vaseline",
+    "sourcePage": 118,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P120",
+    "entityType": "BRAND",
+    "displayName": "EOS",
+    "sourcePage": 120,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P122",
+    "entityType": "BRAND",
+    "displayName": "Olly",
+    "sourcePage": 122,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P124",
+    "entityType": "BRAND",
+    "displayName": "Rubyskin",
+    "sourcePage": 124,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P127",
+    "entityType": "BRAND",
+    "displayName": "Girly",
+    "sourcePage": 127,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P132",
+    "entityType": "BRAND",
+    "displayName": "tratamientoslbsas",
+    "sourcePage": 132,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-CATEGORY-P134",
+    "entityType": "CATEGORY",
+    "displayName": "CEPILLOS Y ACCESORIOS PARA EL CABELLO",
+    "sourcePage": 134,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P143",
+    "entityType": "BRAND",
+    "displayName": "Outdoor Girl",
+    "sourcePage": 143,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P147",
+    "entityType": "BRAND",
+    "displayName": "Especianas",
+    "sourcePage": 147,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P149",
+    "entityType": "BRAND",
+    "displayName": "Destiny by La Segura",
+    "sourcePage": 149,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P154",
+    "entityType": "BRAND",
+    "displayName": "Atenea",
+    "sourcePage": 154,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P162",
+    "entityType": "BRAND",
+    "displayName": "Majikal",
+    "sourcePage": 162,
+    "sourceConfidence": "MEDIUM",
+    "sourceReviewRequired": true
+  },
+  {
+    "referenceId": "CATV1-BRAND-P165",
+    "entityType": "BRAND",
+    "displayName": "NABA",
+    "sourcePage": 165,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P167",
+    "entityType": "BRAND",
+    "displayName": "Ani-K",
+    "sourcePage": 167,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P172",
+    "entityType": "BRAND",
+    "displayName": "Melu by RubyRose",
+    "sourcePage": 172,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P174",
+    "entityType": "BRAND",
+    "displayName": "Bloomshell",
+    "sourcePage": 174,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P201",
+    "entityType": "BRAND",
+    "displayName": "M - logo monograma (nombre exacto por confirmar)",
+    "sourcePage": 201,
+    "sourceConfidence": "LOW",
+    "sourceReviewRequired": true
+  },
+  {
+    "referenceId": "CATV1-CATEGORY-P212",
+    "entityType": "CATEGORY",
+    "displayName": "ACCESORIOS PARA MAQUILLAJE",
+    "sourcePage": 212,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-CATEGORY-P217",
+    "entityType": "CATEGORY",
+    "displayName": "CEJAS, PESTAÑAS Y DELINEADORES",
+    "sourcePage": 217,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-CATEGORY-P224",
+    "entityType": "CATEGORY",
+    "displayName": "LABIALES, BRILLOS, DELINEADORES, HIDRATANTES Y TINTAS",
+    "sourcePage": 224,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-CATEGORY-P228",
+    "entityType": "CATEGORY",
+    "displayName": "BASES, CORRECTORES, POLVOS, RUBORES E ILUMINADORES",
+    "sourcePage": 228,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P232",
+    "entityType": "BRAND",
+    "displayName": "Púrpura by Angie Bedoya",
+    "sourcePage": 232,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  },
+  {
+    "referenceId": "CATV1-BRAND-P239",
+    "entityType": "BRAND",
+    "displayName": "Nube Rosa by Mafe Yepes",
+    "sourcePage": 239,
+    "sourceConfidence": "HIGH",
+    "sourceReviewRequired": false
+  }
+]

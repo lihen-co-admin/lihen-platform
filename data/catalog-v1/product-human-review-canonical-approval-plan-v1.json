@@ -1,0 +1,1941 @@
+{
+  "schemaVersion": "1.21.4",
+  "businessLine": "BEAUTY_CARE",
+  "candidateRunId": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "identityResolutions": [
+    {
+      "identity_key": "BEAUTY_CARE|acondi cebolla|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "ACONDI CEBOLLA",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P033-R1R",
+        "CATV1-P034-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|acondi herbal|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "ACONDI HERBAL",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P029-R3R",
+        "CATV1-P034-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|base matte og|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+      "product_name": "BASE MATTE OG",
+      "resolution": "DEFER",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P145-R3L",
+        "CATV1-P146-R1L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|base|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+      "product_name": "BASE",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P207-R2R",
+        "CATV1-P210-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|berry fondue|340fb06e-fd22-49ec-a967-359e83aa939b|",
+      "product_name": "BERRY FONDUE",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P150-R3R",
+        "CATV1-P152-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|brochas nude elegance|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "BROCHAS NUDE ELEGANCE",
+      "resolution": "DUPLICATE_REFERENCE",
+      "canonical_source_reference_id": "CATV1-P181-R3R",
+      "member_reference_ids": [
+        "CATV1-P181-R3R",
+        "CATV1-P182-R2L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|cepillo masajeador||b36e2375-b910-4030-abf2-832999885338",
+      "product_name": "CEPILLO MASAJEADOR",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P136-R2L",
+        "CATV1-P138-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|color bloom|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "COLOR BLOOM",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P181-R1L",
+        "CATV1-P193-R1R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|corrector miis||e137169e-b616-4487-aa3e-7637db245219",
+      "product_name": "CORRECTOR MIIS",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P229-R2R",
+        "CATV1-P231-R2R",
+        "CATV1-P231-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|corrector ushas||e137169e-b616-4487-aa3e-7637db245219",
+      "product_name": "CORRECTOR USHAS",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P229-R1R",
+        "CATV1-P230-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|deademaosobrillo|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "DEADEMAOSOBRILLO",
+      "resolution": "DUPLICATE_REFERENCE",
+      "canonical_source_reference_id": "CATV1-P176-R3L",
+      "member_reference_ids": [
+        "CATV1-P176-R3L",
+        "CATV1-P180-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|delineador blanco||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+      "product_name": "DELINEADOR BLANCO",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P218-R1L",
+        "CATV1-P221-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|delineador|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "DELINEADOR",
+      "resolution": "DUPLICATE_REFERENCE",
+      "canonical_source_reference_id": "CATV1-P175-R1R",
+      "member_reference_ids": [
+        "CATV1-P175-R1R",
+        "CATV1-P176-R2L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|encrespador fifty||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+      "product_name": "ENCRESPADOR FIFTY",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P222-R2L",
+        "CATV1-P222-R3L",
+        "CATV1-P223-R1L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|gancho flor hawaiana||b36e2375-b910-4030-abf2-832999885338",
+      "product_name": "GANCHO FLOR HAWAIANA",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P141-R3R",
+        "CATV1-P142-R1R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|gel fijador cejas|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+      "product_name": "GEL FIJADOR CEJAS",
+      "resolution": "DEFER",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P208-R3L",
+        "CATV1-P208-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|gloss mimosa|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "GLOSS MIMOSA",
+      "resolution": "DEFER",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P187-R1R",
+        "CATV1-P191-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|glowy shell|e466082b-7532-4204-b781-94650387a81f|",
+      "product_name": "GLOWY SHELL",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P180-R2L",
+        "CATV1-P182-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|kit cartuchera|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+      "product_name": "KIT CARTUCHERA",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P236-R3L",
+        "CATV1-P238-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|labial humectante|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+      "product_name": "LABIAL HUMECTANTE",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P238-R1R",
+        "CATV1-P238-R2L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|labial pureglow og|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+      "product_name": "LABIAL PUREGLOW OG",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P146-R1R",
+        "CATV1-P146-R2L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|light set montoc|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+      "product_name": "LIGHT SET MONTOC",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P208-R1L",
+        "CATV1-P208-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|lip gloss|340fb06e-fd22-49ec-a967-359e83aa939b|",
+      "product_name": "LIP GLOSS",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P150-R1R",
+        "CATV1-P150-R3L",
+        "CATV1-P151-R1R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|lip liner|340fb06e-fd22-49ec-a967-359e83aa939b|",
+      "product_name": "LIP LINER",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P151-R3L",
+        "CATV1-P152-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|masajeador capilar||b36e2375-b910-4030-abf2-832999885338",
+      "product_name": "MASAJEADOR CAPILAR",
+      "resolution": "DUPLICATE_REFERENCE",
+      "canonical_source_reference_id": "CATV1-P138-R1L",
+      "member_reference_ids": [
+        "CATV1-P138-R1L",
+        "CATV1-P141-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|perfume capilar|97dfff9f-d633-42b5-b01b-b5cf608440cf|",
+      "product_name": "PERFUME CAPILAR",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P063-R3L",
+        "CATV1-P063-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|piluss pestanas||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+      "product_name": "PILUSS PESTÁÑAS",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P221-R2R",
+        "CATV1-P221-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|pinza coreana||b36e2375-b910-4030-abf2-832999885338",
+      "product_name": "PINZA COREANA",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P140-R1R",
+        "CATV1-P141-R1L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|polvo majikal mini|52c89d28-6e86-49d7-838d-1ea3be7c096f|",
+      "product_name": "POLVO MAJIKAL MINI",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P164-R3L",
+        "CATV1-P164-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|princesas|0d5fd0dc-2e4c-4e77-bb0a-879997df316d|",
+      "product_name": "PRINCESAS",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P073-R2R",
+        "CATV1-P073-R3L",
+        "CATV1-P073-R3R",
+        "CATV1-P074-R1L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|profesional liso en casa|93f65203-1aaf-405d-9c6d-9e4c46b9b936|",
+      "product_name": "PROFESIONAL LISO EN CASA",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P025-R2L",
+        "CATV1-P025-R2R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|rubor og yess queen|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+      "product_name": "RUBOR OG YESS QUEEN",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P144-R1L",
+        "CATV1-P144-R1R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|serum milagros|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "SERUM MILAGROS",
+      "resolution": "DISTINCT_PRODUCTS",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P029-R2L",
+        "CATV1-P032-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|shampoo biorepo|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "SHAMPOO BIOREPO",
+      "resolution": "DUPLICATE_REFERENCE",
+      "canonical_source_reference_id": "CATV1-P028-R3R",
+      "member_reference_ids": [
+        "CATV1-P028-R3R",
+        "CATV1-P035-R1R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|shampoo emergencia|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "SHAMPOO EMERGENCIA",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P028-R1L",
+        "CATV1-P034-R3R"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|splash purpure|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+      "product_name": "SPLASH PURPURE",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P233-R1L",
+        "CATV1-P233-R3L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    },
+    {
+      "identity_key": "BEAUTY_CARE|trata frutas|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+      "product_name": "TRATA. FRUTAS",
+      "resolution": "VARIANT_SET",
+      "canonical_source_reference_id": null,
+      "member_reference_ids": [
+        "CATV1-P027-R3R",
+        "CATV1-P035-R1L"
+      ],
+      "reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+    }
+  ],
+  "candidateDecisions": [
+    {
+      "source_reference_id": "CATV1-P011-R1L",
+      "source_page": 11,
+      "source_slot": "R1L",
+      "product_name": "SHAMPOO ROMERO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P011-R1R",
+      "source_page": 11,
+      "source_slot": "R1R",
+      "product_name": "SHAMPOO ARGAN",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P011-R2L",
+      "source_page": 11,
+      "source_slot": "R2L",
+      "product_name": "ACONDICIONADOR NUEVO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P011-R2R",
+      "source_page": 11,
+      "source_slot": "R2R",
+      "product_name": "SHAMPOO ANTICASPA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P011-R3L",
+      "source_page": 11,
+      "source_slot": "R3L",
+      "product_name": "GOTAS CBD",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P011-R3R",
+      "source_page": 11,
+      "source_slot": "R3R",
+      "product_name": "TONICO ANTICAIDA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P012-R1L",
+      "source_page": 12,
+      "source_slot": "R1L",
+      "product_name": "EXFOLIANTE CAPILAR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R1L",
+      "source_page": 14,
+      "source_slot": "R1L",
+      "product_name": "BRONCEADOR ZANAHORIA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R1R",
+      "source_page": 14,
+      "source_slot": "R1R",
+      "product_name": "BRONCEADOR COCO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R2L",
+      "source_page": 14,
+      "source_slot": "R2L",
+      "product_name": "LOCION DE ORO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R2R",
+      "source_page": 14,
+      "source_slot": "R2R",
+      "product_name": "MANTEQUILLA CORPORAL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R3L",
+      "source_page": 14,
+      "source_slot": "R3L",
+      "product_name": "GEL DE ALOE VERA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P014-R3R",
+      "source_page": 14,
+      "source_slot": "R3R",
+      "product_name": "BRONCEADOR EN GEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P015-R1L",
+      "source_page": 15,
+      "source_slot": "R1L",
+      "product_name": "FRESHING POP",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P015-R1R",
+      "source_page": 15,
+      "source_slot": "R1R",
+      "product_name": "AUTOBRONCEADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P015-R2L",
+      "source_page": 15,
+      "source_slot": "R2L",
+      "product_name": "BLOQUEADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P015-R2R",
+      "source_page": 15,
+      "source_slot": "R2R",
+      "product_name": "BRONCEADOR DE CHOCOLATE Y MIEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P015-R3L",
+      "source_page": 15,
+      "source_slot": "R3L",
+      "product_name": "BRONCEADOR AUTOBRONCEADORA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P025-R2L",
+      "source_page": 25,
+      "source_slot": "R2L",
+      "product_name": "PROFESIONAL LISO EN CASA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P025-R2R",
+      "source_page": 25,
+      "source_slot": "R2R",
+      "product_name": "PROFESIONAL LISO EN CASA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P027-R3R",
+      "source_page": 27,
+      "source_slot": "R3R",
+      "product_name": "TRATA. FRUTAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P028-R1L",
+      "source_page": 28,
+      "source_slot": "R1L",
+      "product_name": "SHAMPOO EMERGENCIA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P028-R3R",
+      "source_page": 28,
+      "source_slot": "R3R",
+      "product_name": "SHAMPOO BIOREPO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference."
+    },
+    {
+      "source_reference_id": "CATV1-P029-R2L",
+      "source_page": 29,
+      "source_slot": "R2L",
+      "product_name": "SERUM MILAGROS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P029-R3R",
+      "source_page": 29,
+      "source_slot": "R3R",
+      "product_name": "ACONDI HERBAL",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P032-R3R",
+      "source_page": 32,
+      "source_slot": "R3R",
+      "product_name": "SERUM MILAGROS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P033-R1R",
+      "source_page": 33,
+      "source_slot": "R1R",
+      "product_name": "ACONDI CEBOLLA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P034-R2R",
+      "source_page": 34,
+      "source_slot": "R2R",
+      "product_name": "ACONDI CEBOLLA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P034-R3L",
+      "source_page": 34,
+      "source_slot": "R3L",
+      "product_name": "ACONDI HERBAL",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P034-R3R",
+      "source_page": 34,
+      "source_slot": "R3R",
+      "product_name": "SHAMPOO EMERGENCIA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P035-R1L",
+      "source_page": 35,
+      "source_slot": "R1L",
+      "product_name": "TRATA. FRUTAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P035-R1R",
+      "source_page": 35,
+      "source_slot": "R1R",
+      "product_name": "SHAMPOO BIOREPO",
+      "decision": "REJECT",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P028-R3R."
+    },
+    {
+      "source_reference_id": "CATV1-P037-R1L",
+      "source_page": 37,
+      "source_slot": "R1L",
+      "product_name": "SHAMPOO MIEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P037-R2L",
+      "source_page": 37,
+      "source_slot": "R2L",
+      "product_name": "MASCARILLA MIEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P039-R1L",
+      "source_page": 39,
+      "source_slot": "R1L",
+      "product_name": "ACONDI CLICK",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P040-R1R",
+      "source_page": 40,
+      "source_slot": "R1R",
+      "product_name": "ACONDI MIEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P040-R2L",
+      "source_page": 40,
+      "source_slot": "R2L",
+      "product_name": "PERFUME MASHMELLOW",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P063-R3L",
+      "source_page": 63,
+      "source_slot": "R3L",
+      "product_name": "PERFUME CAPILAR",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P063-R3R",
+      "source_page": 63,
+      "source_slot": "R3R",
+      "product_name": "PERFUME CAPILAR",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P073-R2R",
+      "source_page": 73,
+      "source_slot": "R2R",
+      "product_name": "PRINCESAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P073-R3L",
+      "source_page": 73,
+      "source_slot": "R3L",
+      "product_name": "PRINCESAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P073-R3R",
+      "source_page": 73,
+      "source_slot": "R3R",
+      "product_name": "PRINCESAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P074-R1L",
+      "source_page": 74,
+      "source_slot": "R1L",
+      "product_name": "PRINCESAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P074-R2L",
+      "source_page": 74,
+      "source_slot": "R2L",
+      "product_name": "AIROMAN",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P080-R2L",
+      "source_page": 80,
+      "source_slot": "R2L",
+      "product_name": "EXFOLIANTE AZUCAR CORPORAL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P080-R2R",
+      "source_page": 80,
+      "source_slot": "R2R",
+      "product_name": "GEL EXFOLIANTE CORPORAL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P080-R3L",
+      "source_page": 80,
+      "source_slot": "R3L",
+      "product_name": "CREMAS CORPORALES",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P087-R1R",
+      "source_page": 87,
+      "source_slot": "R1R",
+      "product_name": "KIT ARRURU TAMAÑO PEQUEÑO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P091-R1L",
+      "source_page": 91,
+      "source_slot": "R1L",
+      "product_name": "KIT X3 TRULY",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P091-R1R",
+      "source_page": 91,
+      "source_slot": "R1R",
+      "product_name": "KIT X5",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P091-R2L",
+      "source_page": 91,
+      "source_slot": "R2L",
+      "product_name": "TRULY SERUM Y ACEITE PEQ",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P107-R2L",
+      "source_page": 107,
+      "source_slot": "R2L",
+      "product_name": "SERUM AZULAICO Y HIALURONICO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P125-R1R",
+      "source_page": 125,
+      "source_slot": "R1R",
+      "product_name": "RICE CREAM",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P130-R1L",
+      "source_page": 130,
+      "source_slot": "R1L",
+      "product_name": "KIT VIAJERO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P136-R2L",
+      "source_page": 136,
+      "source_slot": "R2L",
+      "product_name": "CEPILLO MASAJEADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P138-R1L",
+      "source_page": 138,
+      "source_slot": "R1L",
+      "product_name": "MASAJEADOR CAPILAR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference."
+    },
+    {
+      "source_reference_id": "CATV1-P138-R3R",
+      "source_page": 138,
+      "source_slot": "R3R",
+      "product_name": "CEPILLO MASAJEADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P139-R1R",
+      "source_page": 139,
+      "source_slot": "R1R",
+      "product_name": "DEADEMAS NUBE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: same image/price is repeated under another category; hair-accessories classification is coherent, so this reference is selected as canonical."
+    },
+    {
+      "source_reference_id": "CATV1-P140-R1L",
+      "source_page": 140,
+      "source_slot": "R1L",
+      "product_name": "PINZA COREANA X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P140-R1R",
+      "source_page": 140,
+      "source_slot": "R1R",
+      "product_name": "PINZA COREANA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P141-R1L",
+      "source_page": 141,
+      "source_slot": "R1L",
+      "product_name": "PINZA COREANA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P141-R1R",
+      "source_page": 141,
+      "source_slot": "R1R",
+      "product_name": "PINZA CORENANA X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P141-R2R",
+      "source_page": 141,
+      "source_slot": "R2R",
+      "product_name": "MASAJEADOR CAPILAR",
+      "decision": "REJECT",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P138-R1L."
+    },
+    {
+      "source_reference_id": "CATV1-P141-R3R",
+      "source_page": 141,
+      "source_slot": "R3R",
+      "product_name": "GANCHO FLOR HAWAIANA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P142-R1R",
+      "source_page": 142,
+      "source_slot": "R1R",
+      "product_name": "GANCHO FLOR HAWAIANA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P144-R1L",
+      "source_page": 144,
+      "source_slot": "R1L",
+      "product_name": "RUBOR OG YESS QUEEN",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P144-R1R",
+      "source_page": 144,
+      "source_slot": "R1R",
+      "product_name": "RUBOR OG YESS QUEEN",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P145-R3L",
+      "source_page": 145,
+      "source_slot": "R3L",
+      "product_name": "BASE MATTE OG",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P146-R1L",
+      "source_page": 146,
+      "source_slot": "R1L",
+      "product_name": "BASE MATTE OG",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P146-R1R",
+      "source_page": 146,
+      "source_slot": "R1R",
+      "product_name": "LABIAL PUREGLOW OG",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P146-R2L",
+      "source_page": 146,
+      "source_slot": "R2L",
+      "product_name": "LABIAL PUREGLOW OG",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P150-R1R",
+      "source_page": 150,
+      "source_slot": "R1R",
+      "product_name": "LIP GLOSS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P150-R2L",
+      "source_page": 150,
+      "source_slot": "R2L",
+      "product_name": "TROPICAL LUST",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P150-R3L",
+      "source_page": 150,
+      "source_slot": "R3L",
+      "product_name": "LIP GLOSS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P150-R3R",
+      "source_page": 150,
+      "source_slot": "R3R",
+      "product_name": "BERRY FONDUE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P151-R1R",
+      "source_page": 151,
+      "source_slot": "R1R",
+      "product_name": "LIP GLOSS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P151-R2L",
+      "source_page": 151,
+      "source_slot": "R2L",
+      "product_name": "VELVET CHERRY",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P151-R3L",
+      "source_page": 151,
+      "source_slot": "R3L",
+      "product_name": "LIP LINER",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P152-R2R",
+      "source_page": 152,
+      "source_slot": "R2R",
+      "product_name": "LIP LINER",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P152-R3L",
+      "source_page": 152,
+      "source_slot": "R3L",
+      "product_name": "BERRY FONDUE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P158-R2R",
+      "source_page": 158,
+      "source_slot": "R2R",
+      "product_name": "ILUMINDOR STICK (2 TONOS )",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P164-R3L",
+      "source_page": 164,
+      "source_slot": "R3L",
+      "product_name": "POLVO MAJIKAL MINI",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P164-R3R",
+      "source_page": 164,
+      "source_slot": "R3R",
+      "product_name": "POLVO MAJIKAL MINI",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P171-R2L",
+      "source_page": 171,
+      "source_slot": "R2L",
+      "product_name": "GEL CEJAS ANIIK",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P175-R1R",
+      "source_page": 175,
+      "source_slot": "R1R",
+      "product_name": "DELINEADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference."
+    },
+    {
+      "source_reference_id": "CATV1-P176-R2L",
+      "source_page": 176,
+      "source_slot": "R2L",
+      "product_name": "DELINEADOR",
+      "decision": "REJECT",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P175-R1R."
+    },
+    {
+      "source_reference_id": "CATV1-P176-R3L",
+      "source_page": 176,
+      "source_slot": "R3L",
+      "product_name": "DEADEMAOSOBRILLO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference."
+    },
+    {
+      "source_reference_id": "CATV1-P180-R2L",
+      "source_page": 180,
+      "source_slot": "R2L",
+      "product_name": "GLOWY SHELL",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P180-R3L",
+      "source_page": 180,
+      "source_slot": "R3L",
+      "product_name": "DEADEMAOSOBRILLO",
+      "decision": "REJECT",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P176-R3L."
+    },
+    {
+      "source_reference_id": "CATV1-P181-R1L",
+      "source_page": 181,
+      "source_slot": "R1L",
+      "product_name": "COLOR BLOOM",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P181-R2L",
+      "source_page": 181,
+      "source_slot": "R2L",
+      "product_name": "BLOOM KISS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P181-R3R",
+      "source_page": 181,
+      "source_slot": "R3R",
+      "product_name": "BROCHAS NUDE ELEGANCE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference."
+    },
+    {
+      "source_reference_id": "CATV1-P182-R2L",
+      "source_page": 182,
+      "source_slot": "R2L",
+      "product_name": "BROCHAS NUDE ELEGANCE",
+      "decision": "REJECT",
+      "reason": "HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P181-R3R."
+    },
+    {
+      "source_reference_id": "CATV1-P182-R3R",
+      "source_page": 182,
+      "source_slot": "R3R",
+      "product_name": "GLOWY SHELL",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P187-R1R",
+      "source_page": 187,
+      "source_slot": "R1R",
+      "product_name": "GLOSS MIMOSA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P191-R3R",
+      "source_page": 191,
+      "source_slot": "R3R",
+      "product_name": "GLOSS MIMOSA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P193-R1R",
+      "source_page": 193,
+      "source_slot": "R1R",
+      "product_name": "COLOR BLOOM",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R1L",
+      "source_page": 202,
+      "source_slot": "R1L",
+      "product_name": "HUMIDE GLOSS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R1R",
+      "source_page": 202,
+      "source_slot": "R1R",
+      "product_name": "JUICYLIPS TONO 202",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R2L",
+      "source_page": 202,
+      "source_slot": "R2L",
+      "product_name": "JUICY GLOSS 200,201,202",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R2R",
+      "source_page": 202,
+      "source_slot": "R2R",
+      "product_name": "CLICKGLOSS PRO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R3L",
+      "source_page": 202,
+      "source_slot": "R3L",
+      "product_name": "LIPPIE BAL,M",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P202-R3R",
+      "source_page": 202,
+      "source_slot": "R3R",
+      "product_name": "RUBOR NOSTALGIC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R1L",
+      "source_page": 203,
+      "source_slot": "R1L",
+      "product_name": "PESTAÑAS PREGLUE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R1R",
+      "source_page": 203,
+      "source_slot": "R1R",
+      "product_name": "CONTORNO HUMIDE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R2L",
+      "source_page": 203,
+      "source_slot": "R2L",
+      "product_name": "CORRECTOR HUMIDE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R2R",
+      "source_page": 203,
+      "source_slot": "R2R",
+      "product_name": "PINE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R3L",
+      "source_page": 203,
+      "source_slot": "R3L",
+      "product_name": "SERUM RETINOL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P203-R3R",
+      "source_page": 203,
+      "source_slot": "R3R",
+      "product_name": "ALGODÓN MONTOC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R1L",
+      "source_page": 204,
+      "source_slot": "R1L",
+      "product_name": "FIJADOR GRANDE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R1R",
+      "source_page": 204,
+      "source_slot": "R1R",
+      "product_name": "FIJADOR DIX FIX 30 ML",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R2L",
+      "source_page": 204,
+      "source_slot": "R2L",
+      "product_name": "GEL HIDRATANTE HYDRO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R2R",
+      "source_page": 204,
+      "source_slot": "R2R",
+      "product_name": "SERUM NIACINAMIDA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R3L",
+      "source_page": 204,
+      "source_slot": "R3L",
+      "product_name": "FACE LIFT ACIDO HIALURONICO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P204-R3R",
+      "source_page": 204,
+      "source_slot": "R3R",
+      "product_name": "SERUM VITAMINA C",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R1L",
+      "source_page": 205,
+      "source_slot": "R1L",
+      "product_name": "JABONFACIAL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R1R",
+      "source_page": 205,
+      "source_slot": "R1R",
+      "product_name": "CONTORNO DE OJOS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R2L",
+      "source_page": 205,
+      "source_slot": "R2L",
+      "product_name": "SERUM BLUSH MONT",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R2R",
+      "source_page": 205,
+      "source_slot": "R2R",
+      "product_name": "AMORE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R3L",
+      "source_page": 205,
+      "source_slot": "R3L",
+      "product_name": "CEPILLO EFECTO ALISADO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P205-R3R",
+      "source_page": 205,
+      "source_slot": "R3R",
+      "product_name": "BROE WAX ULTRA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R1L",
+      "source_page": 206,
+      "source_slot": "R1L",
+      "product_name": "HUMIDE LAPIZ DE CEJAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R1R",
+      "source_page": 206,
+      "source_slot": "R1R",
+      "product_name": "SPIRAL GLOSSHUMIDE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R2L",
+      "source_page": 206,
+      "source_slot": "R2L",
+      "product_name": "SOFT POWDER ROSADO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R2R",
+      "source_page": 206,
+      "source_slot": "R2R",
+      "product_name": "BASEMONTOC TONO 100",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R3L",
+      "source_page": 206,
+      "source_slot": "R3L",
+      "product_name": "LIPPIE BOOSTER",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P206-R3R",
+      "source_page": 206,
+      "source_slot": "R3R",
+      "product_name": "ILUMINADOR PALETA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R1L",
+      "source_page": 207,
+      "source_slot": "R1L",
+      "product_name": "CONTROL OIL MONTOC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R1R",
+      "source_page": 207,
+      "source_slot": "R1R",
+      "product_name": "CORA LIP",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R2L",
+      "source_page": 207,
+      "source_slot": "R2L",
+      "product_name": "LAPIZ DE LABIOS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R2R",
+      "source_page": 207,
+      "source_slot": "R2R",
+      "product_name": "BASE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R3L",
+      "source_page": 207,
+      "source_slot": "R3L",
+      "product_name": "LAPIZ MONTOC X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P207-R3R",
+      "source_page": 207,
+      "source_slot": "R3R",
+      "product_name": "BROCHA B74 X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R1L",
+      "source_page": 208,
+      "source_slot": "R1L",
+      "product_name": "LIGHT SET MONTOC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R1R",
+      "source_page": 208,
+      "source_slot": "R1R",
+      "product_name": "POLVO MONTOC 30G",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R2L",
+      "source_page": 208,
+      "source_slot": "R2L",
+      "product_name": "POLVO 10G TRASLUCIDO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R2R",
+      "source_page": 208,
+      "source_slot": "R2R",
+      "product_name": "LIGHT SET MONTOC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R3L",
+      "source_page": 208,
+      "source_slot": "R3L",
+      "product_name": "GEL FIJADOR CEJAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P208-R3R",
+      "source_page": 208,
+      "source_slot": "R3R",
+      "product_name": "GEL FIJADOR CEJAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R1L",
+      "source_page": 209,
+      "source_slot": "R1L",
+      "product_name": "BRONZER MONTOC",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R1R",
+      "source_page": 209,
+      "source_slot": "R1R",
+      "product_name": "PRIMER GRIP",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R2L",
+      "source_page": 209,
+      "source_slot": "R2L",
+      "product_name": "FIJADOR 200ML",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R2R",
+      "source_page": 209,
+      "source_slot": "R2R",
+      "product_name": "POLVO 10G BANANA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R3L",
+      "source_page": 209,
+      "source_slot": "R3L",
+      "product_name": "RUBOR STICK",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P209-R3R",
+      "source_page": 209,
+      "source_slot": "R3R",
+      "product_name": "BB CREAM SUNSOON",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R1L",
+      "source_page": 210,
+      "source_slot": "R1L",
+      "product_name": "AGUA DE ROSAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R1R",
+      "source_page": 210,
+      "source_slot": "R1R",
+      "product_name": "KIT DE BROCHAS VIAJERAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R2L",
+      "source_page": 210,
+      "source_slot": "R2L",
+      "product_name": "HELLO BEACH BRONZER",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R2R",
+      "source_page": 210,
+      "source_slot": "R2R",
+      "product_name": "BLOQUEADOR SUNSOON",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R3L",
+      "source_page": 210,
+      "source_slot": "R3L",
+      "product_name": "BASE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P210-R3R",
+      "source_page": 210,
+      "source_slot": "R3R",
+      "product_name": "RUBOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R1L",
+      "source_page": 211,
+      "source_slot": "R1L",
+      "product_name": "ENCRESPADOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R1R",
+      "source_page": 211,
+      "source_slot": "R1R",
+      "product_name": "BROCHA FLUFLY",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R2L",
+      "source_page": 211,
+      "source_slot": "R2L",
+      "product_name": "PALETA HARMONY",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R2R",
+      "source_page": 211,
+      "source_slot": "R2R",
+      "product_name": "DELINEADOR MIAU",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R3L",
+      "source_page": 211,
+      "source_slot": "R3L",
+      "product_name": "MONTOC BEAUTY SKIN GEL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P211-R3R",
+      "source_page": 211,
+      "source_slot": "R3R",
+      "product_name": "POLVO 30G BANANA",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P213-R2R",
+      "source_page": 213,
+      "source_slot": "R2R",
+      "product_name": "DEADEMAS NUBE",
+      "decision": "REJECT",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: duplicate of CATV1-P139-R1R with the same image and price but an incoherent makeup-accessories classification."
+    },
+    {
+      "source_reference_id": "CATV1-P215-R1L",
+      "source_page": 215,
+      "source_slot": "R1L",
+      "product_name": "BROCHA CEJAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P216-R1L",
+      "source_page": 216,
+      "source_slot": "R1L",
+      "product_name": "DEPILADOR SAGUI",
+      "decision": "DEFER",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: same image is repeated with conflicting category and/or price; canonical identity cannot be selected safely yet."
+    },
+    {
+      "source_reference_id": "CATV1-P218-R1L",
+      "source_page": 218,
+      "source_slot": "R1L",
+      "product_name": "DELINEADOR BLANCO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P218-R3L",
+      "source_page": 218,
+      "source_slot": "R3L",
+      "product_name": "PESTAÑAS PELOAPELO X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P220-R2R",
+      "source_page": 220,
+      "source_slot": "R2R",
+      "product_name": "PESTAÑINAPROSAMAXI SILICON",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P220-R3L",
+      "source_page": 220,
+      "source_slot": "R3L",
+      "product_name": "PESTAÑINAPROSAPROFESIONAL",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P221-R2R",
+      "source_page": 221,
+      "source_slot": "R2R",
+      "product_name": "PILUSS PESTÁÑAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P221-R3L",
+      "source_page": 221,
+      "source_slot": "R3L",
+      "product_name": "PILUSS PESTÁÑAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P221-R3R",
+      "source_page": 221,
+      "source_slot": "R3R",
+      "product_name": "DELINEADOR BLANCO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P222-R1L",
+      "source_page": 222,
+      "source_slot": "R1L",
+      "product_name": "DEPILADOR SAGUI",
+      "decision": "DEFER",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: same image is repeated with conflicting category and/or price; canonical identity cannot be selected safely yet."
+    },
+    {
+      "source_reference_id": "CATV1-P222-R2L",
+      "source_page": 222,
+      "source_slot": "R2L",
+      "product_name": "ENCRESPADOR FIFTY",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P222-R3L",
+      "source_page": 222,
+      "source_slot": "R3L",
+      "product_name": "ENCRESPADOR FIFTY",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P223-R1L",
+      "source_page": 223,
+      "source_slot": "R1L",
+      "product_name": "ENCRESPADOR FIFTY",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P223-R1R",
+      "source_page": 223,
+      "source_slot": "R1R",
+      "product_name": "COSMETIQUERA BOLSO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P225-R2R",
+      "source_page": 225,
+      "source_slot": "R2R",
+      "product_name": "USHAS 12 TONOS DIFERENTES X",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P227-R2L",
+      "source_page": 227,
+      "source_slot": "R2L",
+      "product_name": "GLOSS CON COLOR LLAVERO",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P229-R1R",
+      "source_page": 229,
+      "source_slot": "R1R",
+      "product_name": "CORRECTOR USHAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P229-R2R",
+      "source_page": 229,
+      "source_slot": "R2R",
+      "product_name": "CORRECTOR MIIS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P230-R2R",
+      "source_page": 230,
+      "source_slot": "R2R",
+      "product_name": "CORRECTOR USHAS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P230-R3L",
+      "source_page": 230,
+      "source_slot": "R3L",
+      "product_name": "POLVO DE HADAS",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P231-R1L",
+      "source_page": 231,
+      "source_slot": "R1L",
+      "product_name": "ILUMIANDOR",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P231-R2R",
+      "source_page": 231,
+      "source_slot": "R2R",
+      "product_name": "CORRECTOR MIIS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P231-R3L",
+      "source_page": 231,
+      "source_slot": "R3L",
+      "product_name": "CORRECTOR MIIS",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P233-R1L",
+      "source_page": 233,
+      "source_slot": "R1L",
+      "product_name": "SPLASH PURPURE",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P233-R3L",
+      "source_page": 233,
+      "source_slot": "R3L",
+      "product_name": "SPLASH PURPURE",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P236-R3L",
+      "source_page": 236,
+      "source_slot": "R3L",
+      "product_name": "KIT CARTUCHERA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    },
+    {
+      "source_reference_id": "CATV1-P238-R1R",
+      "source_page": 238,
+      "source_slot": "R1R",
+      "product_name": "LABIAL HUMECTANTE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P238-R2L",
+      "source_page": 238,
+      "source_slot": "R2L",
+      "product_name": "LABIAL HUMECTANTE",
+      "decision": "APPROVE_CREATE",
+      "reason": "HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate."
+    },
+    {
+      "source_reference_id": "CATV1-P238-R3L",
+      "source_page": 238,
+      "source_slot": "R3L",
+      "product_name": "KIT CARTUCHERA",
+      "decision": "DEFER",
+      "reason": "HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation."
+    }
+  ],
+  "summary": {
+    "schemaVersion": "1.21.4",
+    "businessLine": "BEAUTY_CARE",
+    "candidateRunId": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+    "identityResolutionCounts": {
+      "VARIANT_SET": 17,
+      "DEFER": 3,
+      "DISTINCT_PRODUCTS": 12,
+      "DUPLICATE_REFERENCE": 5
+    },
+    "candidateDecisionCounts": {
+      "APPROVE_CREATE": 136,
+      "DEFER": 45,
+      "REJECT": 6
+    },
+    "identityResolutions": 37,
+    "candidateDecisions": 187,
+    "reviewOperations": 224,
+    "productsWritten": 0,
+    "productImagesWritten": 0,
+    "storageObjectsWritten": 0,
+    "reviewRpcsEnabledAfterClose": false,
+    "humanReviewMethod": "VISUAL_CATALOG_EVIDENCE_PLUS_STAGED_METADATA"
+  }
+}

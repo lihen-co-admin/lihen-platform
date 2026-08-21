@@ -1,0 +1,188 @@
+source_reference_id,source_page,source_slot,product_name,decision,reason
+CATV1-P011-R1L,11,R1L,SHAMPOO ROMERO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P011-R1R,11,R1R,SHAMPOO ARGAN,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P011-R2L,11,R2L,ACONDICIONADOR NUEVO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P011-R2R,11,R2R,SHAMPOO ANTICASPA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P011-R3L,11,R3L,GOTAS CBD,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P011-R3R,11,R3R,TONICO ANTICAIDA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P012-R1L,12,R1L,EXFOLIANTE CAPILAR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R1L,14,R1L,BRONCEADOR ZANAHORIA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R1R,14,R1R,BRONCEADOR COCO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R2L,14,R2L,LOCION DE ORO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R2R,14,R2R,MANTEQUILLA CORPORAL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R3L,14,R3L,GEL DE ALOE VERA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P014-R3R,14,R3R,BRONCEADOR EN GEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P015-R1L,15,R1L,FRESHING POP,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P015-R1R,15,R1R,AUTOBRONCEADOR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P015-R2L,15,R2L,BLOQUEADOR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P015-R2R,15,R2R,BRONCEADOR DE CHOCOLATE Y MIEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P015-R3L,15,R3L,BRONCEADOR AUTOBRONCEADORA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P025-R2L,25,R2L,PROFESIONAL LISO EN CASA,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P025-R2R,25,R2R,PROFESIONAL LISO EN CASA,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P027-R3R,27,R3R,TRATA. FRUTAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P028-R1L,28,R1L,SHAMPOO EMERGENCIA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P028-R3R,28,R3R,SHAMPOO BIOREPO,APPROVE_CREATE,HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference.
+CATV1-P029-R2L,29,R2L,SERUM MILAGROS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P029-R3R,29,R3R,ACONDI HERBAL,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P032-R3R,32,R3R,SERUM MILAGROS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P033-R1R,33,R1R,ACONDI CEBOLLA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P034-R2R,34,R2R,ACONDI CEBOLLA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P034-R3L,34,R3L,ACONDI HERBAL,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P034-R3R,34,R3R,SHAMPOO EMERGENCIA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P035-R1L,35,R1L,TRATA. FRUTAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P035-R1R,35,R1R,SHAMPOO BIOREPO,REJECT,HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P028-R3R.
+CATV1-P037-R1L,37,R1L,SHAMPOO MIEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P037-R2L,37,R2L,MASCARILLA MIEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P039-R1L,39,R1L,ACONDI CLICK,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P040-R1R,40,R1R,ACONDI MIEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P040-R2L,40,R2L,PERFUME MASHMELLOW,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P063-R3L,63,R3L,PERFUME CAPILAR,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P063-R3R,63,R3R,PERFUME CAPILAR,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P073-R2R,73,R2R,PRINCESAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P073-R3L,73,R3L,PRINCESAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P073-R3R,73,R3R,PRINCESAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P074-R1L,74,R1L,PRINCESAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P074-R2L,74,R2L,AIROMAN,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P080-R2L,80,R2L,EXFOLIANTE AZUCAR CORPORAL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P080-R2R,80,R2R,GEL EXFOLIANTE CORPORAL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P080-R3L,80,R3L,CREMAS CORPORALES,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P087-R1R,87,R1R,KIT ARRURU TAMAÑO PEQUEÑO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P091-R1L,91,R1L,KIT X3 TRULY,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P091-R1R,91,R1R,KIT X5,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P091-R2L,91,R2L,TRULY SERUM Y ACEITE PEQ,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P107-R2L,107,R2L,SERUM AZULAICO Y HIALURONICO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P125-R1R,125,R1R,RICE CREAM,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P130-R1L,130,R1L,KIT VIAJERO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P136-R2L,136,R2L,CEPILLO MASAJEADOR,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P138-R1L,138,R1L,MASAJEADOR CAPILAR,APPROVE_CREATE,HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference.
+CATV1-P138-R3R,138,R3R,CEPILLO MASAJEADOR,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P139-R1R,139,R1R,DEADEMAS NUBE,APPROVE_CREATE,"HUMAN_INDIVIDUAL_REVIEW: same image/price is repeated under another category; hair-accessories classification is coherent, so this reference is selected as canonical."
+CATV1-P140-R1L,140,R1L,PINZA COREANA X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P140-R1R,140,R1R,PINZA COREANA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P141-R1L,141,R1L,PINZA COREANA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P141-R1R,141,R1R,PINZA CORENANA X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P141-R2R,141,R2R,MASAJEADOR CAPILAR,REJECT,HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P138-R1L.
+CATV1-P141-R3R,141,R3R,GANCHO FLOR HAWAIANA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P142-R1R,142,R1R,GANCHO FLOR HAWAIANA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P144-R1L,144,R1L,RUBOR OG YESS QUEEN,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P144-R1R,144,R1R,RUBOR OG YESS QUEEN,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P145-R3L,145,R3L,BASE MATTE OG,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P146-R1L,146,R1L,BASE MATTE OG,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P146-R1R,146,R1R,LABIAL PUREGLOW OG,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P146-R2L,146,R2L,LABIAL PUREGLOW OG,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P150-R1R,150,R1R,LIP GLOSS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P150-R2L,150,R2L,TROPICAL LUST,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P150-R3L,150,R3L,LIP GLOSS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P150-R3R,150,R3R,BERRY FONDUE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P151-R1R,151,R1R,LIP GLOSS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P151-R2L,151,R2L,VELVET CHERRY,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P151-R3L,151,R3L,LIP LINER,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P152-R2R,152,R2R,LIP LINER,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P152-R3L,152,R3L,BERRY FONDUE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P158-R2R,158,R2R,ILUMINDOR STICK (2 TONOS ),APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P164-R3L,164,R3L,POLVO MAJIKAL MINI,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P164-R3R,164,R3R,POLVO MAJIKAL MINI,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P171-R2L,171,R2L,GEL CEJAS ANIIK,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P175-R1R,175,R1R,DELINEADOR,APPROVE_CREATE,HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference.
+CATV1-P176-R2L,176,R2L,DELINEADOR,REJECT,HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P175-R1R.
+CATV1-P176-R3L,176,R3L,DEADEMAOSOBRILLO,APPROVE_CREATE,HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference.
+CATV1-P180-R2L,180,R2L,GLOWY SHELL,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P180-R3L,180,R3L,DEADEMAOSOBRILLO,REJECT,HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P176-R3L.
+CATV1-P181-R1L,181,R1L,COLOR BLOOM,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P181-R2L,181,R2L,BLOOM KISS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P181-R3R,181,R3R,BROCHAS NUDE ELEGANCE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: duplicate-reference group resolved; this is the selected canonical catalog reference.
+CATV1-P182-R2L,182,R2L,BROCHAS NUDE ELEGANCE,REJECT,HUMAN_GROUP_REVIEW: duplicate catalog reference rejected in favor of canonical reference CATV1-P181-R3R.
+CATV1-P182-R3R,182,R3R,GLOWY SHELL,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P187-R1R,187,R1R,GLOSS MIMOSA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P191-R3R,191,R3R,GLOSS MIMOSA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P193-R1R,193,R1R,COLOR BLOOM,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P202-R1L,202,R1L,HUMIDE GLOSS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P202-R1R,202,R1R,JUICYLIPS TONO 202,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P202-R2L,202,R2L,"JUICY GLOSS 200,201,202",APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P202-R2R,202,R2R,CLICKGLOSS PRO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P202-R3L,202,R3L,"LIPPIE BAL,M",APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P202-R3R,202,R3R,RUBOR NOSTALGIC,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R1L,203,R1L,PESTAÑAS PREGLUE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R1R,203,R1R,CONTORNO HUMIDE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R2L,203,R2L,CORRECTOR HUMIDE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R2R,203,R2R,PINE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R3L,203,R3L,SERUM RETINOL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P203-R3R,203,R3R,ALGODÓN MONTOC,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R1L,204,R1L,FIJADOR GRANDE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R1R,204,R1R,FIJADOR DIX FIX 30 ML,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R2L,204,R2L,GEL HIDRATANTE HYDRO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R2R,204,R2R,SERUM NIACINAMIDA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R3L,204,R3L,FACE LIFT ACIDO HIALURONICO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P204-R3R,204,R3R,SERUM VITAMINA C,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R1L,205,R1L,JABONFACIAL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R1R,205,R1R,CONTORNO DE OJOS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R2L,205,R2L,SERUM BLUSH MONT,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R2R,205,R2R,AMORE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R3L,205,R3L,CEPILLO EFECTO ALISADO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P205-R3R,205,R3R,BROE WAX ULTRA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R1L,206,R1L,HUMIDE LAPIZ DE CEJAS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R1R,206,R1R,SPIRAL GLOSSHUMIDE,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R2L,206,R2L,SOFT POWDER ROSADO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R2R,206,R2R,BASEMONTOC TONO 100,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R3L,206,R3L,LIPPIE BOOSTER,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P206-R3R,206,R3R,ILUMINADOR PALETA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P207-R1L,207,R1L,CONTROL OIL MONTOC,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P207-R1R,207,R1R,CORA LIP,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P207-R2L,207,R2L,LAPIZ DE LABIOS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P207-R2R,207,R2R,BASE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P207-R3L,207,R3L,LAPIZ MONTOC X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P207-R3R,207,R3R,BROCHA B74 X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P208-R1L,208,R1L,LIGHT SET MONTOC,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P208-R1R,208,R1R,POLVO MONTOC 30G,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P208-R2L,208,R2L,POLVO 10G TRASLUCIDO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P208-R2R,208,R2R,LIGHT SET MONTOC,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P208-R3L,208,R3L,GEL FIJADOR CEJAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P208-R3R,208,R3R,GEL FIJADOR CEJAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P209-R1L,209,R1L,BRONZER MONTOC,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P209-R1R,209,R1R,PRIMER GRIP,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P209-R2L,209,R2L,FIJADOR 200ML,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P209-R2R,209,R2R,POLVO 10G BANANA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P209-R3L,209,R3L,RUBOR STICK,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P209-R3R,209,R3R,BB CREAM SUNSOON,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P210-R1L,210,R1L,AGUA DE ROSAS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P210-R1R,210,R1R,KIT DE BROCHAS VIAJERAS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P210-R2L,210,R2L,HELLO BEACH BRONZER,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P210-R2R,210,R2R,BLOQUEADOR SUNSOON,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P210-R3L,210,R3L,BASE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P210-R3R,210,R3R,RUBOR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R1L,211,R1L,ENCRESPADOR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R1R,211,R1R,BROCHA FLUFLY,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R2L,211,R2L,PALETA HARMONY,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R2R,211,R2R,DELINEADOR MIAU,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R3L,211,R3L,MONTOC BEAUTY SKIN GEL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P211-R3R,211,R3R,POLVO 30G BANANA,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P213-R2R,213,R2R,DEADEMAS NUBE,REJECT,HUMAN_INDIVIDUAL_REVIEW: duplicate of CATV1-P139-R1R with the same image and price but an incoherent makeup-accessories classification.
+CATV1-P215-R1L,215,R1L,BROCHA CEJAS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P216-R1L,216,R1L,DEPILADOR SAGUI,DEFER,HUMAN_INDIVIDUAL_REVIEW: same image is repeated with conflicting category and/or price; canonical identity cannot be selected safely yet.
+CATV1-P218-R1L,218,R1L,DELINEADOR BLANCO,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P218-R3L,218,R3L,PESTAÑAS PELOAPELO X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P220-R2R,220,R2R,PESTAÑINAPROSAMAXI SILICON,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P220-R3L,220,R3L,PESTAÑINAPROSAPROFESIONAL,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P221-R2R,221,R2R,PILUSS PESTÁÑAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P221-R3L,221,R3L,PILUSS PESTÁÑAS,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P221-R3R,221,R3R,DELINEADOR BLANCO,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P222-R1L,222,R1L,DEPILADOR SAGUI,DEFER,HUMAN_INDIVIDUAL_REVIEW: same image is repeated with conflicting category and/or price; canonical identity cannot be selected safely yet.
+CATV1-P222-R2L,222,R2L,ENCRESPADOR FIFTY,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P222-R3L,222,R3L,ENCRESPADOR FIFTY,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P223-R1L,223,R1L,ENCRESPADOR FIFTY,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P223-R1R,223,R1R,COSMETIQUERA BOLSO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P225-R2R,225,R2R,USHAS 12 TONOS DIFERENTES X,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P227-R2L,227,R2L,GLOSS CON COLOR LLAVERO,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P229-R1R,229,R1R,CORRECTOR USHAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P229-R2R,229,R2R,CORRECTOR MIIS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P230-R2R,230,R2R,CORRECTOR USHAS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P230-R3L,230,R3L,POLVO DE HADAS,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P231-R1L,231,R1L,ILUMIANDOR,APPROVE_CREATE,HUMAN_INDIVIDUAL_REVIEW: visible final catalog evidence is sufficient and no unresolved identity group remains; approve canonical product creation candidate.
+CATV1-P231-R2R,231,R2R,CORRECTOR MIIS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P231-R3L,231,R3L,CORRECTOR MIIS,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P233-R1L,233,R1L,SPLASH PURPURE,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P233-R3L,233,R3L,SPLASH PURPURE,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P236-R3L,236,R3L,KIT CARTUCHERA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.
+CATV1-P238-R1R,238,R1R,LABIAL HUMECTANTE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P238-R2L,238,R2L,LABIAL HUMECTANTE,APPROVE_CREATE,HUMAN_GROUP_REVIEW: identity group resolved as DISTINCT_PRODUCTS; this reference is approved as its own canonical product candidate.
+CATV1-P238-R3L,238,R3L,KIT CARTUCHERA,DEFER,HUMAN_GROUP_REVIEW: product creation deferred because the group is unresolved or requires ProductVariant support before canonical creation.

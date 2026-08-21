@@ -1,0 +1,34 @@
+{
+  "phase": "1.19",
+  "strategy_version": "product-master-reconciliation-v1",
+  "source_catalog": "CATALOGO_LIHEN_V5_ACTL_V1.pdf",
+  "catalog_reference_count": 1003,
+  "dev_product_master_count": 0,
+  "result_counts_against_empty_dev_master": {
+    "NEW_PRODUCT": 816,
+    "REVIEW_REQUIRED": 113,
+    "CONFLICT": 74
+  },
+  "catalog_duplicate_identity_groups": 39,
+  "catalog_rows_in_duplicate_identity_groups": 83,
+  "intelligence_supplier_product_count": 1275,
+  "supplier_auxiliary_evidence_counts": {
+    "SUPPLIER_NAME_ONLY": 182,
+    "NO_SUPPLIER_EXACT": 800,
+    "SUPPLIER_AMBIGUOUS_NAME_ONLY": 20,
+    "SUPPLIER_EXACT_NAME_BRAND": 1
+  },
+  "rules": [
+    "Supplier products are auxiliary evidence only and never canonical products.",
+    "Image SHA-256 is evidence only and never product identity.",
+    "Fuzzy matching can generate candidates later but cannot auto-assign product_id.",
+    "NEW_PRODUCT is a reconciliation recommendation, not permission to insert.",
+    "CONFLICT and REVIEW_REQUIRED always require human review.",
+    "No product, brand, category, image or Storage write is performed in FASE 1.19."
+  ],
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ]
+}

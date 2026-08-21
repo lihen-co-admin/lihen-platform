@@ -1,0 +1,39 @@
+{
+  "phase": "1.22.1",
+  "transform_version": "WEBP_Q85_METHOD6_NO_UPSCALE_V1",
+  "source_count": 952,
+  "generated_count": 952,
+  "format": "webp",
+  "mime_type": "image/webp",
+  "width": 345,
+  "height": 176,
+  "quality": 85,
+  "method": 6,
+  "metadata_stripped": true,
+  "upscaled": false,
+  "total_bytes": 2784930,
+  "min_bytes": 570,
+  "max_bytes": 10566,
+  "median_bytes": 2631.0,
+  "bucket_limit_bytes": 3145728,
+  "over_bucket_limit": 0,
+  "unique_derivative_hashes": 951,
+  "duplicate_hash_groups": 1,
+  "unique_storage_paths": 952,
+  "upload_ready_count": 952,
+  "uploads_executed": false,
+  "product_images_inserted": false,
+  "web_publication_enabled": false,
+  "manifest_sha256": "ed77733a06e7d50adf232f933f3f9812c39917452c569bd6f05c5e1f64800c1e",
+  "derivative_manifest_sha256": "1e88664e633eeba67ad451d46a8384bc00d0bbf7d665fcc29a8cce6c3719c844",
+  "duplicate_derivative_hashes": [
+    {
+      "sha256": "592c7d8ec3b273ed45c887e4b9dab4bf30200a7b62495cf72006816f6d46cad9",
+      "count": 2,
+      "references": [
+        "CATV1-P163-R3L",
+        "CATV1-P164-R3L"
+      ]
+    }
+  ]
+}

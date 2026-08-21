@@ -1,0 +1,41 @@
+{
+  "phase": "1.21.2.1",
+  "capturedAt": "2026-08-21T18:09:00Z",
+  "projectRef": "vnmkupzptujtywnnabkp",
+  "businessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ],
+  "beautyCare": {
+    "categories": 5,
+    "candidateRuns": 1,
+    "candidates": 1003,
+    "reviewQueue": 187
+  },
+  "style": {
+    "categories": 0,
+    "candidateRuns": 0,
+    "candidates": 0,
+    "reviewQueue": 0
+  },
+  "products": 0,
+  "candidateCategoryLineMismatches": 0,
+  "createProductAuthenticatedExecute": false,
+  "updateProductAuthenticatedExecute": false,
+  "categoryMismatchGate": "PASS",
+  "securityAdvisorNewFindings": 0,
+  "existingSecurityWarning": "auth_leaked_password_protection",
+  "identityScope": {
+    "multiMemberGroups": 31,
+    "multiMemberCandidates": 67,
+    "singletonResidualConflicts": 7,
+    "reviewRequired": 113,
+    "identityKeyIncludesBusinessLine": true
+  },
+  "relationalIntegrity": {
+    "productCategoryLineFk": true,
+    "candidateCategoryLineFk": true,
+    "categoryParentLineFk": true,
+    "lineMismatches": 0
+  }
+}

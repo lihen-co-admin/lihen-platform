@@ -1,0 +1,26 @@
+{
+  "phase": "1.21.4",
+  "business_line": "BEAUTY_CARE",
+  "identity_resolutions": 37,
+  "identity_counts": {
+    "VARIANT_SET": 17,
+    "DEFER": 3,
+    "DISTINCT_PRODUCTS": 12,
+    "DUPLICATE_REFERENCE": 5
+  },
+  "candidate_decisions": 187,
+  "candidate_counts": {
+    "APPROVE_CREATE": 136,
+    "DEFER": 45,
+    "REJECT": 6
+  },
+  "review_operations": 224,
+  "products": 0,
+  "product_images": 0,
+  "storage_objects": 0,
+  "candidate_review_rpc_authenticated_execute": false,
+  "identity_review_rpc_authenticated_execute": false,
+  "idempotency": "PASS",
+  "security_advisor_new_findings": 0,
+  "known_global_warning": "auth_leaked_password_protection"
+}

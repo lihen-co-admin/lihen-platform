@@ -1,0 +1,20 @@
+{
+  "phase": "1.21.7",
+  "business_line": "BEAUTY_CARE",
+  "canonical_approved": 952,
+  "human_approved": 136,
+  "policy_approved": 816,
+  "created_products": 952,
+  "style_products": 0,
+  "visible_web": 0,
+  "product_images": 0,
+  "storage_objects": 0,
+  "storage_asset_metadata": 0,
+  "inventory_moved": false,
+  "import_operations": 1,
+  "idempotency_replay": "PASS",
+  "rpc_authenticated_execute_after_cutover": false,
+  "rpc_anon_execute_after_cutover": false,
+  "operation_key": "FASE_1_21_7_FULL_CANONICAL_PRODUCT_IMPORT_2026_08_21_V1",
+  "idempotency_fix_applied_before_product_writes": true
+}

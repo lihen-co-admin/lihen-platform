@@ -1,0 +1,7 @@
+FASE 1.16 FILE INVENTORY
+Migration: database/migrations/20260821143058_product_image_controlled_write_foundation.sql
+Validation: database/validation/013_product_image_controlled_write_foundation.sql
+Security doc: docs/security/FASE_1_16_PRODUCT_IMAGE_CONTROLLED_WRITE_FOUNDATION.md
+Repository: packages/products/src/infrastructure/supabase-product-image-repository.ts
+Test: packages/products/tests/supabase-controlled-product-image-writes.test.ts
+Pending cutover: database/migrations/pending/008_product_images_storage_and_write_cutover.sql

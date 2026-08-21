@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.21.0",
+  "strategyVersion": "CANONICAL_TAXONOMY_ANCHORED_CANDIDATES_V1",
+  "source": "CANONICAL_CATALOG_V1",
+  "totalCandidates": 1003,
+  "statusCounts": {
+    "READY_CANDIDATE": 816,
+    "REVIEW_REQUIRED": 113,
+    "CONFLICT": 74
+  },
+  "brandIdResolved": 877,
+  "categoryIdResolved": 126,
+  "taxonomyAnchored": 1003,
+  "autoInsertAllowed": 0,
+  "productsWritten": 0,
+  "rules": [
+    "PRODUCT_CANDIDATE_IS_NOT_PRODUCT",
+    "NO_PRODUCT_ROW_IS_INSERTED_IN_PHASE_1_21",
+    "BRAND_ID_ONLY_FROM_CANONICAL_BRAND",
+    "CATEGORY_ID_ONLY_FROM_EXPLICIT_CANONICAL_CATALOG_SECTION",
+    "SUPPLIER_EVIDENCE_IS_AUXILIARY_ONLY",
+    "IMAGE_HASH_IS_EVIDENCE_NOT_IDENTITY",
+    "DUPLICATE_IDENTITY_REQUIRES_REVIEW",
+    "CATALOG_AUDIT_REVIEW_ROWS_REQUIRE_REVIEW"
+  ],
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ]
+}

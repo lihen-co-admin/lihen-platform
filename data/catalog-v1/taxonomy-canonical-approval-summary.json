@@ -1,0 +1,60 @@
+{
+  "phase": "1.20.1",
+  "source": "CATALOGO_LIHEN_V5_ACTL_V1.pdf",
+  "sourceSha256": "1c08da5b57499d76e32825227322a98b0e6fcf493f9d874d30efc17fee5af65f",
+  "approvedAt": "2026-08-21",
+  "brandCount": 46,
+  "categoryCount": 5,
+  "approvedNewEntityCount": 51,
+  "reviewRequiredCount": 0,
+  "resolvedPreviouslyDoubtful": [
+    {
+      "referenceId": "CATV1-BRAND-P010",
+      "page": 10,
+      "canonicalName": "La Receta CBD",
+      "evidenceType": "OFFICIAL_BRAND+CURRENT_SUPPLIER"
+    },
+    {
+      "referenceId": "CATV1-BRAND-P013",
+      "page": 13,
+      "canonicalName": "D'Luchi",
+      "evidenceType": "OFFICIAL_BRAND"
+    },
+    {
+      "referenceId": "CATV1-BRAND-P162",
+      "page": 162,
+      "canonicalName": "Majikal",
+      "evidenceType": "CURRENT_SUPPLIER"
+    },
+    {
+      "referenceId": "CATV1-BRAND-P201",
+      "page": 201,
+      "canonicalName": "MONTOC",
+      "evidenceType": "OFFICIAL_BRAND"
+    }
+  ],
+  "gates": {
+    "insertBrands": false,
+    "insertCategories": false,
+    "backfillProducts": false,
+    "browserAccess": false
+  },
+  "authorityRule": "APPROVAL_RECORDS_DO_NOT_CREATE_TAXONOMY_ROWS",
+  "resolvedCanonicalCorrections": [
+    {
+      "referenceId": "CATV1-BRAND-P132",
+      "page": 132,
+      "canonicalName": "Tratamientos LB SAS"
+    },
+    {
+      "referenceId": "CATV1-BRAND-P232",
+      "page": 232,
+      "canonicalName": "Purpure by Angie Bedoya"
+    }
+  ],
+  "businessLine": "BEAUTY_CARE",
+  "supportedBusinessLines": [
+    "BEAUTY_CARE",
+    "STYLE"
+  ]
+}

@@ -1,0 +1,2 @@
+import type { Category } from '../domain/category'; import type { CategoryRepository } from '../ports/category-repository';
+export class InMemoryCategoryRepository implements CategoryRepository { public constructor(private readonly categories:readonly Category[]=[]){ } public async findAll(){ return [...this.categories]; } public async findById(id:string){ return this.categories.find(x=>x.id===id)??null; } public async findByNormalizedName(value:string){ const n=value.trim().toLowerCase(); return this.categories.find(x=>x.normalizedName.toLowerCase()===n)??null; } }

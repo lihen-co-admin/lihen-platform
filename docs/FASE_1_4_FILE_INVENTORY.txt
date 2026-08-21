@@ -1,0 +1,15 @@
+packages/products/src/application/commands/create-product.command.ts
+packages/products/src/application/commands/create-product.handler.ts
+packages/products/src/domain/errors/product-errors.ts
+packages/products/src/ports/product-repository.ts
+packages/products/src/infrastructure/in-memory-product-repository.ts
+packages/products/src/infrastructure/supabase-product-repository.ts
+packages/products/tests/create-product.test.ts
+packages/products/tests/supabase-write-block.test.ts
+apps/control-center/src/pages/CreateProductPage.tsx
+apps/control-center/src/composition/products.ts
+apps/control-center/src/app/App.tsx
+apps/control-center/src/pages/ProductsPage.tsx
+tests/e2e/control-center.spec.ts
+docs/FASE_1_4_PRODUCT_CREATE.md
+docs/FASE_1_4_VALIDATION.md

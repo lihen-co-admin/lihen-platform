@@ -1,0 +1,13 @@
+{
+  "data/catalog-v1/product-human-review-canonical-approval-plan-v1.json": "c45a4905ac79ffbb13c8659939ae1c75582290fc39ac8ad3a8e188481b8fa78b",
+  "data/catalog-v1/product-human-review-canonical-approval-summary-v1.json": "9d082d22d72e446d1086aa9b6fe3cffc062be9bcf5607d9719f1a9241c81b37a",
+  "data/catalog-v1/product-human-identity-resolutions-v1.csv": "32a70c743d12b2ffea1e893a2b3a0311e480e14244aaa342e55569a577d5f6bb",
+  "data/catalog-v1/product-human-candidate-decisions-v1.csv": "202eccf64fdeeb0c9b2f44f0e61e58e8db1ca1f669e24768eb4f4b13b6fe0ba2",
+  "data/catalog-v1/product-human-review-dev-evidence-v1.json": "4fe9f2f395afe2a70d3ec286f654ad429b873981149a7707cbcca6876b5b06b4",
+  "database/migrations/20260821182725_enable_product_review_rpcs_dev_cutover.sql": "359845b7cf86b369a42fc67df577f3b3406dc8d428e6cd848a12b83ee24bdf10",
+  "database/migrations/20260821182820_align_product_review_identity_contract.sql": "2efe02c944d36c4f0e5a4e3618ff66a8ffd95f1d206cc5454bf48fdcff5cde9d",
+  "database/migrations/20260821182846_canonicalize_review_evidence_identity_keys.sql": "3e42a8a2c12a3a8f7bd229289aed2ef0a4065c8a7cc09f219308852c51c83fe8",
+  "database/migrations/20260821183801_disable_product_review_rpcs_after_human_review.sql": "9bf00a929c891c76c2d97d8e3a94a99fffc713c29ed7fc8fa2c0e036a7cd097e",
+  "database/validation/020_human_review_canonical_product_approval.sql": "3c4dc5ed700a0d1204471c962d90126695c2b2c158f49dce427f70f49e05535a",
+  "docs/reconciliation/FASE_1_21_4_HUMAN_REVIEW_CANONICAL_PRODUCT_APPROVAL.md": "974c36490d047c62a4b9f527de537e943eb79f587aabb98343dd53ef5dc15115"
+}

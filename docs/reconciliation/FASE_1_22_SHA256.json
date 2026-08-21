@@ -1,0 +1,10 @@
+{
+  "database/migrations/20260821194014_canonical_product_image_linkage_storage_pre_cutover.sql": "f22a6eb620f4ea5a01762b0f3a2c13c5bb62bf44d7d65d98238eaba9873935a8",
+  "data/catalog-v1/canonical-product-image-linkage-v1.json": "fd4dc9212476c6d3ed3fe7f7f2db7c700f21b591e4a099e52e5ec6cdd22171f5",
+  "data/catalog-v1/canonical-product-image-linkage-v1.csv": "7e92d595a50de8d064b6576701c0ad6c07307b43dd4a8b9bcc1ae830b5c3cfca",
+  "data/catalog-v1/canonical-product-image-exclusions-v1.json": "80aad55320c1de6aadd79c34f128a40dca1c29fa92542f6186443cea644e48bd",
+  "data/catalog-v1/canonical-product-image-exclusions-v1.csv": "7c62186e099f96e8b916cd8a99290b2a19f7c1803b1a4038db1204386c32ed07",
+  "data/catalog-v1/canonical-product-image-linkage-summary-v1.json": "01ffa2e2a75517a73ceb6ad477c698581c8cc91636c111d055c34d3d2eba3316",
+  "docs/reconciliation/FASE_1_22_CANONICAL_PRODUCT_IMAGE_LINKAGE_STORAGE_PRE_CUTOVER.md": "3ab1ea64c9d8cee549f7e427dc89628b27252035a8a427100f5d54e21d5dd385",
+  "docs/reconciliation/FASE_1_22_DEV_EVIDENCE.md": "771d137d069f223e2ecb55b5ca70b17c005db6d7b98b91702ee78eca312f4246"
+}

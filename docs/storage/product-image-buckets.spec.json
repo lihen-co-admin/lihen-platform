@@ -1,0 +1,25 @@
+{
+  "version": "FASE_1.17",
+  "buckets": [
+    {
+      "id": "lihen-product-originals",
+      "public": false,
+      "fileSizeLimitBytes": 12582912,
+      "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp"],
+      "purpose": "Immutable source originals"
+    },
+    {
+      "id": "lihen-product-web",
+      "public": true,
+      "fileSizeLimitBytes": 3145728,
+      "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp"],
+      "purpose": "Public optimized web/catalog derivatives"
+    }
+  ],
+  "pathTemplate": {
+    "original": "products/{product_id}/{image_id}/original/{sha256}.{ext}",
+    "web": "products/{product_id}/{image_id}/web/{sha256}.{ext}"
+  },
+  "overwrite": false,
+  "uploadsEnabled": false
+}

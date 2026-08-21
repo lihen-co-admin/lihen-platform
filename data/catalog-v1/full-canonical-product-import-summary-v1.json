@@ -1,0 +1,34 @@
+{
+  "phase": "1.21.6",
+  "scope": "FULL_CANONICAL_APPROVED",
+  "business_line": "BEAUTY_CARE",
+  "candidate_run_id": "d4d17a39-008d-4bcc-88b2-384cc147e262",
+  "dev_import_run_id": "99a5e5bd-6115-40eb-9ca8-8d4adaa3a209",
+  "canonical_approved_total": 952,
+  "human_approved": 136,
+  "policy_approved": 816,
+  "rejected_excluded": 6,
+  "deferred_excluded": 45,
+  "ready_create": 952,
+  "conflicts": 0,
+  "product_writes_executed": false,
+  "products_rows_after_phase": 0,
+  "sku_range": {
+    "first": "BC-20000",
+    "last": "BC-20951",
+    "strategy": "RESERVED_IMPORT_RANGE"
+  },
+  "catalog_code_range": {
+    "first": "BCV5-0001",
+    "last": "BCV5-0952",
+    "strategy": "GENERATED_CANONICAL_SOURCE_CODE"
+  },
+  "slug_strategy": "BEAUTY_CARE_NORMALIZED_NAME_WITH_SOURCE_SUFFIX_ON_COLLISION",
+  "product_id_strategy": "MD5_UUID_LIHEN_PRODUCT_V1_BUSINESS_LINE_SOURCE_REFERENCE",
+  "partial_136_run_status": "SUPERSEDED",
+  "full_run_status": "COMPLETED",
+  "cutover_rpc_execute_authenticated": false,
+  "manifest_md5": "bb5fda9f4e9e0215b172139799941222",
+  "migration_version": "20260821192014",
+  "security_advisor_new_phase_findings": 0
+}

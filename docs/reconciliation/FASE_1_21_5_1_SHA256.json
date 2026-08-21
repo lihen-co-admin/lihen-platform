@@ -1,0 +1,13 @@
+{
+  "data/catalog-v1/canonical-product-approvals-v1.csv": "2b0f4be31e77d49683b215eda0476301b7523ab54875107fe2193328b2f56c44",
+  "data/catalog-v1/canonical-product-approvals-v1.json": "85fd78b6f52185113491df79025474646adbe8d1f1bebd434cf09b8f95df728c",
+  "data/catalog-v1/ready-candidate-canonical-approval-policy-summary-v1.json": "aecca69e6f039520463b787ffa4d6f9984a67dca4e73ade35f72f58ecc89fcd4",
+  "database/migrations/20260821191204_ready_candidate_canonical_approval_policy_foundation.sql": "f1a6ff9cceac0b4c25b2e33209798e50596a196d808d464d5a519da934570378",
+  "database/migrations/20260821191236_enable_ready_candidate_policy_approval_dev_cutover.sql": "f2d84ed69f08574243d4ea90c84c0d8153caf8a63e18220f82ed3cae62beb4b8",
+  "database/migrations/20260821191311_disable_ready_candidate_policy_approval_after_dev_cutover.sql": "cc26f39b1b282142e97330242e3f895b05b718c7e9136360147df8c4dd3ba572",
+  "database/validation/025_ready_candidate_canonical_approval_policy.sql": "9f30cd05f6d9f318495ac88202e1e3d5fd893ef15c522af5319e1dadb34dde84",
+  "docs/reconciliation/FASE_1_21_5_1_DEV_EVIDENCE.md": "6756ea455256f1a36704f062f92ca6020a883e581dc2117a41cf99453bd16cb1",
+  "docs/reconciliation/FASE_1_21_5_1_FILE_INVENTORY.txt": "3d6d72f5e56651e6591ea7dcc4da7eb9a9fc6460f46e607437cf2db9f0869b7c",
+  "docs/reconciliation/FASE_1_21_5_1_READY_CANDIDATE_CANONICAL_APPROVAL_POLICY.md": "fbfaf1fcd91dc1b10aa3d6c44670a89c41221a21af3cb7f8227934c0f79c3a06",
+  "packages/products/src/domain/ready-candidate-approval-policy.ts": "3303f1027ea54b638a170006746084d44bd72d2efdf5041d182a85fe567b8b16"
+}

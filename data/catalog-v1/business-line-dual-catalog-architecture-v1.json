@@ -1,0 +1,61 @@
+{
+  "phase": "1.21.2.1",
+  "canonicalBusinessLines": [
+    {
+      "code": "BEAUTY_CARE",
+      "displayName": "Beauty Care",
+      "status": "ACTIVE"
+    },
+    {
+      "code": "STYLE",
+      "displayName": "Style",
+      "status": "ACTIVE"
+    }
+  ],
+  "currentCanonicalCatalog": {
+    "source": "CATALOGO_LIHEN_V5_ACTL_V1",
+    "businessLine": "BEAUTY_CARE",
+    "references": 1003
+  },
+  "devState": {
+    "BEAUTY_CARE": {
+      "categories": 5,
+      "candidateRuns": 1,
+      "candidates": 1003,
+      "reviewQueue": 187
+    },
+    "STYLE": {
+      "categories": 0,
+      "candidateRuns": 0,
+      "candidates": 0,
+      "reviewQueue": 0
+    },
+    "products": 0
+  },
+  "invariants": [
+    "PRODUCT_BUSINESS_LINE_REQUIRED",
+    "CATEGORY_BUSINESS_LINE_REQUIRED",
+    "PRODUCT_CATEGORY_LINE_MUST_MATCH",
+    "CANDIDATE_RUN_BUSINESS_LINE_REQUIRED",
+    "CANDIDATE_BUSINESS_LINE_REQUIRED_AND_MATCHES_RUN",
+    "CATALOG_SOURCE_BUSINESS_LINE_REQUIRED",
+    "BRANDS_ARE_GLOBAL_NOT_DUPLICATED_PER_LINE",
+    "SUPPLIERS_ARE_GLOBAL; SUPPLIER_PRODUCT_OR_PRODUCT_RELATION_DETERMINES_LINE",
+    "BEAUTY_CARE_AND_STYLE_SHARE_ONE_PRODUCT_MASTER",
+    "CATALOGS_AND_PUBLICATION_ARE_FILTERED_BY_BUSINESS_LINE",
+    "PRODUCT_CATEGORY_LINE_COMPOSITE_FK",
+    "CANDIDATE_CATEGORY_LINE_COMPOSITE_FK",
+    "CATEGORY_PARENT_LINE_COMPOSITE_FK",
+    "CANDIDATE_IDENTITY_KEY_INCLUDES_BUSINESS_LINE"
+  ],
+  "futureStylePipeline": [
+    "STYLE_SUPPLIER_SOURCE",
+    "STYLE_TAXONOMY",
+    "STYLE_PRODUCT_CANDIDATES",
+    "STYLE_REVIEW",
+    "CANONICAL_PRODUCT_MASTER",
+    "STYLE_IMAGES_INVENTORY_PRICING",
+    "STYLE_CATALOG_VERSION",
+    "WEB_STYLE_PROJECTION"
+  ]
+}

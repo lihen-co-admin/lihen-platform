@@ -1,0 +1,9 @@
+packages/products/src/domain/taxonomy-reconciliation.ts
+packages/products/tests/taxonomy-reconciliation.test.ts
+data/catalog-v1/taxonomy-reconciliation-manifest.json
+data/catalog-v1/taxonomy-reconciliation-dry-run-summary.json
+database/migrations/20260821170000_brand_category_reconciliation_foundation.sql
+database/validation/017_brand_category_reconciliation_foundation.sql
+docs/reconciliation/FASE_1_20_BRAND_CATEGORY_RECONCILIATION_FOUNDATION.md
+docs/reconciliation/FASE_1_20_DRY_RUN_EVIDENCE.md
+README.md

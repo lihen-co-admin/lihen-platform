@@ -1,0 +1,3 @@
+import type { Product } from '../domain/product'; import type { BrandRepository } from '../ports/brand-repository'; import type { CategoryRepository } from '../ports/category-repository';
+export interface ProductTaxonomyLabels { readonly brandName?:string; readonly categoryName?:string; }
+export async function resolveProductTaxonomy(product:Product,brands?:BrandRepository,categories?:CategoryRepository):Promise<ProductTaxonomyLabels>{ const [brand,category]=await Promise.all([product.brandId&&brands?brands.findById(product.brandId):Promise.resolve(null),product.categoryId&&categories?categories.findById(product.categoryId):Promise.resolve(null)]); return {...(brand?{brandName:brand.name}:{}),...(category?{categoryName:category.name}:{})}; }

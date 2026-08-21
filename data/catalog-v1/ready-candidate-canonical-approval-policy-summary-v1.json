@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.21.5.1-V1",
+  "businessLine": "BEAUTY_CARE",
+  "policyKey": "READY_CANDIDATE_CANONICAL_APPROVAL_V1",
+  "humanApproved": 136,
+  "policyApproved": 816,
+  "canonicalApprovedTotal": 952,
+  "rejected": 6,
+  "deferred": 45,
+  "productsWritten": 0,
+  "policyGates": {
+    "auditReviewFlagged": 0,
+    "missingImageSha256": 0,
+    "missingTaxonomyAnchor": 0,
+    "categoryBusinessLineMismatch": 0,
+    "duplicateIdentityAcrossFullCandidateRun": 0,
+    "preexistingHumanDecisionOnReady": 0
+  }
+}

@@ -1,0 +1,1546 @@
+[
+  {
+    "identity_key": "BEAUTY_CARE|acondi cebolla|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P033-R1R",
+      "CATV1-P034-R2R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "ACONDI CEBOLLA",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      37900,
+      16000
+    ],
+    "pages": [
+      33,
+      34
+    ],
+    "image_sha256": [
+      "58571a350d02e52e012436d83967d069148c6bce3516c329f52a081c6d6ec989",
+      "3055220c277497c8b39d435bb335a4f42cba90c56f7c25715bd3c1cf2934e5a1"
+    ],
+    "perceptual_hash_distance_min": 11,
+    "perceptual_hash_distance_max": 11,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|acondi herbal|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P029-R3R",
+      "CATV1-P034-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "ACONDI HERBAL",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      37900,
+      16000
+    ],
+    "pages": [
+      29,
+      34
+    ],
+    "image_sha256": [
+      "1f9fecfbacf58afe1e457162b70a934cec9ed796bce90717aede70ab91fb91cd",
+      "6110dade6f28b3ba29fc9fa79a7614ee70169c121e0045559ade97c81b41c9b7"
+    ],
+    "perceptual_hash_distance_min": 10,
+    "perceptual_hash_distance_max": 10,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|base matte og|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P145-R3L",
+      "CATV1-P146-R1L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "BASE MATTE OG",
+    "canonical_brand_name": "Outdoor Girl",
+    "category_label": null,
+    "prices_cop": [
+      49000,
+      36000
+    ],
+    "pages": [
+      145,
+      146
+    ],
+    "image_sha256": [
+      "67108e70ffa80413d1273a1250ccff4ea2b7464599a7f6cc64dfdf638910d826",
+      "f727da2c1fa0e47b1f4772b4f973e42824045b2254236d6a80967c3146964f23"
+    ],
+    "perceptual_hash_distance_min": 3,
+    "perceptual_hash_distance_max": 3,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 90,
+    "reasons": [
+      "VERY_HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DEFER",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|base|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P207-R2R",
+      "CATV1-P210-R3L"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "REVIEW_REQUIRED"
+    ],
+    "product_name": "BASE",
+    "canonical_brand_name": "MONTOC",
+    "category_label": null,
+    "prices_cop": [
+      60000,
+      53000
+    ],
+    "pages": [
+      207,
+      210
+    ],
+    "image_sha256": [
+      "bdcfb46283277293f46a04d0f9dde7d30acbb514d01abeb8122ab49d1c41ae79",
+      "9f280146b7c9bbe004f004c2dbc8918f7ab77e2a90e6772a595c65d08851d231"
+    ],
+    "perceptual_hash_distance_min": 8,
+    "perceptual_hash_distance_max": 8,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|berry fondue|340fb06e-fd22-49ec-a967-359e83aa939b|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P150-R3R",
+      "CATV1-P152-R3L"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "CONFLICT"
+    ],
+    "product_name": "BERRY FONDUE",
+    "canonical_brand_name": "Destiny by La Segura",
+    "category_label": null,
+    "prices_cop": [
+      31000,
+      21000
+    ],
+    "pages": [
+      150,
+      152
+    ],
+    "image_sha256": [
+      "47d9ad00776c057aa3c32722028ae1b14c77edf43d4a9d6389752d652e991e74",
+      "e2a7501aaf9db032b2d91f3c5d554a14c43d48f775ff5cff97b0b62a47744325"
+    ],
+    "perceptual_hash_distance_min": 4,
+    "perceptual_hash_distance_max": 4,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 80,
+    "reasons": [
+      "HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|brochas nude elegance|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P181-R3R",
+      "CATV1-P182-R2L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "BROCHAS NUDE ELEGANCE",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      29000,
+      29000
+    ],
+    "pages": [
+      181,
+      182
+    ],
+    "image_sha256": [
+      "b3b02b51f3dc33dfaba2c12a4436d9a8369bca0ad459d25cf4d741fb6b5880b1",
+      "409e97d380f06efdd280d77f99e032da09d54a642ac844f6565f8afb934ee391"
+    ],
+    "perceptual_hash_distance_min": 10,
+    "perceptual_hash_distance_max": 10,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DUPLICATE_REFERENCE",
+    "human_canonical_source_reference_id": "CATV1-P181-R3R",
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|cepillo masajeador||b36e2375-b910-4030-abf2-832999885338",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P136-R2L",
+      "CATV1-P138-R3R"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "CONFLICT"
+    ],
+    "product_name": "CEPILLO MASAJEADOR",
+    "canonical_brand_name": null,
+    "category_label": "CEPILLOS Y ACCESORIOS PARA EL CABELLO",
+    "prices_cop": [
+      11000,
+      13000
+    ],
+    "pages": [
+      136,
+      138
+    ],
+    "image_sha256": [
+      "26a502e9f54560a1232f61ceb00ddfab54e43a2d60adb75ae95a6461a7955523",
+      "78d67f4d5a0bd5be4abc53b1bae36288aeea8125e1dc790c8ea5db978ca993b4"
+    ],
+    "perceptual_hash_distance_min": 4,
+    "perceptual_hash_distance_max": 4,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 80,
+    "reasons": [
+      "HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|color bloom|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P181-R1L",
+      "CATV1-P193-R1R"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "CONFLICT"
+    ],
+    "product_name": "COLOR BLOOM",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      19000,
+      19000
+    ],
+    "pages": [
+      181,
+      193
+    ],
+    "image_sha256": [
+      "44074277d49a6a2c16aa29431fc3962a768e0da4ef1b69757b21cd003c374da2",
+      "eec2b343ceabb487d538039009c52822b451888c50ef9f04e0293d186e0038fd"
+    ],
+    "perceptual_hash_distance_min": 4,
+    "perceptual_hash_distance_max": 4,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 80,
+    "reasons": [
+      "HIGH_VISUAL_SIMILARITY",
+      "SAME_PRICE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|corrector miis||e137169e-b616-4487-aa3e-7637db245219",
+    "member_count": 3,
+    "member_reference_ids": [
+      "CATV1-P229-R2R",
+      "CATV1-P231-R2R",
+      "CATV1-P231-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "CORRECTOR MIIS",
+    "canonical_brand_name": null,
+    "category_label": "BASES, CORRECTORES, POLVOS, RUBORES E ILUMINADORES",
+    "prices_cop": [
+      16000,
+      16000,
+      16000
+    ],
+    "pages": [
+      229,
+      231,
+      231
+    ],
+    "image_sha256": [
+      "a938fd73684a03fc230e251fadf8f4398ae165f4199d6df71f7c055bfff26bcc",
+      "a07c5b09ccf470fd27f97eb02ebaef4200870b9a82b3ef133571ef7b2055f276",
+      "c914f52af4dead90cefec5086c2b4e893060d7017b0e70a60c828b29cc9ac433"
+    ],
+    "perceptual_hash_distance_min": 8,
+    "perceptual_hash_distance_max": 13,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|corrector ushas||e137169e-b616-4487-aa3e-7637db245219",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P229-R1R",
+      "CATV1-P230-R2R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "CORRECTOR USHAS",
+    "canonical_brand_name": null,
+    "category_label": "BASES, CORRECTORES, POLVOS, RUBORES E ILUMINADORES",
+    "prices_cop": [
+      13000,
+      13000
+    ],
+    "pages": [
+      229,
+      230
+    ],
+    "image_sha256": [
+      "5ceea7d347638d54c5703b861527f797285f19da21a012698fb127790dfd96b6",
+      "6231013f429cfbaf73420550e01fe6ab6abeac27c18b9672877116d5738643a5"
+    ],
+    "perceptual_hash_distance_min": 10,
+    "perceptual_hash_distance_max": 10,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|deademaosobrillo|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P176-R3L",
+      "CATV1-P180-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "DEADEMAOSOBRILLO",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      13000,
+      13000
+    ],
+    "pages": [
+      176,
+      180
+    ],
+    "image_sha256": [
+      "221e66a65b7360e216f08f39571dd07314dd6b6b052f419144a0b8fc19bf61ec",
+      "611fd3d06f7f8b52a657e17727e9d2c420958eb38fbd1172bc775dfb9655695e"
+    ],
+    "perceptual_hash_distance_min": 9,
+    "perceptual_hash_distance_max": 9,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DUPLICATE_REFERENCE",
+    "human_canonical_source_reference_id": "CATV1-P176-R3L",
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|delineador blanco||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P218-R1L",
+      "CATV1-P221-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "DELINEADOR BLANCO",
+    "canonical_brand_name": null,
+    "category_label": "CEJAS, PESTAÑAS Y DELINEADORES",
+    "prices_cop": [
+      13000,
+      7000
+    ],
+    "pages": [
+      218,
+      221
+    ],
+    "image_sha256": [
+      "30e032c6ff70aa170525b96ad580be94340a376e64ba0b4d2054585c874e5e02",
+      "1242f31cf91710208ca1b90e66a42c38833db88595e49a42529d5488aff1032d"
+    ],
+    "perceptual_hash_distance_min": 9,
+    "perceptual_hash_distance_max": 9,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|delineador|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P175-R1R",
+      "CATV1-P176-R2L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "DELINEADOR",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      13000,
+      13000
+    ],
+    "pages": [
+      175,
+      176
+    ],
+    "image_sha256": [
+      "47c1bc8c78d8d80eece61821b01162e4e3e5b61547e548be1f4a09aa44b30719",
+      "14086f2de291adda92294ed2621ecf5f5b9cb463ab4b6a3fe28a6840f6f5a223"
+    ],
+    "perceptual_hash_distance_min": 3,
+    "perceptual_hash_distance_max": 3,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 95,
+    "reasons": [
+      "VERY_HIGH_VISUAL_SIMILARITY",
+      "SAME_PRICE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DUPLICATE_REFERENCE",
+    "human_canonical_source_reference_id": "CATV1-P175-R1R",
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|encrespador fifty||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+    "member_count": 3,
+    "member_reference_ids": [
+      "CATV1-P222-R2L",
+      "CATV1-P222-R3L",
+      "CATV1-P223-R1L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "ENCRESPADOR FIFTY",
+    "canonical_brand_name": null,
+    "category_label": "CEJAS, PESTAÑAS Y DELINEADORES",
+    "prices_cop": [
+      13000,
+      13000,
+      13000
+    ],
+    "pages": [
+      222,
+      222,
+      223
+    ],
+    "image_sha256": [
+      "b99bcd2f83494936ff9358e6631171f53ef4bb3e74fd37877e6592042ef20aa2",
+      "c83a98daccc8c3dbc71e8d84c09823758ee6098ab59e5caebebf2d86e242b35b",
+      "77d44e51e347bce5140a8bb461cf4678125e493cab63e93329b69ef13700f11a"
+    ],
+    "perceptual_hash_distance_min": 5,
+    "perceptual_hash_distance_max": 7,
+    "proposal": "VARIANT_SET",
+    "confidence": 80,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "NEARBY_CATALOG_PLACEMENT",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|gancho flor hawaiana||b36e2375-b910-4030-abf2-832999885338",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P141-R3R",
+      "CATV1-P142-R1R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "GANCHO FLOR HAWAIANA",
+    "canonical_brand_name": null,
+    "category_label": "CEPILLOS Y ACCESORIOS PARA EL CABELLO",
+    "prices_cop": [
+      7000,
+      7000
+    ],
+    "pages": [
+      141,
+      142
+    ],
+    "image_sha256": [
+      "7f34459a69e931f84e0144cfe83b572c5be7bb7ed8522f5e48fb7d96ca81853a",
+      "e8513e5b43306e505900f0da9b49d1da0e98fa11053c2962e782148a0c2348b6"
+    ],
+    "perceptual_hash_distance_min": 9,
+    "perceptual_hash_distance_max": 9,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|gel fijador cejas|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P208-R3L",
+      "CATV1-P208-R3R"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "REVIEW_REQUIRED"
+    ],
+    "product_name": "GEL FIJADOR CEJAS",
+    "canonical_brand_name": "MONTOC",
+    "category_label": null,
+    "prices_cop": [
+      26000,
+      25000
+    ],
+    "pages": [
+      208,
+      208
+    ],
+    "image_sha256": [
+      "cfd1f1ced915d60f4b727db563509d43df685bea29e4ff8e1acaeb00ad82f3f8",
+      "82c790391561c913a30025029dd725b2644b71f38abf9d02b9436c8abc8063a3"
+    ],
+    "perceptual_hash_distance_min": 9,
+    "perceptual_hash_distance_max": 9,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DEFER",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|gloss mimosa|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P187-R1R",
+      "CATV1-P191-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "GLOSS MIMOSA",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      26000,
+      17000
+    ],
+    "pages": [
+      187,
+      191
+    ],
+    "image_sha256": [
+      "bab9cedbecccab7ca2a635b159f90fc92e4c9a6e9d0a724b5c6542b656ee4369",
+      "e85b61cf7dda01012d23c441b91e2e99cdfef1b7b64719236c1ca0c45bdb38e0"
+    ],
+    "perceptual_hash_distance_min": 8,
+    "perceptual_hash_distance_max": 8,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DEFER",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: conflicting price/presentation evidence is insufficient to classify safely as duplicate, variant, or distinct product; defer."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|glowy shell|e466082b-7532-4204-b781-94650387a81f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P180-R2L",
+      "CATV1-P182-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "GLOWY SHELL",
+    "canonical_brand_name": "Bloomshell",
+    "category_label": null,
+    "prices_cop": [
+      13000,
+      13000
+    ],
+    "pages": [
+      180,
+      182
+    ],
+    "image_sha256": [
+      "24b6a00baa6ba683a8806fe468ab5c2704697a98dad7ec38ea9be914096db8c1",
+      "da67c6a00e8b76ef1aaa158ed142910c79d1923e8b9e6bb805833dba51ed4fda"
+    ],
+    "perceptual_hash_distance_min": 12,
+    "perceptual_hash_distance_max": 12,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|kit cartuchera|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P236-R3L",
+      "CATV1-P238-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "KIT CARTUCHERA",
+    "canonical_brand_name": "Purpure by Angie Bedoya",
+    "category_label": null,
+    "prices_cop": [
+      41900,
+      41900
+    ],
+    "pages": [
+      236,
+      238
+    ],
+    "image_sha256": [
+      "d7badc5b85ec50dd2184f830b3cf2146e04221b4526c37d7abdd0712820f179b",
+      "8d7f160bf8d22ab4057cab2bf7a152e939842f5098c28f9b073e4b4520f7e252"
+    ],
+    "perceptual_hash_distance_min": 10,
+    "perceptual_hash_distance_max": 10,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|labial humectante|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P238-R1R",
+      "CATV1-P238-R2L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "LABIAL HUMECTANTE",
+    "canonical_brand_name": "Purpure by Angie Bedoya",
+    "category_label": null,
+    "prices_cop": [
+      8000,
+      20000
+    ],
+    "pages": [
+      238,
+      238
+    ],
+    "image_sha256": [
+      "44fcea456092b3d009877921008cc17a13462ddeca02b62b78076a3e56ea99fa",
+      "1d6a6c87f8d934d42cc23c6f3a422f91b635d9927a310ae98bfaa7b67660d4c9"
+    ],
+    "perceptual_hash_distance_min": 6,
+    "perceptual_hash_distance_max": 6,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|labial pureglow og|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P146-R1R",
+      "CATV1-P146-R2L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "LABIAL PUREGLOW OG",
+    "canonical_brand_name": "Outdoor Girl",
+    "category_label": null,
+    "prices_cop": [
+      36000,
+      36000
+    ],
+    "pages": [
+      146,
+      146
+    ],
+    "image_sha256": [
+      "9421436f7c10329b4faa1bc8f538feed5a142fed9628be195bcb9714aa4d6894",
+      "77b4e12fccccc73417f4b9ac32cb0dede46eec1e8b13a099cc5b19c6845b5313"
+    ],
+    "perceptual_hash_distance_min": 6,
+    "perceptual_hash_distance_max": 6,
+    "proposal": "VARIANT_SET",
+    "confidence": 80,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "NEARBY_CATALOG_PLACEMENT",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|light set montoc|a4ed69d0-66b1-4abd-9207-5ff729babb58|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P208-R1L",
+      "CATV1-P208-R2R"
+    ],
+    "statuses": [
+      "REVIEW_REQUIRED",
+      "REVIEW_REQUIRED"
+    ],
+    "product_name": "LIGHT SET MONTOC",
+    "canonical_brand_name": "MONTOC",
+    "category_label": null,
+    "prices_cop": [
+      37000,
+      34000
+    ],
+    "pages": [
+      208,
+      208
+    ],
+    "image_sha256": [
+      "44152c4d518118460c2147adc9d5bc3be7c867195e455bb0d5f81981cefc5e4f",
+      "4356b805291093a42092a94303af505a0ca334cc0855fd7ed0bb06d01a7d3607"
+    ],
+    "perceptual_hash_distance_min": 8,
+    "perceptual_hash_distance_max": 8,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|lip gloss|340fb06e-fd22-49ec-a967-359e83aa939b|",
+    "member_count": 3,
+    "member_reference_ids": [
+      "CATV1-P150-R1R",
+      "CATV1-P150-R3L",
+      "CATV1-P151-R1R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "LIP GLOSS",
+    "canonical_brand_name": "Destiny by La Segura",
+    "category_label": null,
+    "prices_cop": [
+      31000,
+      31000,
+      31000
+    ],
+    "pages": [
+      150,
+      150,
+      151
+    ],
+    "image_sha256": [
+      "6e53701707fa1a5a049cd1edd723d049480de87b08f74dcfe6b74e749324fbdf",
+      "f9cec1aa5227a7e0299c3f89296e0aeadbc54f96f884063a1c7f5b178d2072d9",
+      "b2fa90b3583fa9de8bac6ff5664111e271c53f24f33bd8bd10953f42676e430e"
+    ],
+    "perceptual_hash_distance_min": 0,
+    "perceptual_hash_distance_max": 6,
+    "proposal": "VARIANT_SET",
+    "confidence": 80,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "NEARBY_CATALOG_PLACEMENT",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|lip liner|340fb06e-fd22-49ec-a967-359e83aa939b|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P151-R3L",
+      "CATV1-P152-R2R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "LIP LINER",
+    "canonical_brand_name": "Destiny by La Segura",
+    "category_label": null,
+    "prices_cop": [
+      21000,
+      21000
+    ],
+    "pages": [
+      151,
+      152
+    ],
+    "image_sha256": [
+      "58cc5fbf8d9b81d6eabccdd109bffddbd2872714e92e2b602c6d1ad5491dda9c",
+      "0ddf8014ff24f8097740764769a6a28704bba6fdea6b0f743a4242277cdf8326"
+    ],
+    "perceptual_hash_distance_min": 15,
+    "perceptual_hash_distance_max": 15,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|masajeador capilar||b36e2375-b910-4030-abf2-832999885338",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P138-R1L",
+      "CATV1-P141-R2R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "MASAJEADOR CAPILAR",
+    "canonical_brand_name": null,
+    "category_label": "CEPILLOS Y ACCESORIOS PARA EL CABELLO",
+    "prices_cop": [
+      13000,
+      13000
+    ],
+    "pages": [
+      138,
+      141
+    ],
+    "image_sha256": [
+      "c39303465fb9c1b168ccc77301f9d21f6cdd8c9563584eb3c0b0a776c465f490",
+      "09b193515136b9ce3213e2c7939d9ee0f1358ed7497c56af1defc2632d2bcf8a"
+    ],
+    "perceptual_hash_distance_min": 1,
+    "perceptual_hash_distance_max": 1,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 95,
+    "reasons": [
+      "VERY_HIGH_VISUAL_SIMILARITY",
+      "SAME_PRICE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DUPLICATE_REFERENCE",
+    "human_canonical_source_reference_id": "CATV1-P138-R1L",
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|perfume capilar|97dfff9f-d633-42b5-b01b-b5cf608440cf|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P063-R3L",
+      "CATV1-P063-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "PERFUME CAPILAR",
+    "canonical_brand_name": "Leche Pal Pelo",
+    "category_label": null,
+    "prices_cop": [
+      25000,
+      25000
+    ],
+    "pages": [
+      63,
+      63
+    ],
+    "image_sha256": [
+      "b83f284370682ead4caa0a64dfe65218d3eb5ab2656a42c16dc610461a9f30fa",
+      "c813317b64db5f8bd1d419c33b8aaf032cbc9ac13478d4daa2cfc1299c220e69"
+    ],
+    "perceptual_hash_distance_min": 4,
+    "perceptual_hash_distance_max": 4,
+    "proposal": "VARIANT_SET",
+    "confidence": 80,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "NEARBY_CATALOG_PLACEMENT",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|piluss pestanas||69039ea1-d8d5-4ae9-9dcb-f57b20ec92b7",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P221-R2R",
+      "CATV1-P221-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "PILUSS PESTÁÑAS",
+    "canonical_brand_name": null,
+    "category_label": "CEJAS, PESTAÑAS Y DELINEADORES",
+    "prices_cop": [
+      46000,
+      11000
+    ],
+    "pages": [
+      221,
+      221
+    ],
+    "image_sha256": [
+      "f9f58ac5474206b28fc5d365bfc5b5182ff99382982e2be10639236e75e688e3",
+      "71530ce269afb34fb256974c9d99642c2a3332d5c5f923ee75138aecfd574822"
+    ],
+    "perceptual_hash_distance_min": 10,
+    "perceptual_hash_distance_max": 10,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|pinza coreana||b36e2375-b910-4030-abf2-832999885338",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P140-R1R",
+      "CATV1-P141-R1L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "PINZA COREANA",
+    "canonical_brand_name": null,
+    "category_label": "CEPILLOS Y ACCESORIOS PARA EL CABELLO",
+    "prices_cop": [
+      6000,
+      6000
+    ],
+    "pages": [
+      140,
+      141
+    ],
+    "image_sha256": [
+      "f75b49e377b8700132e336ec7a3cbaf38cdd4951fce729a92931eabd13ea963f",
+      "d966ea5568e8ed81888b1c737eacc083cce575dc4d850f3f4518bacc7e817656"
+    ],
+    "perceptual_hash_distance_min": 11,
+    "perceptual_hash_distance_max": 11,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|polvo majikal mini|52c89d28-6e86-49d7-838d-1ea3be7c096f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P164-R3L",
+      "CATV1-P164-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "POLVO MAJIKAL MINI",
+    "canonical_brand_name": "Majikal",
+    "category_label": null,
+    "prices_cop": [
+      31000,
+      16000
+    ],
+    "pages": [
+      164,
+      164
+    ],
+    "image_sha256": [
+      "2985b0d6afdacb2aa37f0b93be93f69a7d4061c3c6ab67b91dcbd3fe4cccd939",
+      "d0a44af5f0b532ec3ee256b809c820dcafc3395a363fd78aca128c189116a549"
+    ],
+    "perceptual_hash_distance_min": 6,
+    "perceptual_hash_distance_max": 6,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|princesas|0d5fd0dc-2e4c-4e77-bb0a-879997df316d|",
+    "member_count": 4,
+    "member_reference_ids": [
+      "CATV1-P073-R2R",
+      "CATV1-P073-R3L",
+      "CATV1-P073-R3R",
+      "CATV1-P074-R1L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT",
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "PRINCESAS",
+    "canonical_brand_name": "Cosmos",
+    "category_label": null,
+    "prices_cop": [
+      33000,
+      39000,
+      34000,
+      34000
+    ],
+    "pages": [
+      73,
+      73,
+      73,
+      74
+    ],
+    "image_sha256": [
+      "03a5ca7d982e6fec3d3fc52b6b46bc96cfd5df7548ff371114082290e25ed010",
+      "cc387f7e227e305d192df69c89b849d546f343d8fadc01f2d10e6d752fdd0180",
+      "4f0fdd4eba30b23c7f5dbf3fce86fbbb85a69e05ff3e7b8f2d246e329eb19801",
+      "76c181428cc80c33760a1cc4d145f41de72df59e226266f2310dec00981cf7ca"
+    ],
+    "perceptual_hash_distance_min": 0,
+    "perceptual_hash_distance_max": 2,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 90,
+    "reasons": [
+      "VERY_HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|profesional liso en casa|93f65203-1aaf-405d-9c6d-9e4c46b9b936|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P025-R2L",
+      "CATV1-P025-R2R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "PROFESIONAL LISO EN CASA",
+    "canonical_brand_name": "Anyeluz",
+    "category_label": null,
+    "prices_cop": [
+      71000,
+      71000
+    ],
+    "pages": [
+      25,
+      25
+    ],
+    "image_sha256": [
+      "25b5a1fd4b40c39f1d7a39599ec696258a64259d930ca5e3b6facac7e8539f82",
+      "fd0601bab61f16fdf6db1dfb7cca9a3c426668f314eed48fa4e250609bca74c8"
+    ],
+    "perceptual_hash_distance_min": 12,
+    "perceptual_hash_distance_max": 12,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|rubor og yess queen|4ef7e563-2744-446c-804d-7fc5952ec59a|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P144-R1L",
+      "CATV1-P144-R1R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "RUBOR OG YESS QUEEN",
+    "canonical_brand_name": "Outdoor Girl",
+    "category_label": null,
+    "prices_cop": [
+      41000,
+      36000
+    ],
+    "pages": [
+      144,
+      144
+    ],
+    "image_sha256": [
+      "24da711148989ae3490d7d8ffe19b8c2c97326ec40c2be0bd87912c2df5d948f",
+      "87167d3d8985887c403e11cb5dbbdaf5204369ae2588d2e0d3f9e345c3388423"
+    ],
+    "perceptual_hash_distance_min": 9,
+    "perceptual_hash_distance_max": 9,
+    "proposal": "VARIANT_SET",
+    "confidence": 65,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "NEARBY_CATALOG_PLACEMENT",
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|serum milagros|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P029-R2L",
+      "CATV1-P032-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "SERUM MILAGROS",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      37000,
+      47000
+    ],
+    "pages": [
+      29,
+      32
+    ],
+    "image_sha256": [
+      "a0d8dd8c3c03136abf5951b89a9a76a6d404e38dca0bbb6df81087344e5a0b27",
+      "fa5e440bbed40a5095a7b0b2c9426f1817f0caefb753ac772844862159859489"
+    ],
+    "perceptual_hash_distance_min": 0,
+    "perceptual_hash_distance_max": 0,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 90,
+    "reasons": [
+      "VERY_HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DISTINCT_PRODUCTS",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references show materially different physical products despite the same normalized label; treat them as distinct canonical products."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|shampoo biorepo|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P028-R3R",
+      "CATV1-P035-R1R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "SHAMPOO BIOREPO",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      36900,
+      36900
+    ],
+    "pages": [
+      28,
+      35
+    ],
+    "image_sha256": [
+      "f917ae7b7949f2efb13eb0a647480658d8d26ee8902acd60d629b581f2a4ef7d",
+      "9b18c88064ea410d772e1332e6441764e6ce6223dcdc6d24a69e92d02c753444"
+    ],
+    "perceptual_hash_distance_min": 7,
+    "perceptual_hash_distance_max": 7,
+    "proposal": "VARIANT_SET",
+    "confidence": 70,
+    "reasons": [
+      "SAME_NAME_TAXONOMY",
+      "SAME_PRICE",
+      "VISUAL_VARIATION"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "DUPLICATE_REFERENCE",
+    "human_canonical_source_reference_id": "CATV1-P028-R3R",
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references represent the same catalog product/repetition; earliest catalog reference selected as canonical for staging approval."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|shampoo emergencia|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P028-R1L",
+      "CATV1-P034-R3R"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "SHAMPOO EMERGENCIA",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      36900,
+      16000
+    ],
+    "pages": [
+      28,
+      34
+    ],
+    "image_sha256": [
+      "19f4bd3484097bba626b93bd9156d059c90362c66f87831783edd078510c601a",
+      "8cb2d2656fc5a31cccca9a15a2c35a02e263622fbdd9a657fe580f9ae216fd78"
+    ],
+    "perceptual_hash_distance_min": 17,
+    "perceptual_hash_distance_max": 17,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|splash purpure|ea9d8272-18a7-4af8-8f21-578b65ac5c66|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P233-R1L",
+      "CATV1-P233-R3L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "SPLASH PURPURE",
+    "canonical_brand_name": "Purpure by Angie Bedoya",
+    "category_label": null,
+    "prices_cop": [
+      27000,
+      17000
+    ],
+    "pages": [
+      233,
+      233
+    ],
+    "image_sha256": [
+      "31d429efd874467386e6e212b21cefea2e03355448389cc9eae14b96641eab0b",
+      "03b31c8e510ebc4c362f148cce50ed433282e3da06553f8cbe41c5f37089976c"
+    ],
+    "perceptual_hash_distance_min": 4,
+    "perceptual_hash_distance_max": 4,
+    "proposal": "DUPLICATE_REFERENCE",
+    "confidence": 80,
+    "reasons": [
+      "HIGH_VISUAL_SIMILARITY",
+      "PRICE_CONFLICT"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  },
+  {
+    "identity_key": "BEAUTY_CARE|trata frutas|7d7ace64-4b5a-46ff-99e8-ffe658fe617f|",
+    "member_count": 2,
+    "member_reference_ids": [
+      "CATV1-P027-R3R",
+      "CATV1-P035-R1L"
+    ],
+    "statuses": [
+      "CONFLICT",
+      "CONFLICT"
+    ],
+    "product_name": "TRATA. FRUTAS",
+    "canonical_brand_name": "Milagros",
+    "category_label": null,
+    "prices_cop": [
+      37900,
+      16000
+    ],
+    "pages": [
+      27,
+      35
+    ],
+    "image_sha256": [
+      "75a893c16e7c81bee0d0028cadae7e10804cb70b001c85aaf86a1dc8388cbed2",
+      "61cb74fb752d053ef038ab51cf3577a61956a5dbe5e64453d61219b77cd18d9d"
+    ],
+    "perceptual_hash_distance_min": 8,
+    "perceptual_hash_distance_max": 8,
+    "proposal": "DEFER",
+    "confidence": 40,
+    "reasons": [
+      "PRICE_VARIATION",
+      "VISUAL_VARIATION",
+      "INSUFFICIENT_IDENTITY_EVIDENCE"
+    ],
+    "requires_human_approval": true,
+    "business_line": "BEAUTY_CARE",
+    "human_resolution": "VARIANT_SET",
+    "human_canonical_source_reference_id": null,
+    "human_review_reason": "HUMAN_VISUAL_REVIEW: references share a commercial identity but show materially different presentation, shade, design or size; keep as a variant set and defer product creation until ProductVariant is modeled."
+  }
+]

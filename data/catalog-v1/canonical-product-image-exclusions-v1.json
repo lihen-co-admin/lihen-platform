@@ -1,0 +1,359 @@
+[
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P027-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "75a893c16e7c81bee0d0028cadae7e10804cb70b001c85aaf86a1dc8388cbed2",
+    "evidence_path": "product_images/p027_2_3_trata-frutas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P028-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "19f4bd3484097bba626b93bd9156d059c90362c66f87831783edd078510c601a",
+    "evidence_path": "product_images/p028_1_1_shampoo-emergencia.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P029-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "1f9fecfbacf58afe1e457162b70a934cec9ed796bce90717aede70ab91fb91cd",
+    "evidence_path": "product_images/p029_2_3_acondi-herbal.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P033-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "58571a350d02e52e012436d83967d069148c6bce3516c329f52a081c6d6ec989",
+    "evidence_path": "product_images/p033_2_1_acondi-cebolla.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P034-R2R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "3055220c277497c8b39d435bb335a4f42cba90c56f7c25715bd3c1cf2934e5a1",
+    "evidence_path": "product_images/p034_2_2_acondi-cebolla.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P034-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "6110dade6f28b3ba29fc9fa79a7614ee70169c121e0045559ade97c81b41c9b7",
+    "evidence_path": "product_images/p034_1_3_acondi-herbal.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P034-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "8cb2d2656fc5a31cccca9a15a2c35a02e263622fbdd9a657fe580f9ae216fd78",
+    "evidence_path": "product_images/p034_2_3_shampoo-emergencia.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P035-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "61cb74fb752d053ef038ab51cf3577a61956a5dbe5e64453d61219b77cd18d9d",
+    "evidence_path": "product_images/p035_1_1_trata-frutas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P035-R1R",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "9b18c88064ea410d772e1332e6441764e6ce6223dcdc6d24a69e92d02c753444",
+    "evidence_path": "product_images/p035_2_1_shampoo-biorepo.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P063-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "b83f284370682ead4caa0a64dfe65218d3eb5ab2656a42c16dc610461a9f30fa",
+    "evidence_path": "product_images/p063_1_3_perfume-capilar.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P063-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "c813317b64db5f8bd1d419c33b8aaf032cbc9ac13478d4daa2cfc1299c220e69",
+    "evidence_path": "product_images/p063_2_3_perfume-capilar.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P140-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "f75b49e377b8700132e336ec7a3cbaf38cdd4951fce729a92931eabd13ea963f",
+    "evidence_path": "product_images/p140_2_1_pinza-coreana.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P141-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "d966ea5568e8ed81888b1c737eacc083cce575dc4d850f3f4518bacc7e817656",
+    "evidence_path": "product_images/p141_1_1_pinza-coreana.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P141-R2R",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "09b193515136b9ce3213e2c7939d9ee0f1358ed7497c56af1defc2632d2bcf8a",
+    "evidence_path": "product_images/p141_2_2_masajeador-capilar.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P141-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "7f34459a69e931f84e0144cfe83b572c5be7bb7ed8522f5e48fb7d96ca81853a",
+    "evidence_path": "product_images/p141_2_3_gancho-flor-hawaiana.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P142-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "e8513e5b43306e505900f0da9b49d1da0e98fa11053c2962e782148a0c2348b6",
+    "evidence_path": "product_images/p142_2_1_gancho-flor-hawaiana.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P145-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "67108e70ffa80413d1273a1250ccff4ea2b7464599a7f6cc64dfdf638910d826",
+    "evidence_path": "product_images/p145_1_3_base-matte-og.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P146-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "f727da2c1fa0e47b1f4772b4f973e42824045b2254236d6a80967c3146964f23",
+    "evidence_path": "product_images/p146_1_1_base-matte-og.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P146-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "9421436f7c10329b4faa1bc8f538feed5a142fed9628be195bcb9714aa4d6894",
+    "evidence_path": "product_images/p146_2_1_labial-pureglow-og.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P146-R2L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "77b4e12fccccc73417f4b9ac32cb0dede46eec1e8b13a099cc5b19c6845b5313",
+    "evidence_path": "product_images/p146_1_2_labial-pureglow-og.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P150-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "6e53701707fa1a5a049cd1edd723d049480de87b08f74dcfe6b74e749324fbdf",
+    "evidence_path": "product_images/p150_2_1_lip-gloss.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P150-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "f9cec1aa5227a7e0299c3f89296e0aeadbc54f96f884063a1c7f5b178d2072d9",
+    "evidence_path": "product_images/p150_1_3_lip-gloss.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P151-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "b2fa90b3583fa9de8bac6ff5664111e271c53f24f33bd8bd10953f42676e430e",
+    "evidence_path": "product_images/p151_2_1_lip-gloss.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P151-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "58cc5fbf8d9b81d6eabccdd109bffddbd2872714e92e2b602c6d1ad5491dda9c",
+    "evidence_path": "product_images/p151_1_3_lip-liner.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P152-R2R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "0ddf8014ff24f8097740764769a6a28704bba6fdea6b0f743a4242277cdf8326",
+    "evidence_path": "product_images/p152_2_2_lip-liner.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P176-R2L",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "14086f2de291adda92294ed2621ecf5f5b9cb463ab4b6a3fe28a6840f6f5a223",
+    "evidence_path": "product_images/p176_1_2_delineador.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P180-R2L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "24b6a00baa6ba683a8806fe468ab5c2704697a98dad7ec38ea9be914096db8c1",
+    "evidence_path": "product_images/p180_1_2_glowy-shell.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P180-R3L",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "611fd3d06f7f8b52a657e17727e9d2c420958eb38fbd1172bc775dfb9655695e",
+    "evidence_path": "product_images/p180_1_3_deademaosobrillo.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P181-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "44074277d49a6a2c16aa29431fc3962a768e0da4ef1b69757b21cd003c374da2",
+    "evidence_path": "product_images/p181_1_1_color-bloom.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P182-R2L",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "409e97d380f06efdd280d77f99e032da09d54a642ac844f6565f8afb934ee391",
+    "evidence_path": "product_images/p182_1_2_brochas-nude-elegance.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P182-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "da67c6a00e8b76ef1aaa158ed142910c79d1923e8b9e6bb805833dba51ed4fda",
+    "evidence_path": "product_images/p182_2_3_glowy-shell.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P187-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "bab9cedbecccab7ca2a635b159f90fc92e4c9a6e9d0a724b5c6542b656ee4369",
+    "evidence_path": "product_images/p187_2_1_gloss-mimosa.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P191-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "e85b61cf7dda01012d23c441b91e2e99cdfef1b7b64719236c1ca0c45bdb38e0",
+    "evidence_path": "product_images/p191_2_3_gloss-mimosa.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P193-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "eec2b343ceabb487d538039009c52822b451888c50ef9f04e0293d186e0038fd",
+    "evidence_path": "product_images/p193_2_1_color-bloom.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P208-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "cfd1f1ced915d60f4b727db563509d43df685bea29e4ff8e1acaeb00ad82f3f8",
+    "evidence_path": "product_images/p208_1_3_gel-fijador-cejas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P208-R3R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "82c790391561c913a30025029dd725b2644b71f38abf9d02b9436c8abc8063a3",
+    "evidence_path": "product_images/p208_2_3_gel-fijador-cejas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P213-R2R",
+    "exclusion_reason": "REJECT",
+    "evidence_sha256": "f2338aaf192427817484767006084126f4611bae04f2a1951677dc21d52591c5",
+    "evidence_path": "product_images/p213_2_2_deademas-nube.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P216-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "69542ef3444a1bb8f5f9c3ef1c19675b55b64a970a3c8868fbe48d3eb90f3404",
+    "evidence_path": "product_images/p216_1_1_depilador-sagui.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P222-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "e86220b819f925189fa09a38d4d7a31e4973f1322122d7b1a3938de1068904fe",
+    "evidence_path": "product_images/p222_1_1_depilador-sagui.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P222-R2L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "b99bcd2f83494936ff9358e6631171f53ef4bb3e74fd37877e6592042ef20aa2",
+    "evidence_path": "product_images/p222_1_2_encrespador-fifty.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P222-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "c83a98daccc8c3dbc71e8d84c09823758ee6098ab59e5caebebf2d86e242b35b",
+    "evidence_path": "product_images/p222_1_3_encrespador-fifty.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P223-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "77d44e51e347bce5140a8bb461cf4678125e493cab63e93329b69ef13700f11a",
+    "evidence_path": "product_images/p223_1_1_encrespador-fifty.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P229-R1R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "5ceea7d347638d54c5703b861527f797285f19da21a012698fb127790dfd96b6",
+    "evidence_path": "product_images/p229_2_1_corrector-ushas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P229-R2R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "a938fd73684a03fc230e251fadf8f4398ae165f4199d6df71f7c055bfff26bcc",
+    "evidence_path": "product_images/p229_2_2_corrector-miis.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P230-R2R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "6231013f429cfbaf73420550e01fe6ab6abeac27c18b9672877116d5738643a5",
+    "evidence_path": "product_images/p230_2_2_corrector-ushas.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P231-R2R",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "a07c5b09ccf470fd27f97eb02ebaef4200870b9a82b3ef133571ef7b2055f276",
+    "evidence_path": "product_images/p231_2_2_corrector-miis.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P231-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "c914f52af4dead90cefec5086c2b4e893060d7017b0e70a60c828b29cc9ac433",
+    "evidence_path": "product_images/p231_1_3_corrector-miis.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P233-R1L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "31d429efd874467386e6e212b21cefea2e03355448389cc9eae14b96641eab0b",
+    "evidence_path": "product_images/p233_1_1_splash-purpure.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P233-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "03b31c8e510ebc4c362f148cce50ed433282e3da06553f8cbe41c5f37089976c",
+    "evidence_path": "product_images/p233_1_3_splash-purpure.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P236-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "d7badc5b85ec50dd2184f830b3cf2146e04221b4526c37d7abdd0712820f179b",
+    "evidence_path": "product_images/p236_1_3_kit-cartuchera.jpg"
+  },
+  {
+    "run_id": "39514b38-f90b-4b15-9ac1-0f12d8b1e625",
+    "source_reference_id": "CATV1-P238-R3L",
+    "exclusion_reason": "DEFER",
+    "evidence_sha256": "8d7f160bf8d22ab4057cab2bf7a152e939842f5098c28f9b073e4b4520f7e252",
+    "evidence_path": "product_images/p238_1_3_kit-cartuchera.jpg"
+  }
+]

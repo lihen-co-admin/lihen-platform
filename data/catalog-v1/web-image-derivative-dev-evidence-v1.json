@@ -1,0 +1,19 @@
+{
+  "phase": "1.22.1",
+  "dev_run_id": "35301d9d-fbee-4244-8f42-67273118411d",
+  "status": "COMPLETED",
+  "source_count": 952,
+  "generated_count": 952,
+  "ready_upload_count": 952,
+  "over_limit_count": 0,
+  "duplicate_hash_group_count": 1,
+  "generated_total_bytes": 2784930,
+  "metadata_authority": "LOCAL_VERSIONED_MANIFEST",
+  "upload_manifest_sha256": "ed77733a06e7d50adf232f933f3f9812c39917452c569bd6f05c5e1f64800c1e",
+  "derivative_manifest_sha256": "1e88664e633eeba67ad451d46a8384bc00d0bbf7d665fcc29a8cce6c3719c844",
+  "product_images_rows": 0,
+  "storage_objects_rows": 0,
+  "main_image_urls": 0,
+  "visible_web": 0,
+  "temporary_ingest_helper_removed": true
+}

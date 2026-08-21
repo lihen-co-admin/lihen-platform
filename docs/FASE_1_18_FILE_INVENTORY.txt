@@ -1,0 +1,10 @@
+packages/products/src/domain/catalog-image-reconciliation.ts
+packages/products/src/index.ts
+packages/products/tests/catalog-image-reconciliation.test.ts
+database/migrations/20260821161354_catalog_image_reconciliation_foundation.sql
+database/validation/015_catalog_image_reconciliation_foundation.sql
+data/catalog-v1/catalog-image-reconciliation-manifest.json
+data/catalog-v1/catalog-image-reconciliation-dry-run-summary.json
+docs/reconciliation/FASE_1_18_CATALOG_IMAGE_RECONCILIATION_ORCHESTRATION_FOUNDATION.md
+docs/reconciliation/FASE_1_18_DRY_RUN_EVIDENCE.md
+README.md
