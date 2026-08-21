@@ -19,6 +19,11 @@ const reportPath = reportArg
   ? resolve(process.cwd(), reportArg.slice('--report='.length))
   : resolve(root, `data/catalog-v1/web-image-storage-cutover-${execute ? 'execute' : 'dry-run'}-report-v1.json`);
 
+// Conservative settings for Supabase Free/DEV: avoid connection bursts and retry transient throttling.
+const concurrency = Number(process.env.LIHEN_CUTOVER_CONCURRENCY || 1);
+const maxAttempts = Number(process.env.LIHEN_CUTOVER_MAX_ATTEMPTS || 10);
+const baseBackoffMs = Number(process.env.LIHEN_CUTOVER_BACKOFF_MS || 1000);
+
 function requiredEnv(name) {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`Missing required environment variable: ${name}`);
@@ -31,6 +36,45 @@ function sha256(buffer) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function sleep(ms) {
+  return new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
+}
+
+function retryableStatus(status) {
+  return status === 408 || status === 425 || status === 429 || status >= 500;
+}
+
+function retryDelay(attempt, response) {
+  const retryAfter = response?.headers?.get?.('retry-after');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.max(250, seconds * 1000);
+  }
+  const exponential = baseBackoffMs * (2 ** Math.max(0, attempt - 1));
+  const jitter = Math.floor(Math.random() * Math.min(500, baseBackoffMs));
+  return Math.min(15_000, exponential + jitter);
+}
+
+async function fetchWithRetry(url, init = {}, label = 'request') {
+  let lastResponse;
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const response = await fetch(url, init);
+      lastResponse = response;
+      if (!retryableStatus(response.status) || attempt === maxAttempts) return response;
+      await response.arrayBuffer().catch(() => undefined);
+      await sleep(retryDelay(attempt, response));
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts) throw error;
+      await sleep(retryDelay(attempt));
+    }
+  }
+  if (lastResponse) return lastResponse;
+  throw lastError || new Error(`${label} failed after retries.`);
 }
 
 function publicUrl(baseUrl, objectPath) {
@@ -78,16 +122,16 @@ async function loadAndValidateManifest() {
   return { rows, totalBytes };
 }
 
-async function fetchWithAuth(url, key, init = {}) {
+async function fetchWithAuth(url, key, init = {}, label = 'authenticated request') {
   const headers = new Headers(init.headers || {});
   headers.set('apikey', key);
   headers.set('Authorization', `Bearer ${key}`);
-  return fetch(url, { ...init, headers });
+  return fetchWithRetry(url, { ...init, headers }, label);
 }
 
 async function verifyPublicObject(baseUrl, row) {
   const url = publicUrl(baseUrl, row.storage_path);
-  const response = await fetch(url, { cache: 'no-store' });
+  const response = await fetchWithRetry(url, { cache: 'no-store' }, `verify ${row.product_image_id}`);
   if (!response.ok) return { ok: false, status: response.status, reason: `GET ${response.status}` };
   const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.length !== row.derivative_size_bytes) {
@@ -111,14 +155,14 @@ async function uploadObject(baseUrl, key, row, bytes) {
       'x-upsert': 'false',
     },
     body: bytes,
-  });
+  }, `upload ${row.product_image_id}`);
 
-  if (response.ok) return { uploaded: true, existed: false };
+  if (response.ok) return { uploaded: true, existed: false, verified: false };
 
   // Idempotent replay: an existing object is accepted only if public bytes match the manifest hash exactly.
   if (response.status === 400 || response.status === 409) {
     const existing = await verifyPublicObject(baseUrl, row);
-    if (existing.ok) return { uploaded: false, existed: true };
+    if (existing.ok) return { uploaded: false, existed: true, verified: true };
   }
 
   const body = await response.text();
@@ -144,7 +188,7 @@ async function finalizeMetadata(baseUrl, key, row) {
       p_width_px: row.width,
       p_height_px: row.height,
     }),
-  });
+  }, `finalize ${row.product_image_id}`);
   const text = await response.text();
   if (!response.ok) throw new Error(`Metadata finalizer failed ${response.status}: ${text.slice(0, 800)}`);
   const data = text ? JSON.parse(text) : [];
@@ -156,7 +200,7 @@ async function processRow(baseUrl, key, row) {
   const file = resolve(derivativeRoot, row.local_path);
   const bytes = await readFile(file);
   const upload = await uploadObject(baseUrl, key, row, bytes);
-  const verified = await verifyPublicObject(baseUrl, row);
+  const verified = upload.verified ? { ok: true, status: 200 } : await verifyPublicObject(baseUrl, row);
   if (!verified.ok) throw new Error(`Post-upload object verification failed: ${verified.reason}`);
   const metadata = await finalizeMetadata(baseUrl, key, row);
   return {
@@ -172,7 +216,7 @@ async function processRow(baseUrl, key, row) {
   };
 }
 
-async function runPool(items, concurrency, worker) {
+async function runPool(items, poolConcurrency, worker) {
   const results = new Array(items.length);
   let cursor = 0;
   async function lane() {
@@ -184,10 +228,21 @@ async function runPool(items, concurrency, worker) {
       } catch (error) {
         results[index] = { ok: false, error: error instanceof Error ? error.message : String(error), item: items[index] };
       }
+      // Tiny gap between rows further reduces Storage/PostgREST bursts on small DEV projects.
+      await sleep(250);
     }
   }
-  await Promise.all(Array.from({ length: concurrency }, () => lane()));
+  await Promise.all(Array.from({ length: poolConcurrency }, () => lane()));
   return results;
+}
+
+async function getFinalizedWebCardIds(baseUrl, key) {
+  const endpoint = `${baseUrl}/rest/v1/product_images?select=id&source_type=eq.CATALOG_EVIDENCE_CROP&asset_role=eq.DERIVATIVE&derivative_profile=eq.WEB_CARD&status=eq.ACTIVE&limit=1000`;
+  const response = await fetchWithAuth(endpoint, key, { method: 'GET' }, 'list finalized WEB_CARD metadata');
+  if (!response.ok) throw new Error(`Existing metadata preflight failed ${response.status}: ${await response.text()}`);
+  const rows = await response.json();
+  assert(Array.isArray(rows), 'Unexpected existing metadata response.');
+  return new Set(rows.map((row) => row.id));
 }
 
 async function countCanonicalWebCards(baseUrl, key) {
@@ -195,7 +250,7 @@ async function countCanonicalWebCards(baseUrl, key) {
   const response = await fetchWithAuth(endpoint, key, {
     method: 'HEAD',
     headers: { Prefer: 'count=exact', Range: '0-0' },
-  });
+  }, 'count canonical WEB_CARD metadata');
   if (!response.ok) throw new Error(`Count verification failed ${response.status}: ${await response.text()}`);
   const range = response.headers.get('content-range');
   const total = range?.split('/')[1];
@@ -229,23 +284,38 @@ async function main() {
   const baseUrl = requiredEnv('SUPABASE_URL');
   const key = requiredEnv('SUPABASE_SERVICE_ROLE_KEY');
   assert(baseUrl.startsWith('https://'), 'SUPABASE_URL must use https://');
+  assert(Number.isInteger(concurrency) && concurrency >= 1 && concurrency <= 4, 'LIHEN_CUTOVER_CONCURRENCY must be 1..4.');
 
-  const results = await runPool(rows, 8, (row) => processRow(baseUrl, key, row));
+  // Resume safely: rows already finalized are not re-uploaded or re-finalized.
+  const finalizedIds = await getFinalizedWebCardIds(baseUrl, key);
+  const pendingRows = rows.filter((row) => !finalizedIds.has(row.product_image_id));
+  const alreadyFinalizedCount = rows.length - pendingRows.length;
+
+  console.log(`Resume preflight: ${alreadyFinalizedCount}/${expectedCount} already finalized; ${pendingRows.length} pending.`);
+  console.log(`Concurrency: ${concurrency}; transient retry attempts: ${maxAttempts}.`);
+
+  const results = await runPool(pendingRows, concurrency, (row) => processRow(baseUrl, key, row));
   const failures = results.filter((r) => !r.ok);
   const successes = results.filter((r) => r.ok).map((r) => r.value);
   const canonicalWebCardCount = failures.length === 0 ? await countCanonicalWebCards(baseUrl, key) : null;
+  const totalSuccessfulCount = alreadyFinalizedCount + successes.length;
 
   const report = {
     ...baseReport,
-    uploads_executed: true,
-    metadata_finalization_executed: true,
+    uploads_executed: pendingRows.length > 0,
+    metadata_finalization_executed: pendingRows.length > 0,
     status: failures.length === 0 && canonicalWebCardCount === expectedCount ? 'EXECUTE_PASS' : 'EXECUTE_INCOMPLETE',
-    successful_count: successes.length,
+    already_finalized_count: alreadyFinalizedCount,
+    pending_count_at_start: pendingRows.length,
+    processed_this_run_count: successes.length,
+    successful_count: totalSuccessfulCount,
     failed_count: failures.length,
     uploaded_new_count: successes.filter((r) => r.uploaded).length,
     object_replay_count: successes.filter((r) => r.object_replayed).length,
     metadata_replay_count: successes.filter((r) => r.metadata_replayed).length,
     canonical_web_card_metadata_count: canonicalWebCardCount,
+    concurrency,
+    max_attempts: maxAttempts,
     failures: failures.map((r) => ({
       product_id: r.item?.product_id,
       product_image_id: r.item?.product_image_id,

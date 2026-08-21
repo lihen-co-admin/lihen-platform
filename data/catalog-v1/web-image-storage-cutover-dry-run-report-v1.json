@@ -1,7 +1,7 @@
 {
   "phase": "1.22.2",
   "mode": "DRY_RUN",
-  "started_at": "2026-08-21T21:27:48.815Z",
+  "started_at": "2026-08-21T23:30:21.293Z",
   "manifest_path": "data/catalog-v1/web-image-storage-upload-dry-run-v1.json",
   "expected_count": 952,
   "validated_count": 952,
@@ -10,5 +10,5 @@
   "uploads_executed": false,
   "metadata_finalization_executed": false,
   "status": "DRY_RUN_PASS",
-  "completed_at": "2026-08-21T21:27:48.983Z"
+  "completed_at": "2026-08-21T23:30:22.087Z"
 }
