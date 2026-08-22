@@ -1,0 +1,10 @@
+export const INVENTORY_ADJUSTMENT_REASONS = [
+  'PHYSICAL_COUNT_INCREASE',
+  'PHYSICAL_COUNT_DECREASE',
+  'DAMAGE_WRITE_OFF',
+  'LOSS_WRITE_OFF',
+  'RETURN_TO_STOCK',
+  'MANUAL_CORRECTION',
+] as const;
+
+export type InventoryAdjustmentReason = (typeof INVENTORY_ADJUSTMENT_REASONS)[number];

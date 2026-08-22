@@ -1,0 +1,3 @@
+-- El estado final endurecido ya está expresado en la migración 20260822184017 para que un reset local
+-- reproduzca directamente el contrato seguro. Esta migración conserva la misma versión registrada en DEV.
+-- En DEV reemplazó las funciones para evaluar primero operation_key/fingerprint antes de estado mutable.

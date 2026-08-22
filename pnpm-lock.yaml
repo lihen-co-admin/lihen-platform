@@ -38,12 +38,30 @@ importers:
       '@lihen/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@lihen/finance':
+        specifier: workspace:*
+        version: link:../../packages/finance
+      '@lihen/inventory':
+        specifier: workspace:*
+        version: link:../../packages/inventory
+      '@lihen/orders':
+        specifier: workspace:*
+        version: link:../../packages/orders
+      '@lihen/procurement':
+        specifier: workspace:*
+        version: link:../../packages/procurement
       '@lihen/products':
         specifier: workspace:*
         version: link:../../packages/products
+      '@lihen/sales':
+        specifier: workspace:*
+        version: link:../../packages/sales
       '@lihen/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@lihen/suppliers':
+        specifier: workspace:*
+        version: link:../../packages/suppliers
       '@supabase/supabase-js':
         specifier: ^2.0.0
         version: 2.112.3
@@ -119,6 +137,19 @@ importers:
         specifier: ^6.0.0
         version: 6.0.3
 
+  packages/finance:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
+    devDependencies:
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@26.2.0)(vite@8.2.2(@types/node@26.2.0))
+
   packages/identity:
     dependencies:
       '@lihen/core':
@@ -136,12 +167,30 @@ importers:
         version: 4.1.11(@types/node@26.2.0)(vite@8.2.2(@types/node@26.2.0))
 
   packages/inventory:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
+    devDependencies:
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
+  packages/orders:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
     devDependencies:
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
 
   packages/procurement:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
     devDependencies:
       typescript:
         specifier: ^6.0.0
@@ -166,6 +215,19 @@ importers:
         specifier: ^6.0.0
         version: 6.0.3
 
+  packages/sales:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
+    devDependencies:
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@26.2.0)(vite@8.2.2(@types/node@26.2.0))
+
   packages/shared:
     devDependencies:
       typescript:
@@ -173,6 +235,10 @@ importers:
         version: 6.0.3
 
   packages/suppliers:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
     devDependencies:
       typescript:
         specifier: ^6.0.0

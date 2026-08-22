@@ -1,0 +1,2 @@
+export interface CreatePurchaseDraftItemInput { readonly id: string; readonly productId: string; readonly quantityRequested: number; readonly quotedUnitCost: number | null; }
+export interface CreatePurchaseDraftCommand { readonly operationKey: string; readonly purchaseId: string; readonly purchaseNumber: string; readonly supplierId: string; readonly purchaseDate: string | null; readonly expectedDate: string | null; readonly notes: string | null; readonly items: readonly CreatePurchaseDraftItemInput[]; }

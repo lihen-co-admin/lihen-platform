@@ -1,0 +1,4 @@
+import{UuidGenerator}from'@lihen/core';import{getBrowserSupabaseClient,parseBrowserEnv}from'@lihen/database';import{SupabaseFinanceRepository,type FinanceRepository}from'@lihen/finance';
+export interface FinanceComposition{readonly repository:FinanceRepository;readonly canWrite:boolean;readonly ids:UuidGenerator;}
+export function createFinanceComposition(env:Record<string,unknown>=import.meta.env):FinanceComposition{const parsed=parseBrowserEnv(env);const controlled=parsed.VITE_FINANCE_WRITE_MODE==='controlled';if(parsed.VITE_PRODUCT_READ_SOURCE!=='supabase')throw new Error('Finance requires Supabase DEV.');return{repository:new SupabaseFinanceRepository(getBrowserSupabaseClient(env),{controlledWriteEnabled:controlled}),canWrite:controlled,ids:new UuidGenerator()};}
+export const financeComposition=createFinanceComposition();

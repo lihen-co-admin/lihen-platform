@@ -1,0 +1,2 @@
+import type {OrderRepository} from '../../ports/order-repository';import type {CreateOrderDraftCommand} from './create-order-draft.command';
+export class CreateOrderDraftHandler{public constructor(private readonly repository:OrderRepository){}public execute(command:CreateOrderDraftCommand){if(command.items.length===0)throw new Error('ORDER_ITEMS_REQUIRED');if(command.items.some(i=>!Number.isInteger(i.quantity)||i.quantity<=0||i.unitPrice<0))throw new Error('ORDER_ITEM_INVALID');return this.repository.createDraft(command);}}

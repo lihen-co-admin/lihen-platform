@@ -1,0 +1,4 @@
+import{UuidGenerator}from'@lihen/core';import{getBrowserSupabaseClient,parseBrowserEnv}from'@lihen/database';import{SupabaseSaleRepository,type SaleRepository}from'@lihen/sales';
+export interface SalesComposition{readonly repository:SaleRepository;readonly canWrite:boolean;readonly ids:UuidGenerator;}
+export function createSalesComposition(env:Record<string,unknown>=import.meta.env):SalesComposition{const parsed=parseBrowserEnv(env);const controlled=parsed.VITE_SALE_WRITE_MODE==='controlled';if(parsed.VITE_PRODUCT_READ_SOURCE!=='supabase')throw new Error('Sales require Supabase DEV.');return{repository:new SupabaseSaleRepository(getBrowserSupabaseClient(env),{controlledWriteEnabled:controlled}),canWrite:controlled,ids:new UuidGenerator()};}
+export const salesComposition=createSalesComposition();

@@ -1,0 +1,1 @@
+import type {OrderRepository} from '../../ports/order-repository';export class GetOrdersHandler{public constructor(private readonly repository:OrderRepository){}public execute(){return this.repository.list();}}

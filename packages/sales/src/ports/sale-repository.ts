@@ -1,0 +1,1 @@
+import type{CompleteOrderSaleInput,CreatePosSaleInput,Sale}from'../domain/sale';export interface SaleRepository{list():Promise<readonly Sale[]>;createPos(input:CreatePosSaleInput):Promise<Sale>;completeOrder(input:CompleteOrderSaleInput):Promise<Sale>;}

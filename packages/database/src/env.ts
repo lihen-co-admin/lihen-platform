@@ -24,6 +24,12 @@ export const browserEnvSchema = z.object({
   VITE_PRODUCT_IMAGES_READ_MODE: productReadModeSchema.default('blocked'),
   VITE_PRODUCT_IMAGE_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_PRODUCT_IMAGE_STORAGE_UPLOAD_MODE: productWriteModeSchema.default('blocked'),
+  VITE_INVENTORY_WRITE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_SUPPLIER_WRITE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_PURCHASE_WRITE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_ORDER_WRITE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_SALE_WRITE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_FINANCE_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: booleanFromEnv.default(false),
   VITE_SUPABASE_URL: z.string().url().optional(),
   VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
@@ -107,6 +113,46 @@ export function parseBrowserEnv(env: Record<string, unknown>): BrowserEnv {
 
   if (parsed.VITE_PRODUCT_IMAGE_STORAGE_UPLOAD_MODE === 'controlled' && parsed.VITE_PRODUCT_IMAGE_WRITE_MODE !== 'controlled') {
     throw new Error('Controlled product-image Storage uploads require VITE_PRODUCT_IMAGE_WRITE_MODE=controlled.');
+  }
+
+  if (parsed.VITE_INVENTORY_WRITE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
+    throw new Error('Controlled inventory writes require VITE_PRODUCT_READ_SOURCE=supabase.');
+  }
+
+  if (parsed.VITE_INVENTORY_WRITE_MODE === 'controlled' && parsed.VITE_AUTH_MODE !== 'supabase') {
+    throw new Error('Controlled inventory writes require VITE_AUTH_MODE=supabase.');
+  }
+
+  if (parsed.VITE_SUPPLIER_WRITE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
+    throw new Error('Controlled supplier writes require VITE_PRODUCT_READ_SOURCE=supabase.');
+  }
+
+  if (parsed.VITE_SUPPLIER_WRITE_MODE === 'controlled' && parsed.VITE_AUTH_MODE !== 'supabase') {
+    throw new Error('Controlled supplier writes require VITE_AUTH_MODE=supabase.');
+  }
+
+  if (parsed.VITE_PURCHASE_WRITE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
+    throw new Error('Controlled purchase writes require VITE_PRODUCT_READ_SOURCE=supabase.');
+  }
+
+  if (parsed.VITE_PURCHASE_WRITE_MODE === 'controlled' && parsed.VITE_AUTH_MODE !== 'supabase') {
+    throw new Error('Controlled purchase writes require VITE_AUTH_MODE=supabase.');
+  }
+
+  if (parsed.VITE_ORDER_WRITE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
+    throw new Error('Controlled order writes require VITE_PRODUCT_READ_SOURCE=supabase.');
+  }
+
+  if (parsed.VITE_ORDER_WRITE_MODE === 'controlled' && parsed.VITE_AUTH_MODE !== 'supabase') {
+    throw new Error('Controlled order writes require VITE_AUTH_MODE=supabase.');
+  }
+
+  if (parsed.VITE_SALE_WRITE_MODE === 'controlled' && (parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase' || parsed.VITE_AUTH_MODE !== 'supabase')) {
+    throw new Error('Controlled sale writes require Supabase read source and auth.');
+  }
+
+  if (parsed.VITE_FINANCE_WRITE_MODE === 'controlled' && (parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase' || parsed.VITE_AUTH_MODE !== 'supabase')) {
+    throw new Error('Controlled finance writes require Supabase read source and auth.');
   }
 
   if (parsed.VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP && parsed.VITE_AUTH_MODE !== 'supabase') {

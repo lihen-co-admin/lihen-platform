@@ -1,0 +1,2 @@
+import{describe,expect,it}from'vitest';import{CreateOrderDraftHandler,InMemoryOrderRepository}from'../src';
+describe('order draft',()=>{it('creates a DRAFT only',async()=>{const r=new InMemoryOrderRepository();const h=new CreateOrderDraftHandler(r);const o=await h.execute({operationKey:'x',orderId:'o1',orderNumber:'P-1',channel:'WHATSAPP',customerName:null,customerPhone:null,notes:null,requestedAt:null,items:[{id:'i1',productId:'p1',quantity:1,unitPrice:1000,notes:null}]});expect(o.status).toBe('DRAFT');expect((await r.listItems('o1')).length).toBe(1);});});

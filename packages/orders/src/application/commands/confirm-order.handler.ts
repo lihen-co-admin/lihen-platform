@@ -1,0 +1,1 @@
+import type{OrderRepository}from'../../ports/order-repository';import type{ConfirmOrderCommand}from'./confirm-order.command';export class ConfirmOrderHandler{public constructor(private readonly repository:OrderRepository){}public execute(command:ConfirmOrderCommand){return this.repository.confirm(command);}}

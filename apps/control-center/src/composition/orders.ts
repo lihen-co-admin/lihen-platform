@@ -1,0 +1,6 @@
+import {UuidGenerator} from '@lihen/core';
+import {getBrowserSupabaseClient,parseBrowserEnv} from '@lihen/database';
+import {CancelOrderHandler,ConfirmOrderHandler,CreateOrderDraftHandler,GetOrdersHandler,InMemoryOrderRepository,SupabaseOrderRepository,type OrderRepository} from '@lihen/orders';
+export interface OrdersComposition{readonly repository:OrderRepository;readonly getOrders:GetOrdersHandler;readonly createDraft:CreateOrderDraftHandler;readonly confirm:ConfirmOrderHandler;readonly cancel:CancelOrderHandler;readonly canWrite:boolean;readonly ids:UuidGenerator;}
+export function createOrdersComposition(env:Record<string,unknown>=import.meta.env):OrdersComposition{const parsed=parseBrowserEnv(env);const controlled=parsed.VITE_ORDER_WRITE_MODE==='controlled';const repository:OrderRepository=parsed.VITE_PRODUCT_READ_SOURCE==='supabase'?new SupabaseOrderRepository(getBrowserSupabaseClient(env),{controlledWriteEnabled:controlled}):new InMemoryOrderRepository();return{repository,getOrders:new GetOrdersHandler(repository),createDraft:new CreateOrderDraftHandler(repository),confirm:new ConfirmOrderHandler(repository),cancel:new CancelOrderHandler(repository),canWrite:parsed.VITE_PRODUCT_READ_SOURCE==='memory'||controlled,ids:new UuidGenerator()};}
+export const ordersComposition=createOrdersComposition();

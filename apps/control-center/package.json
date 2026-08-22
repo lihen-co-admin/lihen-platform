@@ -18,7 +18,13 @@
     "react-router-dom": "^7.0.0",
     "zod": "^4.0.0",
     "@lihen/database": "workspace:*",
-    "@supabase/supabase-js": "^2.0.0"
+    "@supabase/supabase-js": "^2.0.0",
+    "@lihen/inventory": "workspace:*",
+    "@lihen/suppliers": "workspace:*",
+    "@lihen/procurement": "workspace:*",
+    "@lihen/orders": "workspace:*",
+    "@lihen/sales": "workspace:*",
+    "@lihen/finance": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

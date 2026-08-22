@@ -1,0 +1,1 @@
+import type{OrderRepository}from'../../ports/order-repository';import type{CancelOrderCommand}from'./cancel-order.command';export class CancelOrderHandler{public constructor(private readonly repository:OrderRepository){}public execute(command:CancelOrderCommand){return this.repository.cancel(command);}}
