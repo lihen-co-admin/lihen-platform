@@ -31,6 +31,10 @@ describe('architecture boundaries', () => {
     expectNoImport('packages/products/src/domain', /from\s+['"](?:react|@supabase\/)/);
   });
 
+  it('core events and strategies do not depend on React or Supabase', () => {
+    expectNoImport('packages/core/src', /from\s+['"](?:react|@supabase\/)/);
+  });
+
   it('supplier domain does not depend on React or Supabase', () => {
     expectNoImport('packages/suppliers/src/domain', /from\s+['"](?:react|@supabase\/)/);
   });

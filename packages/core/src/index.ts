@@ -5,3 +5,8 @@ export * from './errors/domain-error';
 export * from './clock/clock';
 export * from './ids/id-generator';
 export * from './logging/logger';
+export * from './events/domain-event-bus';
+export * from './events/domain-event-store';
+export * from './events/in-memory-domain-event-bus';
+export * from './strategies/strategy';
+export * from './strategies/strategy-registry';

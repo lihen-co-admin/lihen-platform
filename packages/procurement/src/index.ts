@@ -5,3 +5,5 @@ export * from './domain/purchase-item';
 export * from './domain/supplier-invoice';
 export * from './ports/purchase-repository';
 export * from './ports/supplier-invoice-repository';
+export * from './domain/events/purchase-created.event';
+export * from './domain/events/supplier-invoice-registered.event';
