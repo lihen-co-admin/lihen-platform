@@ -1,2 +1,3 @@
-# Phase 1.28 local legacy exports may contain sensitive operational/financial data
+# Phase 1.28 legacy operational exports: never commit.
 legacy-export-*/
+legacy-export-*.zip

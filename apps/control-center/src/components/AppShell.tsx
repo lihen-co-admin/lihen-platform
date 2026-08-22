@@ -23,7 +23,7 @@ export function AppShell() {
         <header className="app-header">
           <div>
             <strong>LIHEN Control Center</strong>
-            <small>{auth.user?.email ?? 'Sesión autenticada'}</small>
+            <small>{auth.user?.email ?? 'Sesión autenticada'} · {auth.profile?.roleCode ?? 'sin rol'}</small>
           </div>
           <button type="button" onClick={() => void auth.signOut()}>Cerrar sesión</button>
         </header>

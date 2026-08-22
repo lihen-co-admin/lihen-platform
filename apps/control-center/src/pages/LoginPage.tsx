@@ -12,7 +12,7 @@ export function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [oauthSubmitting, setOauthSubmitting] = useState(false);
 
-  if (!auth.enabled || (!auth.loading && auth.session)) return <Navigate to="/" replace />;
+  if (!auth.enabled || (!auth.loading && !auth.authorizationLoading && auth.session && auth.authorized)) return <Navigate to="/" replace />;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,7 +50,7 @@ export function LoginPage() {
           type="button"
           className="oauth-button"
           onClick={signInWithGitHub}
-          disabled={oauthSubmitting || auth.loading}
+          disabled={oauthSubmitting || auth.loading || auth.authorizationLoading}
         >
           <span aria-hidden="true" className="oauth-button__icon">GH</span>
           {oauthSubmitting ? 'Abriendo GitHub…' : 'Continuar con GitHub'}
@@ -68,7 +68,7 @@ export function LoginPage() {
               onChange={(event) => setPassword(event.target.value)} />
           </label>
           {error ? <p role="alert" className="error-text">{error}</p> : null}
-          <button type="submit" disabled={submitting || auth.loading}>
+          <button type="submit" disabled={submitting || auth.loading || auth.authorizationLoading}>
             {submitting ? 'Ingresando…' : 'Ingresar'}
           </button>
         </form>
