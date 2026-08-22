@@ -1,0 +1,17 @@
+select
+  (select count(*) from public.products) as products,
+  (select count(*) from public.products where business_line='BEAUTY_CARE') as beauty_care,
+  (select count(*) from public.products where business_line='STYLE') as style,
+  (select count(*) from public.product_images where status='ACTIVE' and derivative_profile='WEB_CARD') as active_web_card_images,
+  (select count(*) from lihen_private.product_image_storage_assets where status='ACTIVE' and rendition_profile='WEB_CARD') as active_web_card_assets,
+  (select count(*) from lihen_private.web_image_storage_cutover_operations) as image_cutover_ops,
+  (select count(*) from storage.objects where bucket_id='lihen-product-web') as web_storage_objects,
+  (select count(*) from public.products where visible_on_website) as visible_products,
+  (select count(*) from public.products where main_image_url is not null) as products_with_main_image_url,
+  (select count(*) from public.inventory_movements) as canonical_inventory_movements,
+  (select coalesce(sum(quantity_delta),0) from public.inventory_movements where bucket='ON_HAND') as canonical_on_hand,
+  (select coalesce(sum(quantity_delta),0) from public.inventory_movements where bucket='RESERVED') as canonical_reserved,
+  (select coalesce(sum(quantity_delta),0) from public.inventory_movements where bucket='PENDING_IN') as canonical_pending,
+  (select count(*) from lihen_private.financial_ledger_entries) as financial_ledger_entries,
+  (select count(*) from lihen_private.legacy_financial_account_snapshots) as legacy_account_snapshots,
+  (select count(*) from lihen_private.legacy_reconciliation_runs where status='CUTOVER') as completed_reconciliation_runs;

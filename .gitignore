@@ -14,3 +14,7 @@ Thumbs.db
 *.temp
 *.pdf
 !docs/**/*.pdf
+
+# Local legacy reconciliation exports contain operational/financial evidence.
+legacy-export-*/
+legacy-export-*.zip

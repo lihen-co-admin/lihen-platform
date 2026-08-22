@@ -1,0 +1,2 @@
+# Phase 1.28 local legacy exports may contain sensitive operational/financial data
+legacy-export-*/
