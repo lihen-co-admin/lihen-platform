@@ -31,6 +31,22 @@ describe('architecture boundaries', () => {
     expectNoImport('packages/products/src/domain', /from\s+['"](?:react|@supabase\/)/);
   });
 
+  it('supplier domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/suppliers/src/domain', /from\s+['"](?:react|@supabase\/)/);
+  });
+
+  it('procurement domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/procurement/src/domain', /from\s+['"](?:react|@supabase\/)/);
+  });
+
+  it('inventory domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/inventory/src/domain', /from\s+['"](?:react|@supabase\/)/);
+  });
+
+  it('catalog domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/catalog/src/domain', /from\s+['"](?:react|@supabase\/)/);
+  });
+
   it('shared does not depend on business domains', () => {
     expectNoImport('packages/shared/src', /from\s+['"]@lihen\/(?:products|suppliers|inventory|sales|finance|catalog)/);
   });
