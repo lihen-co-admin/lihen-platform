@@ -20,6 +20,8 @@ import {
   SetMainProductImageHandler,
   SupabaseProductImageRepository,
   SupabaseProductRepository,
+  SupabaseBrandRepository,
+  SupabaseCategoryRepository,
   UpdateProductHandler,
   type BrandRepository,
   type CategoryRepository,
@@ -110,12 +112,15 @@ export function createProductsComposition(
         })
       : new InMemoryProductRepository(developmentProducts);
 
-  const brandRepository: BrandRepository = new InMemoryBrandRepository(
-    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? developmentBrands : [],
-  );
-  const categoryRepository: CategoryRepository = new InMemoryCategoryRepository(
-    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? developmentCategories : [],
-  );
+  const brandRepository: BrandRepository =
+    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
+      ? new SupabaseBrandRepository(getBrowserSupabaseClient(env))
+      : new InMemoryBrandRepository(developmentBrands);
+
+  const categoryRepository: CategoryRepository =
+    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
+      ? new SupabaseCategoryRepository(getBrowserSupabaseClient(env))
+      : new InMemoryCategoryRepository(developmentCategories);
   const imageRepository: ProductImageRepository =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
       ? new SupabaseProductImageRepository(getBrowserSupabaseClient(env), {
@@ -146,7 +151,7 @@ export function createProductsComposition(
     canReadImages:
       parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
       || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImagesReadEnabled),
-    canReadCanonicalTaxonomy: parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory',
+    canReadCanonicalTaxonomy: true,
     repository,
     brandRepository,
     categoryRepository,
@@ -157,13 +162,13 @@ export function createProductsComposition(
     createProduct: new CreateProductHandler(
       repository,
       ids,
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? brandRepository : undefined,
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? categoryRepository : undefined,
+      brandRepository,
+      categoryRepository,
     ),
     updateProduct: new UpdateProductHandler(
       repository,
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? brandRepository : undefined,
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ? categoryRepository : undefined,
+      brandRepository,
+      categoryRepository,
     ),
     changeProductSalePrice: new ChangeProductSalePriceHandler(
       repository,

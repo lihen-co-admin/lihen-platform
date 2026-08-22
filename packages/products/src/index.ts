@@ -67,3 +67,5 @@ export * from './domain/approved-product-import';
 export * from './domain/full-canonical-product-import';
 
 export * from './domain/web-image-derivative';
+export * from './infrastructure/supabase-brand-repository';
+export * from './infrastructure/supabase-category-repository';
