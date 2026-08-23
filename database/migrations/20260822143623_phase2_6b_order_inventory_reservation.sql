@@ -26,7 +26,6 @@ begin
   if not found then raise exception using errcode='P0002',message='LIHEN_ORDER_NOT_FOUND'; end if;
   if v_order.status<>'DRAFT' then raise exception using errcode='22023',message='LIHEN_ORDER_CONFIRM_REQUIRES_DRAFT'; end if;
   if not exists(select 1 from public.order_items i where i.order_id=p_order_id) then raise exception using errcode='22023',message='LIHEN_ORDER_ITEMS_REQUIRED'; end if;
-  -- Primero valida todas las líneas; no reserva parcialmente si una falla.
   for v_item in select * from public.order_items i where i.order_id=p_order_id order by i.product_id loop
     perform pg_advisory_xact_lock(hashtextextended(v_item.product_id::text,0));
     select stock_available into v_available from public.inventory_stock where product_id=v_item.product_id;

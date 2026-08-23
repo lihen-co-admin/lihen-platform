@@ -1,12 +1,69 @@
-DEV migration content verification (MD5 of SQL statement, excluding only local trailing newline):
+LIHEN Platform — DEV migration integrity checkpoint
+Date: 2026-08-23
+Authoritative project: vnmkupzptujtywnnabkp
 
-20260823031829 aacfba5d978c95682f0cac4cf20516eb 4241 phase3_finance_opening_balance_controlled
-20260823031907 da145209a63303f6af46020c32e9ee50 3886 phase3_product_initial_cost_controlled
-20260823031938 3d2fe07933289730b81058433360ae37 7627 phase3_cutover_private_finance_cost_helpers
-20260823032049 86400fa374fdf8c0a1f8f4469696737f 15418 phase3_controlled_cutover_executor_foundation
-20260823032116 c670ab0bd21de897710be42c649d283c 7900 phase3_post_cutover_verification_controlled
-20260823034542 32a18b1888374eb58a73a80b03ca97d1 1309 phase4_entry_gate_foundation
-20260823045752 d53658467f6884677f60fb55e58872bb 4513 phase4_operational_readiness_diagnostics
-20260823142223 28b9c52473a763a0db9c8ecb81b14d27 5116 phase5_supplier_document_intake_foundation
-20260823142900 b1e3b0e3a251943de7865c169b7ac2be 13800 phase5_supplier_document_extraction_adapter
-20260823143218 e784649435249cd1971bfa66c16a2332 17809 phase5_supplier_records_candidate_bridge_foundation
+VERSION SET
+- Local active versioned migration files (root): 113
+- Additional SQL under database/migrations/pending/: 11 (not part of DEV applied version set)
+- DEV schema_migrations rows: 113
+- Version set comparison: ALIGNED (no DEV version absent from local after reconciliation)
+
+RECOVERED / CORRECTED FROM DEV DURING THIS REVIEW
+- 20260821033154_create_brands_expand.sql
+- 20260821033202_create_categories_expand.sql
+- 20260821033211_add_product_taxonomy_refs_expand.sql
+- 20260821033254_validate_product_taxonomy_fks_empty_baseline.sql
+- 20260821162531_brand_category_reconciliation_foundation.sql
+- 20260821165607_temporary_product_candidate_staging_ingest_bridge.sql
+- 20260821170959_private_product_candidate_staging_batch_helper.sql
+- 20260821171555_remove_temporary_product_candidate_staging_bridges.sql
+- 20260821171620_private_candidate_hash_backfill_helper.sql
+- 20260822021345_phase2_2_enable_controlled_product_create_dev.sql
+- 20260822035808_core_03_supplier_foundation.sql
+- 20260822035952_core_05_procurement_invoice_foundation.sql
+- 20260822040046_core_07_catalog_version_foundation.sql
+- 20260822041408_core_08_10_11_events_strategies_foundation.sql
+- 20260822045329_phase_2_3_controlled_product_update_cutover.sql
+- 20260822051725_phase2_4_inventory_operational_foundation.sql
+- 20260822051928_phase2_4_inventory_read_policy_fix.sql
+- 20260822052624_phase2_5_supplier_control_center_foundation.sql
+- 20260822052816_phase2_5_purchase_draft_controlled.sql
+- 20260822143142_phase2_5c_purchase_confirmation_receipt.sql
+- 20260822143344_phase2_6a_order_draft_foundation.sql
+- 20260822143623_phase2_6b_order_inventory_reservation.sql
+- 20260822221346_phase2_10_11_dashboard_audit_observability.sql
+- 20260823151921_phase3_cutover_initial_cost_operation_contract_fix.sql
+- 20260823153134_phase3_cutover_executor_failure_context_observability.sql
+- 20260823153725_phase3_initial_cost_allow_inactive_product.sql
+
+RECENT BLOCK VERIFIED AGAINST DEV MD5
+20260823031829 aacfba5d978c95682f0cac4cf20516eb phase3_finance_opening_balance_controlled
+20260823031907 da145209a63303f6af46020c32e9ee50 phase3_product_initial_cost_controlled
+20260823031938 3d2fe07933289730b81058433360ae37 phase3_cutover_private_finance_cost_helpers
+20260823032049 86400fa374fdf8c0a1f8f4469696737f phase3_controlled_cutover_executor_foundation
+20260823032116 c670ab0bd21de897710be42c649d283c phase3_post_cutover_verification_controlled
+20260823034542 32a18b1888374eb58a73a80b03ca97d1 phase4_entry_gate_foundation
+20260823045752 d53658467f6884677f60fb55e58872bb phase4_operational_readiness_diagnostics
+20260823142223 28b9c52473a763a0db9c8ecb81b14d27 phase5_supplier_document_intake_foundation
+20260823142900 b1e3b0e3a251943de7865c169b7ac2be phase5_supplier_document_extraction_adapter
+20260823143218 e784649435249cd1971bfa66c16a2332 phase5_supplier_records_candidate_bridge_foundation
+20260823151921 a51438ee09ea6946f6cd631a954f1494 phase3_cutover_initial_cost_operation_contract_fix
+20260823153134 b1c0d0c74351c4464668a702a7444e15 phase3_cutover_executor_failure_context_observability
+20260823153725 b3dc0f52181f0e7c6de9e51f168692d8 phase3_initial_cost_allow_inactive_product
+
+IMPORTANT HISTORICAL DRIFT
+- A complete hash comparison still reports multiple older migrations whose local SQL text differs from the statement text stored in DEV.
+- DEV is authoritative.
+- Do not silently treat the repository as a byte-for-byte migration archive yet.
+- Close this archival reproducibility debt before FASE 7 clean rebuild / go-live certification.
+- Do not rewrite remaining history blindly; reconstruct each mismatch from DEV if/when full immutable archive parity is required.
+
+CURRENT CUTOVER STATE
+- FASE 3.10 run: APPLIED
+- FASE 3.10 batch: APPLIED
+- receipts: 1019/1019; 130 APPLIED; 889 SKIPPED; 0 FAILED
+- FASE 3.11: WAITING_FOR_VERIFICATION
+- FASE 4 entry: BLOCKED / PHASE3_POST_VERIFICATION_NOT_PASSED
+
+Latest synchronized DEV migration:
+- 20260823174500_phase3_11_controlled_gate_status_read

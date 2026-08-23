@@ -17,7 +17,6 @@ create table if not exists lihen_private.inventory_write_operations (
 revoke all on table lihen_private.inventory_write_operations from public, anon, authenticated;
 grant select, insert on table lihen_private.inventory_write_operations to service_role;
 
--- Read access stays narrow: authenticated ACTIVE OWNER/ADMIN only.
 drop policy if exists inventory_movements_admin_read on public.inventory_movements;
 create policy inventory_movements_admin_read
 on public.inventory_movements
@@ -145,7 +144,6 @@ begin
     return;
   end if;
 
-  -- Serialize writes for one product so balance checks cannot race.
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_product_id::text, 2404));
 
   select s.stock_on_hand, s.stock_reserved, s.stock_pending, s.stock_available
@@ -204,5 +202,4 @@ grant execute on function public.record_inventory_adjustment_controlled(text,uui
 grant execute on function public.record_inventory_adjustment_controlled(text,uuid,uuid,integer,text,timestamptz,text)
   to service_role;
 
--- Direct mutation remains forbidden; the immutable trigger also rejects UPDATE/DELETE.
 revoke insert, update, delete on table public.inventory_movements from anon, authenticated;

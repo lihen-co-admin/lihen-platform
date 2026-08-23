@@ -14,11 +14,19 @@ create table public.categories (
   constraint categories_status_valid check (status in ('ACTIVE','INACTIVE')),
   constraint categories_no_self_parent check (parent_id is null or parent_id <> id)
 );
+
 create index categories_parent_id_idx on public.categories(parent_id);
 create index categories_normalized_name_idx on public.categories(normalized_name);
+
 alter table public.categories enable row level security;
 revoke all on table public.categories from anon;
 revoke insert, update, delete, truncate, references, trigger on table public.categories from authenticated;
 grant select on table public.categories to authenticated;
-create policy categories_authenticated_read on public.categories for select to authenticated using (true);
+
+create policy categories_authenticated_read
+  on public.categories
+  for select
+  to authenticated
+  using (true);
+
 comment on table public.categories is 'Canonical hierarchical LIHEN categories. FASE 1.8.1 expand-only; writes remain blocked.';

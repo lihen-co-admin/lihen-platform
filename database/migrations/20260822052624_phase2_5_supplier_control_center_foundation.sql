@@ -49,7 +49,7 @@ begin
   end if;
   if p_operation_key is null or length(btrim(p_operation_key))=0 then raise exception using errcode='22023', message='LIHEN_OPERATION_KEY_REQUIRED'; end if;
   if p_id is null then raise exception using errcode='22023', message='LIHEN_SUPPLIER_ID_REQUIRED'; end if;
-  v_name := regexp_replace(btrim(coalesce(p_business_name,'')), '\\s+', ' ', 'g');
+  v_name := regexp_replace(btrim(coalesce(p_business_name,'')), '\s+', ' ', 'g');
   if length(v_name)=0 then raise exception using errcode='22023', message='LIHEN_SUPPLIER_BUSINESS_NAME_REQUIRED'; end if;
   v_normalized := lower(v_name);
   if p_average_delivery_days is not null and p_average_delivery_days < 0 then raise exception using errcode='22023', message='LIHEN_SUPPLIER_DELIVERY_DAYS_INVALID'; end if;
@@ -122,7 +122,7 @@ begin
   end if;
   if p_operation_key is null or length(btrim(p_operation_key))=0 then raise exception using errcode='22023', message='LIHEN_OPERATION_KEY_REQUIRED'; end if;
   if p_supplier_id is null then raise exception using errcode='22023', message='LIHEN_SUPPLIER_ID_REQUIRED'; end if;
-  v_name := regexp_replace(btrim(coalesce(p_business_name,'')), '\\s+', ' ', 'g');
+  v_name := regexp_replace(btrim(coalesce(p_business_name,'')), '\s+', ' ', 'g');
   if length(v_name)=0 then raise exception using errcode='22023', message='LIHEN_SUPPLIER_BUSINESS_NAME_REQUIRED'; end if;
   v_normalized := lower(v_name);
   if p_average_delivery_days is not null and p_average_delivery_days < 0 then raise exception using errcode='22023', message='LIHEN_SUPPLIER_DELIVERY_DAYS_INVALID'; end if;

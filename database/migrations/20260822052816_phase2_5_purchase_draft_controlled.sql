@@ -59,7 +59,6 @@ begin
 
   if exists(select 1 from public.purchases p where p.id=p_purchase_id or p.purchase_number=v_number) then raise exception using errcode='23505',message='LIHEN_PURCHASE_ALREADY_EXISTS'; end if;
 
-  -- Validate every line before inserting anything.
   for v_item in select value from jsonb_array_elements(v_items) loop
     begin v_product_id := (v_item->>'product_id')::uuid; exception when others then raise exception using errcode='22023',message='LIHEN_PURCHASE_PRODUCT_ID_INVALID'; end;
     begin v_qty := (v_item->>'quantity_requested')::integer; exception when others then raise exception using errcode='22023',message='LIHEN_PURCHASE_QUANTITY_INVALID'; end;
