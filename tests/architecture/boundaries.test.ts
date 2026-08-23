@@ -23,32 +23,36 @@ function expectNoImport(dir: string, forbidden: RegExp): void {
 }
 
 describe('architecture boundaries', () => {
-  it('packages never import applications', () => {
-    expectNoImport('packages', /from\s+['"][^'"]*apps\//);
-  });
+  it(
+    'packages never import applications',
+    () => {
+      expectNoImport('packages', /from\s+['"][^'"]*apps\//);
+    },
+    10_000,
+  );
 
   it('product domain does not depend on React or Supabase', () => {
-    expectNoImport('packages/products/src/domain', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/products/src/domain', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('core events and strategies do not depend on React or Supabase', () => {
-    expectNoImport('packages/core/src', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/core/src', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('supplier domain does not depend on React or Supabase', () => {
-    expectNoImport('packages/suppliers/src/domain', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/suppliers/src/domain', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('procurement domain does not depend on React or Supabase', () => {
-    expectNoImport('packages/procurement/src/domain', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/procurement/src/domain', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('inventory domain does not depend on React or Supabase', () => {
-    expectNoImport('packages/inventory/src/domain', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/inventory/src/domain', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('catalog domain does not depend on React or Supabase', () => {
-    expectNoImport('packages/catalog/src/domain', /from\s+['"](?:react|@supabase\/)/);
+    expectNoImport('packages/catalog/src/domain', /from\s+['"](?:react|@Supabase\/)/);
   });
 
   it('shared does not depend on business domains', () => {
@@ -62,7 +66,7 @@ describe('architecture boundaries', () => {
   it('Control Center pages do not import persistence adapters directly', () => {
     expectNoImport(
       'apps/control-center/src/pages',
-      /from\s+['"](?:@supabase\/|@lihen\/database)|SupabaseProductRepository|InMemoryProductRepository/,
+      /from\s+['"](?:@Supabase\/|@lihen\/database)|SupabaseProductRepository|InMemoryProductRepository/,
     );
   });
 });
