@@ -21,6 +21,9 @@ import { OrdersPage } from '../pages/OrdersPage';
 import { SalesPage } from '../pages/SalesPage';
 import { FinancePage } from '../pages/FinancePage';
 import { OperationsPage } from '../pages/OperationsPage';
+import { CatalogsPage } from '../pages/CatalogsPage';
+import { CatalogPdfRenderPage } from '../pages/CatalogPdfRenderPage';
+import { CatalogInstitutionalContentPage } from '../pages/CatalogInstitutionalContentPage';
 
 export function App() {
   return (
@@ -28,6 +31,7 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/bootstrap-admin" element={<BootstrapAdminPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/catalogs/:id/render" element={<CatalogPdfRenderPage />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/products" element={<ProductsPage />} />
@@ -39,6 +43,8 @@ export function App() {
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/operations" element={<OperationsPage />} />
+          <Route path="/catalogs" element={<CatalogsPage />} />
+          <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />

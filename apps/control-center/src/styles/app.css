@@ -291,3 +291,108 @@
 .status-alert { color: var(--warning); background: #fff1d6; }
 @media (max-width: 1100px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .metric-grid { grid-template-columns: 1fr; } }
+
+
+/* FASE 4.11 institutional catalog content */
+.institutional-field,
+.institutional-payment-grid label,
+.institutional-channel-row label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 700;
+}
+
+.institutional-field input,
+.institutional-field textarea,
+.institutional-subcard input,
+.institutional-subcard textarea,
+.institutional-payment-grid input,
+.institutional-payment-grid select,
+.institutional-channel-row input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 0.7rem 0.8rem;
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.institutional-subcard {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.institutional-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.institutional-field--wide {
+  grid-column: 1 / -1;
+}
+
+.institutional-channel-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.institutional-channel-row:last-child {
+  border-bottom: 0;
+}
+
+.institutional-qr-preview {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.35rem;
+}
+
+.institutional-photo-preview {
+  width: min(100%, 360px);
+  max-height: 420px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+@media (max-width: 760px) {
+  .institutional-payment-grid,
+  .institutional-channel-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.institutional-payment-qr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.institutional-payment-grid input[type="file"] {
+  padding: 0.55rem;
+}
+
+.mono-wrap {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: .82rem;
+}
