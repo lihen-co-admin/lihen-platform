@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 const repoRoot = resolve(process.cwd());
@@ -156,6 +156,9 @@ console.log('No deployment or database mutation is performed by this command.');
 run('pnpm', ['check']);
 run('pnpm', ['test:e2e:storefront']);
 run('pnpm', ['build:storefront:release']);
+
+rmSync(resolve(repoRoot, 'playwright-report-storefront'), { recursive: true, force: true });
+rmSync(resolve(repoRoot, 'test-results'), { recursive: true, force: true });
 
 const buildMetadataChanges = generatedBuildMetadataChanges();
 const inventory = distInventory();
