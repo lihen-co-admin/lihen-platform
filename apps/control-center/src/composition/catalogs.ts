@@ -99,6 +99,45 @@ interface CatalogPublicationRow {
   publication_status: string;
 }
 
+
+export interface StorefrontVisibilityCutoverStatus {
+  runId: string;
+  catalogVersionId: string;
+  status: 'PREPARED' | 'EXECUTED' | 'VERIFIED';
+  sourceCount: number;
+  eligibleCount: number;
+  blockedCount: number;
+  alreadyVisibleCount: number;
+  outsideVisibleBaselineCount: number;
+  affectedCount: number;
+  verificationMetrics: Record<string, unknown> | null;
+}
+
+interface StorefrontVisibilityCutoverRow {
+  run_id: string;
+  catalog_version_id: string;
+  status: 'PREPARED' | 'EXECUTED' | 'VERIFIED';
+  source_count: number | string;
+  eligible_count: number | string;
+  blocked_count: number | string;
+  already_visible_count: number | string;
+  outside_visible_baseline_count: number | string;
+  affected_count: number | string;
+  verification_metrics: Record<string, unknown> | null;
+}
+
+export interface StorefrontVisibilityCutoverVerificationRow {
+  run_id: string;
+  status: 'EXECUTED' | 'VERIFIED';
+  expected_visible_count: number | string;
+  actual_visible_count: number | string;
+  missing_visible_count: number | string;
+  outside_visible_baseline_count: number | string;
+  outside_visible_current_count: number | string;
+  revalidation_failure_count: number | string;
+  storefront_projection_count: number | string;
+}
+
 export interface PdfArtifactInspection {
   sha256: string;
   pageCount: number;
@@ -162,6 +201,22 @@ interface CatalogRenderRow {
   image_url: string;
   image_alt: string | null;
   sort_order: number | string;
+}
+
+
+function mapStorefrontCutoverRow(item: StorefrontVisibilityCutoverRow): StorefrontVisibilityCutoverStatus {
+  return {
+    runId: item.run_id,
+    catalogVersionId: item.catalog_version_id,
+    status: item.status,
+    sourceCount: Number(item.source_count),
+    eligibleCount: Number(item.eligible_count),
+    blockedCount: Number(item.blocked_count),
+    alreadyVisibleCount: Number(item.already_visible_count),
+    outsideVisibleBaselineCount: Number(item.outside_visible_baseline_count),
+    affectedCount: Number(item.affected_count),
+    verificationMetrics: item.verification_metrics ?? null,
+  };
 }
 
 function db() {
@@ -395,6 +450,94 @@ export const catalogsComposition = {
     });
 
     if (error) throw error;
+  },
+
+
+  async getLatestStorefrontVisibilityCutover(
+    catalogVersionId: string,
+  ): Promise<StorefrontVisibilityCutoverStatus | null> {
+    const { data, error } = await db().rpc(
+      'get_latest_storefront_visibility_cutover_controlled',
+      { p_catalog_version_id: catalogVersionId },
+    );
+
+    if (error) throw error;
+    const row = ((data ?? []) as StorefrontVisibilityCutoverRow[])[0];
+    return row ? mapStorefrontCutoverRow(row) : null;
+  },
+
+  async prepareStorefrontVisibilityCutover(
+    catalogVersionId: string,
+    expectedSourceCount: number,
+  ): Promise<StorefrontVisibilityCutoverStatus> {
+    const { data, error } = await db().rpc(
+      'prepare_storefront_visibility_cutover_controlled',
+      {
+        p_catalog_version_id: catalogVersionId,
+        p_operation_key: `storefront-prepare:${catalogVersionId}:${crypto.randomUUID()}`,
+        p_expected_source_count: expectedSourceCount,
+      },
+    );
+
+    if (error) throw error;
+    const row = ((data ?? []) as StorefrontVisibilityCutoverRow[])[0];
+    if (!row) throw new Error('El cutover no devolvió un run preparado.');
+    return mapStorefrontCutoverRow(row);
+  },
+
+  async executeStorefrontVisibilityCutover(
+    runId: string,
+  ): Promise<StorefrontVisibilityCutoverStatus> {
+    const { data, error } = await db().rpc(
+      'execute_storefront_visibility_cutover_controlled',
+      {
+        p_run_id: runId,
+        p_operation_key: `storefront-execute:${runId}:${crypto.randomUUID()}`,
+      },
+    );
+
+    if (error) throw error;
+    const row = ((data ?? []) as Array<{
+      run_id: string;
+      status: 'EXECUTED' | 'VERIFIED';
+      source_count: number | string;
+      eligible_count: number | string;
+      blocked_count: number | string;
+      affected_count: number | string;
+    }>)[0];
+    if (!row) throw new Error('El cutover no devolvió el resultado de ejecución.');
+
+    const { data: statusData, error: statusError } = await db().rpc(
+      'get_storefront_visibility_cutover_status_controlled',
+      { p_run_id: row.run_id },
+    );
+    if (statusError) throw statusError;
+    const statusRow = ((statusData ?? []) as StorefrontVisibilityCutoverRow[])[0];
+    if (!statusRow) throw new Error('No fue posible recargar el estado del cutover.');
+    return mapStorefrontCutoverRow(statusRow);
+  },
+
+  async verifyStorefrontVisibilityCutover(
+    runId: string,
+  ): Promise<{ status: StorefrontVisibilityCutoverStatus; verification: StorefrontVisibilityCutoverVerificationRow }> {
+    const { data, error } = await db().rpc(
+      'verify_storefront_visibility_cutover_controlled',
+      { p_run_id: runId },
+    );
+
+    if (error) throw error;
+    const verification = ((data ?? []) as StorefrontVisibilityCutoverVerificationRow[])[0];
+    if (!verification) throw new Error('El cutover no devolvió verificación.');
+
+    const { data: statusData, error: statusError } = await db().rpc(
+      'get_storefront_visibility_cutover_status_controlled',
+      { p_run_id: runId },
+    );
+    if (statusError) throw statusError;
+    const row = ((statusData ?? []) as StorefrontVisibilityCutoverRow[])[0];
+    if (!row) throw new Error('No fue posible recargar el estado del cutover.');
+
+    return { status: mapStorefrontCutoverRow(row), verification };
   },
 
   async archive(versionId: string): Promise<void> {
