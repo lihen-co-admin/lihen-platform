@@ -1,0 +1,38 @@
+:root {
+  color-scheme: light;
+
+  --lihen-color-ink: #1d1717;
+  --lihen-color-text: #4a4237;
+  --lihen-color-muted: #746a63;
+  --lihen-color-white: #ffffff;
+  --lihen-color-ivory: #fbf8f2;
+  --lihen-color-cream: #f5f0e9;
+  --lihen-color-sand: #e8ddd0;
+  --lihen-color-blush: #f5ddd8;
+  --lihen-color-rose: #d99b8f;
+  --lihen-color-rose-deep: #823047;
+  --lihen-color-lilac: #b7a0db;
+  --lihen-color-gold: #b48a48;
+  --lihen-color-gold-dark: #8b6914;
+  --lihen-color-line: #e8e1da;
+  --lihen-color-success: #396b4c;
+
+  --lihen-font-body: "DM Sans", Arial, sans-serif;
+  --lihen-font-display: "Playfair Display", Georgia, serif;
+
+  --lihen-container: 1180px;
+  --lihen-page-gutter: clamp(18px, 3vw, 40px);
+  --lihen-section-space: clamp(64px, 8vw, 104px);
+  --lihen-header-height: 88px;
+
+  --lihen-radius-xs: 10px;
+  --lihen-radius-sm: 14px;
+  --lihen-radius-md: 20px;
+  --lihen-radius-lg: 30px;
+  --lihen-radius-pill: 999px;
+
+  --lihen-shadow-soft: 0 18px 50px rgba(53, 38, 28, 0.1);
+  --lihen-shadow-card: 0 10px 32px rgba(42, 29, 21, 0.08);
+  --lihen-transition-fast: 180ms ease;
+  --lihen-transition-base: 240ms ease;
+}
