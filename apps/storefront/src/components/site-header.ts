@@ -91,15 +91,15 @@ export function renderSiteHeader(): string {
     <header class="site-header" id="inicio">
       <div class="header-main lihen-shell">
         <div class="header-slot header-slot--start">
-          <button class="icon-button" type="button" aria-label="Buscar productos" disabled title="Disponible en FASE 5.7">${searchIcon}</button>
+          <a class="icon-button" href="#catalogo" aria-label="Buscar productos" title="Buscar productos">${searchIcon}<span class="search-button__label">Buscar productos</span></a>
         </div>
         <a class="brand" href="#inicio" aria-label="Inicio LIHEN.CO">
           <img src="${lihenLogoUrl}" alt="LIHEN.CO" />
         </a>
         <div class="header-slot header-slot--end">
-          <button class="icon-button selection-button" type="button" aria-label="Mi selección" disabled title="Disponible en FASE 5.9">
+          <button class="icon-button selection-button" type="button" aria-label="Mi selección" data-selection-trigger>
             ${selectionIcon}
-            <small aria-hidden="true">0</small>
+            <small aria-hidden="true" data-selection-count>0</small>
           </button>
           <button class="icon-button menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú">
             <span class="menu-toggle__icon" aria-hidden="true"><i></i><i></i><i></i></span>

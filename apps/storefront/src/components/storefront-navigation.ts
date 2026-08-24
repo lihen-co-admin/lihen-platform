@@ -31,14 +31,14 @@ export interface DirectNavigationItem {
 export type StorefrontNavigationItem = MegaNavigationItem | DirectNavigationItem;
 
 const beautyCategories: readonly NavigationLink[] = [
-  { label: 'Cejas, pestañas y delineadores', href: '#beauty', meta: '26 referencias' },
-  { label: 'Labiales, brillos e hidratantes', href: '#beauty', meta: '14 referencias' },
-  { label: 'Bases, correctores, polvos y rubores', href: '#beauty', meta: '12 referencias' },
+  { label: 'Cejas, pestañas y delineadores', href: '#catalogo?category=CEJAS%2C+PESTA%C3%91AS+Y+DELINEADORES', meta: '26 referencias' },
+  { label: 'Labiales, brillos e hidratantes', href: '#catalogo?category=LABIALES%2C+BRILLOS%2C+DELINEADORES%2C+HIDRATANTES+Y+TINTAS', meta: '14 referencias' },
+  { label: 'Bases, correctores, polvos y rubores', href: '#catalogo?category=BASES%2C+CORRECTORES%2C+POLVOS%2C+RUBORES+E+ILUMINADORES', meta: '12 referencias' },
 ];
 
 const beautyTools: readonly NavigationLink[] = [
-  { label: 'Cepillos y accesorios para el cabello', href: '#accesorios', meta: '40 referencias' },
-  { label: 'Accesorios para maquillaje', href: '#accesorios', meta: '18 referencias' },
+  { label: 'Cepillos y accesorios para el cabello', href: '#catalogo?category=CEPILLOS+Y+ACCESORIOS+PARA+EL+CABELLO', meta: '40 referencias' },
+  { label: 'Accesorios para maquillaje', href: '#catalogo?category=ACCESORIOS+PARA+MAQUILLAJE', meta: '18 referencias' },
 ];
 
 /**
@@ -63,9 +63,9 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
       {
         title: 'Explora',
         links: [
-          { label: 'Ver catálogo', href: '#beauty' },
-          { label: 'Beauty Care', href: '#beauty' },
-          { label: 'Accesorios', href: '#accesorios' },
+          { label: 'Ver catálogo', href: '#catalogo' },
+          { label: 'Beauty Care', href: '#catalogo?business_line=BEAUTY_CARE' },
+          { label: 'Accesorios', href: '#catalogo?category=ACCESORIOS+PARA+MAQUILLAJE' },
         ],
       },
       {
@@ -82,7 +82,7 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
     kind: 'mega',
     key: 'beauty',
     label: 'Belleza',
-    href: '#beauty',
+    href: '#catalogo?business_line=BEAUTY_CARE',
     eyebrow: 'Beauty Care',
     title: 'Belleza para tu forma de cuidarte',
     description: 'Navegación basada en las categorías canónicas actualmente publicadas para Beauty Care.',
@@ -122,7 +122,7 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
     kind: 'mega',
     key: 'accessories',
     label: 'Accesorios',
-    href: '#accesorios',
+    href: '#catalogo?category=ACCESORIOS+PARA+MAQUILLAJE',
     eyebrow: 'Complementos LIHEN',
     title: 'Detalles prácticos para tu rutina',
     description: 'Accesos directos a las categorías de accesorios que ya existen en la taxonomía canónica publicada.',
@@ -130,11 +130,11 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
     groups: [
       {
         title: 'Cabello',
-        links: [{ label: 'Cepillos y accesorios', href: '#accesorios', meta: '40 referencias' }],
+        links: [{ label: 'Cepillos y accesorios', href: '#catalogo?category=CEPILLOS+Y+ACCESORIOS+PARA+EL+CABELLO', meta: '40 referencias' }],
       },
       {
         title: 'Maquillaje',
-        links: [{ label: 'Accesorios para maquillaje', href: '#accesorios', meta: '18 referencias' }],
+        links: [{ label: 'Accesorios para maquillaje', href: '#catalogo?category=ACCESORIOS+PARA+MAQUILLAJE', meta: '18 referencias' }],
       },
     ],
   },

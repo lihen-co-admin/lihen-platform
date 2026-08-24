@@ -139,6 +139,10 @@ export function renderHomePage(): string {
       <p class="home-brands__note lihen-shell">Los conteos corresponden al universo visible validado en DEV al cierre de FASE 5.5. El filtrado interactivo se conecta en FASE 5.7.</p>
     </section>
 
+    <section class="product-rail lihen-shell" data-product-rail="discover" aria-label="Productos destacados"><p class="product-rail__error">Cargando selección LIHEN…</p></section>
+
+    <section class="product-rail lihen-shell" data-product-rail="bloomshell" aria-label="Productos Bloomshell"><p class="product-rail__error">Cargando productos por marca…</p></section>
+
     <section class="lihen-section home-style" id="style" aria-labelledby="style-title">
       <div class="home-style__card lihen-shell">
         <div class="home-style__copy">
