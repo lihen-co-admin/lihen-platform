@@ -19,13 +19,23 @@ function requiredEnv(name) {
   return value;
 }
 
-function run(command, args) {
-  console.log(`\n> ${command} ${args.join(' ')}`);
-  execFileSync(command, args, {
+function runPnpm(args) {
+  console.log(`\n> pnpm ${args.join(' ')}`);
+
+  if (process.platform === 'win32') {
+    const comspec = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+    execFileSync(comspec, ['/d', '/s', '/c', `pnpm ${args.join(' ')}`], {
+      cwd: repoRoot,
+      env: process.env,
+      stdio: 'inherit',
+    });
+    return;
+  }
+
+  execFileSync('pnpm', args, {
     cwd: repoRoot,
     env: process.env,
     stdio: 'inherit',
-    shell: process.platform === 'win32',
   });
 }
 
@@ -34,7 +44,6 @@ function capture(command, args) {
     cwd: repoRoot,
     env: process.env,
     encoding: 'utf8',
-    shell: process.platform === 'win32',
   }).trim();
 }
 
@@ -97,10 +106,13 @@ function assertInitialGitClean() {
 }
 
 function generatedBuildMetadataChanges() {
-  const lines = capture('git', ['status', '--porcelain'])
-    .split(/\r?\n/)
-    .map((line) => line.trimEnd())
-    .filter(Boolean);
+  const raw = capture('git', ['status', '--porcelain']);
+  const lines = raw
+    ? raw
+        .split(/\r?\n/)
+        .map((line) => line.trimEnd())
+        .filter(Boolean)
+    : [];
 
   const unexpected = lines.filter((line) => {
     const path = line.slice(3).replaceAll('\\', '/');
@@ -153,9 +165,9 @@ console.log(`Preparing Storefront Release Candidate ${releaseCandidate}`);
 console.log(`Environment label: ${releaseEnvironment}`);
 console.log('No deployment or database mutation is performed by this command.');
 
-run('pnpm', ['check']);
-run('pnpm', ['test:e2e:storefront']);
-run('pnpm', ['build:storefront:release']);
+runPnpm(['check']);
+runPnpm(['test:e2e:storefront']);
+runPnpm(['build:storefront:release']);
 
 rmSync(resolve(repoRoot, 'playwright-report-storefront'), { recursive: true, force: true });
 rmSync(resolve(repoRoot, 'test-results'), { recursive: true, force: true });
