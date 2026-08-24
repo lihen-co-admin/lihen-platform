@@ -1,5 +1,6 @@
 import './styles/global.css';
 import './styles/navigation.css';
+import './styles/home.css';
 import './styles/shell.css';
 import { bindSiteShellInteractions, renderSiteShell } from './components/site-shell';
 
