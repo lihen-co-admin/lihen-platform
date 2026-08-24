@@ -1,47 +1,10 @@
 import lihenLogoUrl from '../assets/brand/lihen-logo-official.png';
-
-const searchIcon = `
-<svg viewBox="0 0 32 32" aria-hidden="true">
-  <circle cx="14" cy="14" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-  <path d="m19.5 19.5 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-</svg>`;
-
-const selectionIcon = `
-<svg viewBox="0 0 32 32" aria-hidden="true">
-  <path d="M7.5 11h17l1.3 17H6.2l1.3-17Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-  <path d="M11.5 12V9a4.5 4.5 0 0 1 9 0v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-</svg>`;
+import { bindSiteHeaderInteractions, renderSiteHeader } from './site-header';
 
 export function renderSiteShell(): string {
   return `
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
-    <div class="announcement">Envíos a toda Colombia · Atención personalizada · LIHEN.CO</div>
-
-    <header class="site-header" id="inicio">
-      <div class="header-main lihen-shell">
-        <div class="header-slot header-slot--start">
-          <button class="icon-button" type="button" aria-label="Buscar productos" disabled title="Disponible en FASE 5.7">${searchIcon}</button>
-        </div>
-        <a class="brand" href="#inicio" aria-label="Inicio LIHEN.CO">
-          <img src="${lihenLogoUrl}" alt="LIHEN.CO" />
-        </a>
-        <div class="header-slot header-slot--end">
-          <button class="icon-button" type="button" aria-label="Mi selección" disabled title="Disponible en FASE 5.9">${selectionIcon}</button>
-          <button class="icon-button menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menú">
-            <span aria-hidden="true">☰</span>
-          </button>
-        </div>
-      </div>
-      <nav class="main-nav lihen-shell" id="main-nav" aria-label="Navegación principal">
-        <a href="#novedades">Novedades</a>
-        <a href="#beauty">Belleza</a>
-        <a href="#style">Moda</a>
-        <a href="#accesorios">Accesorios</a>
-        <a href="#experiencia">Así se vive LIHEN.CO</a>
-        <a href="#regalos">Ideas para regalar</a>
-        <a href="#nosotros">Nosotros</a>
-      </nav>
-    </header>
+    ${renderSiteHeader()}
 
     <main id="contenido">
       <section class="shell-hero" id="novedades" aria-labelledby="hero-title">
@@ -118,26 +81,5 @@ export function renderSiteShell(): string {
 }
 
 export function bindSiteShellInteractions(root: HTMLElement): void {
-  const toggle = root.querySelector<HTMLButtonElement>('.menu-toggle');
-  const nav = root.querySelector<HTMLElement>('#main-nav');
-  if (!toggle || !nav) return;
-
-  const closeMenu = (): void => {
-    toggle.setAttribute('aria-expanded', 'false');
-    nav.classList.remove('is-open');
-  };
-
-  toggle.addEventListener('click', () => {
-    const isOpen = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!isOpen));
-    nav.classList.toggle('is-open', !isOpen);
-  });
-
-  nav.addEventListener('click', (event) => {
-    if (event.target instanceof HTMLAnchorElement) closeMenu();
-  });
-
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 900) closeMenu();
-  });
+  bindSiteHeaderInteractions(root);
 }
