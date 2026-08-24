@@ -24,7 +24,8 @@
     "test:e2e:all": "pnpm test:e2e && pnpm test:e2e:storefront",
     "check:storefront:release-env": "node tooling/validate-storefront-release-env.mjs",
     "check:storefront:dist": "node tooling/validate-storefront-dist.mjs",
-    "build:storefront:release": "pnpm check:storefront:release-env && pnpm --filter @lihen/storefront build && pnpm check:storefront:dist"
+    "build:storefront:release": "pnpm check:storefront:release-env && pnpm --filter @lihen/storefront build && pnpm check:storefront:dist",
+    "prepare:storefront:release-candidate": "node tooling/prepare-storefront-release-candidate.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
