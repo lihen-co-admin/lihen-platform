@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 const repoRoot = resolve(process.cwd());
