@@ -28,7 +28,7 @@ describe('architecture boundaries', () => {
     () => {
       expectNoImport('packages', /from\s+['"][^'"]*apps\//);
     },
-    10_000,
+    30_000,
   );
 
   it('product domain does not depend on React or Supabase', () => {

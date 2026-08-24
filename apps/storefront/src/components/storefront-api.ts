@@ -1,25 +1,5 @@
 import type { StorefrontProduct, StorefrontProductPage, StorefrontProductQuery } from './storefront-product';
-
-interface StorefrontRuntimeConfig {
-  url: string;
-  publishableKey: string;
-}
-
-const defaultDevConfig: StorefrontRuntimeConfig = {
-  url: 'https://vnmkupzptujtywnnabkp.supabase.co',
-  publishableKey: 'sb_publishable_E03kLaIYYbTgn6c6rBR52Q_iAaWTwr4',
-};
-
-function runtimeConfig(): StorefrontRuntimeConfig {
-  const url = import.meta.env.VITE_SUPABASE_URL?.trim();
-  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
-
-  if (url && publishableKey) return { url, publishableKey };
-
-  // DEV-only fallback. Both values are browser-publishable and the RPC is
-  // explicitly granted to anon/authenticated. Production can override them via Vite env.
-  return defaultDevConfig;
-}
+import { getStorefrontRuntimeConfig } from './storefront-runtime-config';
 
 function normalizeProduct(value: unknown): StorefrontProduct | null {
   if (!value || typeof value !== 'object') return null;
@@ -45,7 +25,7 @@ function normalizeProduct(value: unknown): StorefrontProduct | null {
 }
 
 export async function getStorefrontProducts(query: StorefrontProductQuery = {}): Promise<StorefrontProductPage> {
-  const config = runtimeConfig();
+  const config = getStorefrontRuntimeConfig();
   const requestedLimit = Math.min(Math.max(query.limit ?? 24, 1), 100);
   const fetchLimit = Math.min(requestedLimit + 1, 100);
   const response = await fetch(`${config.url}/rest/v1/rpc/get_storefront_products_controlled`, {
