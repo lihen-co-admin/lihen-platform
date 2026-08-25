@@ -200,3 +200,31 @@ test('storefront provides canonical metadata and no obvious legacy markers', asy
   expect(html).not.toContain('catalog_public');
   expect(html).not.toContain('data/catalog-v1');
 });
+
+
+test('gifts, about and trust pages are real routes instead of empty anchors', async ({ page }) => {
+  await page.goto('/');
+
+  await page.getByRole('link', { name: 'Ideas para regalar' }).first().click();
+  await expect(page).toHaveURL(/#regalos$/);
+  await expect(page.getByRole('heading', { name: 'Detalles para regalar con intención.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Explorar productos publicados' })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Nosotros' }).last().click();
+  await expect(page).toHaveURL(/#nosotros$/);
+  await expect(page.getByRole('heading', { name: 'Belleza, cuidado y estilo desde Cali para Colombia.' })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Términos y condiciones' }).click();
+  await expect(page).toHaveURL(/#terminos$/);
+  await expect(page.getByRole('heading', { name: 'Términos y condiciones' })).toBeVisible();
+  await expect(page.getByText('Contenido en revisión para publicación definitiva.')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Peticiones, quejas y reclamos' }).click();
+  await expect(page).toHaveURL(/#pqrs$/);
+  await expect(page.getByRole('heading', { name: 'Peticiones, quejas, reclamos y solicitudes.' })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Derechos del consumidor' }).click();
+  await expect(page).toHaveURL(/#consumidor$/);
+  await expect(page.getByRole('heading', { name: 'Conoce tus derechos como consumidor.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /sede electrónica de la SIC/i })).toHaveAttribute('href', 'https://sedeelectronica.sic.gov.co/');
+});

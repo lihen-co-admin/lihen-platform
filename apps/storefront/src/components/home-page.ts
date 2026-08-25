@@ -171,8 +171,6 @@ export function renderHomePage(): string {
     </section>
 
     <span id="accesorios" hidden></span>
-    <span id="regalos" hidden></span>
-    <span id="nosotros" hidden></span>
   `;
 }
 

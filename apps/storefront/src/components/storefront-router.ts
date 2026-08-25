@@ -1,25 +1,71 @@
 import { bindHomePageInteractions, renderHomePage } from './home-page';
+import { renderStaticContentPage, type StorefrontContentPage } from './static-content-page';
 
-type Route = 'home' | 'catalog';
-let activeRoute: Route | null = null;
+type Route =
+  | { kind: 'home' }
+  | { kind: 'catalog' }
+  | { kind: 'content'; page: StorefrontContentPage };
+
+const contentRouteByHash: Readonly<Record<string, StorefrontContentPage>> = {
+  '#regalos': 'gifts',
+  '#nosotros': 'about',
+  '#terminos': 'terms',
+  '#privacidad': 'privacy',
+  '#cambios-devoluciones': 'returns',
+  '#envios': 'shipping',
+  '#pqrs': 'pqrs',
+  '#consumidor': 'consumer',
+};
+
+let activeRouteKey: string | null = null;
 
 function routeFromHash(): Route {
-  return location.hash.startsWith('#catalogo') ? 'catalog' : 'home';
+  if (location.hash.startsWith('#catalogo')) return { kind: 'catalog' };
+  const contentPage = contentRouteByHash[location.hash];
+  if (contentPage) return { kind: 'content', page: contentPage };
+  return { kind: 'home' };
+}
+
+function routeKey(route: Route): string {
+  return route.kind === 'content' ? `${route.kind}:${route.page}` : route.kind;
+}
+
+function titleForContentPage(page: StorefrontContentPage): string {
+  const titles: Readonly<Record<StorefrontContentPage, string>> = {
+    gifts: 'Ideas para regalar',
+    about: 'Nosotros',
+    terms: 'Términos y condiciones',
+    privacy: 'Política de privacidad',
+    returns: 'Cambios y devoluciones',
+    shipping: 'Política de envíos',
+    pqrs: 'PQRS',
+    consumer: 'Derechos del consumidor',
+  };
+  return `${titles[page]} | LIHEN.CO`;
 }
 
 export async function renderCurrentRoute(root: HTMLElement, force = false): Promise<void> {
   const main = root.querySelector<HTMLElement>('#contenido');
   if (!main) return;
   const route = routeFromHash();
-  if (!force && activeRoute === route) return;
-  activeRoute = route;
+  const key = routeKey(route);
+  if (!force && activeRouteKey === key) return;
+  activeRouteKey = key;
 
-  if (route === 'catalog') {
+  if (route.kind === 'catalog') {
     const { renderCatalogPage, bindCatalogPage } = await import('./catalog-page');
     main.innerHTML = renderCatalogPage();
     await bindCatalogPage(main);
     document.title = 'Catálogo | LIHEN.CO';
     main.focus({ preventScroll: true });
+    return;
+  }
+
+  if (route.kind === 'content') {
+    main.innerHTML = renderStaticContentPage(route.page);
+    document.title = titleForContentPage(route.page);
+    main.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'auto' });
     return;
   }
 
