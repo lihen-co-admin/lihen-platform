@@ -26,7 +26,7 @@ export function renderSiteFooter(): string {
       </div>
       <div class="site-footer__bottom lihen-shell">
         <span>© 2026 LIHEN.CO</span>
-        <span>Beauty Cure | Style</span>
+        <span>Beauty Care | Style</span>
       </div>
     </footer>
   `;

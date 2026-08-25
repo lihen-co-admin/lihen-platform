@@ -55,9 +55,9 @@ export function DashboardPage() {
               <p>Dashboard real y bitácora append-only para operaciones controladas. Los dry-runs no dejan registros.</p>
             </article>
             <article className="card">
-              <span className="card-label">FASE 2.12</span>
-              <strong>Gate final pendiente</strong>
-              <p>Requiere pnpm check, revisión visual final y commit limpio antes de cerrar formalmente Fase 2.</p>
+              <span className="card-label">FASE 2 · CERRADA</span>
+              <strong>Capability operativa · PASS</strong>
+              <p>El gate de integridad de Fase 2 está cerrado en DEV. El rehearsal completo de navegador y go-live pertenece a Fase 7.</p>
             </article>
           </div>
         </>
