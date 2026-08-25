@@ -25,7 +25,7 @@
 .catalog-page__heading h1 { max-width: 760px; margin: .25rem 0 .6rem; font-size: clamp(2.5rem, 6vw, 4.8rem); }
 .catalog-page__heading p { max-width: 650px; margin: 0; color: var(--lihen-color-muted); }
 .catalog-page__home { color: var(--lihen-color-rose-deep); white-space: nowrap; }
-.catalog-filters { display: grid; grid-template-columns: minmax(260px, 1.4fr) 1fr 1.25fr auto auto; gap: .85rem; align-items: end; padding: 1rem; border: 1px solid var(--lihen-color-line); border-radius: var(--lihen-radius-md); background: var(--lihen-color-ivory); }
+.catalog-filters { display: grid; grid-template-columns: minmax(240px, 1.4fr) .8fr 1fr 1.2fr auto auto; gap: .85rem; align-items: end; padding: 1rem; border: 1px solid var(--lihen-color-line); border-radius: var(--lihen-radius-md); background: var(--lihen-color-ivory); }
 .catalog-filters label { display: grid; gap: .4rem; }
 .catalog-filters label > span { font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .catalog-filters input, .catalog-filters select { width: 100%; min-height: 46px; border: 1px solid var(--lihen-color-line); border-radius: var(--lihen-radius-sm); background: white; padding: .7rem .8rem; color: var(--lihen-color-text); font: inherit; }

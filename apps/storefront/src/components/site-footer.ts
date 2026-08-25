@@ -1,4 +1,5 @@
 import lihenLogoUrl from '../assets/brand/lihen-logo-official.png';
+import { buildCatalogHref } from './catalog-navigation';
 
 export function renderSiteFooter(): string {
   return `
@@ -11,8 +12,8 @@ export function renderSiteFooter(): string {
         </div>
         <div>
           <h2>Explora</h2>
-          <a href="#beauty">Beauty Care</a>
-          <a href="#style">Style</a>
+          <a href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">Beauty Care</a>
+          <a href="${buildCatalogHref({ businessLine: 'STYLE' })}">Style</a>
           <a href="#marcas">Marcas</a>
           <a href="#experiencia">Experiencia LIHEN</a>
         </div>

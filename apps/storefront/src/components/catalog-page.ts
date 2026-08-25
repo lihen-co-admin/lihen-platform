@@ -36,7 +36,7 @@ function readState(): CatalogState {
   };
 }
 
-function writeState(state: CatalogState): void {
+function writeState(state: CatalogState, mode: 'push' | 'replace' = 'push'): void {
   const params = new URLSearchParams();
   if (state.query) params.set('q', state.query);
   if (state.businessLine) params.set('business_line', state.businessLine);
@@ -44,7 +44,7 @@ function writeState(state: CatalogState): void {
   if (state.category) params.set('category', state.category);
   if (state.page > 1) params.set('page', String(state.page));
   const query = params.toString();
-  history.replaceState(null, '', `#catalogo${query ? `?${query}` : ''}`);
+  history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', `#catalogo${query ? `?${query}` : ''}`);
 }
 
 function options(values: readonly string[], selected: string, emptyLabel: string): string {
@@ -72,6 +72,7 @@ export function renderCatalogPage(): string {
       </div>
       <form class="catalog-filters" data-catalog-filters role="search">
         <label class="catalog-search"><span>Buscar</span><input type="search" name="q" value="${escapeHtml(state.query)}" placeholder="Producto, marca o SKU" autocomplete="off" /></label>
+        <label><span>Línea</span><select name="business_line"><option value="BEAUTY_CARE" ${state.businessLine === 'BEAUTY_CARE' ? 'selected' : ''}>Beauty Care</option><option value="STYLE" ${state.businessLine === 'STYLE' ? 'selected' : ''}>Style</option></select></label>
         <label><span>Marca</span><select name="brand">${options(knownBrands, state.brand, 'Todas las marcas')}</select></label>
         <label><span>Categoría</span><select name="category">${options(knownCategories, state.category, 'Todas las categorías')}</select></label>
         <button class="lihen-button lihen-button--dark" type="submit">Buscar</button>
@@ -104,7 +105,9 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
       grid.setAttribute('aria-busy', 'false');
       status.textContent = page.items.length > 0
         ? `Página ${state.page} · ${page.items.length} productos mostrados${page.hasMore ? ' · hay más resultados' : ''}.`
-        : 'No encontramos productos con esos filtros.';
+        : state.businessLine === 'STYLE' && !state.query && !state.brand && !state.category
+          ? 'Aún no hay productos Style publicados. Estamos preparando esta colección con información e imágenes verificadas.'
+          : 'No encontramos productos con esos filtros.';
       bindProductInteractions(grid, page.items, openProductDetail);
 
       const prevDisabled = state.page <= 1;
@@ -137,7 +140,7 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
     const data = new FormData(form);
     state = {
       query: String(data.get('q') ?? '').trim(),
-      businessLine: 'BEAUTY_CARE',
+      businessLine: String(data.get('business_line') ?? 'BEAUTY_CARE'),
       brand: String(data.get('brand') ?? ''),
       category: String(data.get('category') ?? ''),
       page: 1,
@@ -147,8 +150,11 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
   });
 
   clear.addEventListener('click', () => {
+    const businessLine = state.businessLine;
     form.reset();
-    state = { query: '', businessLine: 'BEAUTY_CARE', brand: '', category: '', page: 1 };
+    const businessLineSelect = form.elements.namedItem('business_line');
+    if (businessLineSelect instanceof HTMLSelectElement) businessLineSelect.value = businessLine;
+    state = { query: '', businessLine, brand: '', category: '', page: 1 };
     writeState(state);
     void load();
   });

@@ -13,6 +13,7 @@ import kabaLogoUrl from '../assets/home/brands/kaba.webp';
 import destinyLogoUrl from '../assets/home/brands/destiny-by-la-segura.webp';
 import aniKLogoUrl from '../assets/home/brands/ani-k.webp';
 import dluchiLogoUrl from '../assets/home/brands/d-luchi.webp';
+import { buildCatalogHref } from './catalog-navigation';
 
 interface HomeBrand {
   name: string;
@@ -35,11 +36,11 @@ const visibleBeautyBrands: readonly HomeBrand[] = [
 
 function renderBrand(brand: HomeBrand): string {
   return `
-    <article class="home-brand" aria-label="${brand.name}, ${brand.productCount} productos visibles">
+    <a class="home-brand" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE', brand: brand.name })}" aria-label="Ver ${brand.productCount} referencias de ${brand.name}">
       <div class="home-brand__logo"><img src="${brand.logoUrl}" alt="${brand.name}" /></div>
       <strong>${brand.name}</strong>
       <span>${brand.productCount} referencias</span>
-    </article>
+    </a>
   `;
 }
 
@@ -53,8 +54,8 @@ export function renderHomePage(): string {
             <h1 class="lihen-display">Detalles que acompañan tu esencia.</h1>
             <p>Productos seleccionados para cuidarte, expresarte y disfrutar cada momento con intención.</p>
             <div class="home-hero__actions">
-              <a class="lihen-button lihen-button--dark" href="#beauty">Explorar Beauty Care</a>
-              <a class="lihen-button lihen-button--light" href="#style">Ver Style</a>
+              <a class="lihen-button lihen-button--dark" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">Explorar Beauty Care</a>
+              <a class="lihen-button lihen-button--light" href="${buildCatalogHref({ businessLine: 'STYLE' })}">Ver Style</a>
             </div>
           </div>
           <div class="home-hero__editorial-media">
@@ -62,10 +63,10 @@ export function renderHomePage(): string {
           </div>
         </article>
 
-        <a class="home-hero__slide home-hero__slide--banner" data-home-slide href="#beauty" aria-label="Descubrir Beauty Care y Style">
+        <a class="home-hero__slide home-hero__slide--banner" data-home-slide href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}" aria-label="Descubrir Beauty Care y Style">
           <img src="${bannerRepresentationUrl}" alt="¿Qué te representa? Beauty y Style" />
         </a>
-        <a class="home-hero__slide home-hero__slide--banner" data-home-slide href="#style" aria-label="Explorar Style">
+        <a class="home-hero__slide home-hero__slide--banner" data-home-slide href="${buildCatalogHref({ businessLine: 'STYLE' })}" aria-label="Explorar Style">
           <img src="${bannerStyleUrl}" alt="LIHEN.CO, estilo que te impulsa" />
         </a>
         <a class="home-hero__slide home-hero__slide--banner" data-home-slide href="#experiencia" aria-label="Conocer la identidad LIHEN.CO">
@@ -84,13 +85,13 @@ export function renderHomePage(): string {
         <h2 class="lihen-display" id="home-categories-title">Algo especial para cada momento.</h2>
       </div>
       <div class="home-category-grid lihen-shell">
-        <a class="home-category home-category--rose" href="#beauty">
+        <a class="home-category home-category--rose" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">
           <span>Beauty Care</span><small>Maquillaje y cuidado</small>
         </a>
-        <a class="home-category home-category--cream" href="#beauty">
+        <a class="home-category home-category--cream" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">
           <span>Cuidado</span><small>Rutinas para ti</small>
         </a>
-        <a class="home-category home-category--lilac" href="#style">
+        <a class="home-category home-category--lilac" href="${buildCatalogHref({ businessLine: 'STYLE' })}">
           <span>Style</span><small>Moda que te representa</small>
         </a>
         <a class="home-category home-category--gold" href="#marcas">
@@ -136,7 +137,7 @@ export function renderHomePage(): string {
           ${visibleBeautyBrands.map(renderBrand).join('')}
         </div>
       </div>
-      <p class="home-brands__note lihen-shell">Los conteos corresponden al universo visible validado en DEV al cierre de FASE 5.5. El filtrado interactivo se conecta en FASE 5.7.</p>
+      <p class="home-brands__note lihen-shell">Selecciona una marca para ver sus referencias publicadas en el catálogo.</p>
     </section>
 
     <section class="product-rail lihen-shell" data-product-rail="discover" aria-label="Productos destacados"><p class="product-rail__error">Cargando selección LIHEN…</p></section>
@@ -149,7 +150,7 @@ export function renderHomePage(): string {
           <p class="lihen-eyebrow">LIHEN Style</p>
           <h2 class="lihen-display" id="style-title">Estilo que se mueve contigo.</h2>
           <p>La línea Style conserva su espacio editorial en la experiencia LIHEN. Sus productos se incorporarán al storefront únicamente cuando formen parte de la proyección canónica publicada.</p>
-          <a class="lihen-button lihen-button--light" href="#experiencia">Conocer la experiencia LIHEN</a>
+          <a class="lihen-button lihen-button--light" href="${buildCatalogHref({ businessLine: 'STYLE' })}">Ver colección Style</a>
         </div>
         <div class="home-style__media"><img src="${bannerStyleUrl}" alt="LIHEN.CO Style, estilo que te impulsa" /></div>
       </div>

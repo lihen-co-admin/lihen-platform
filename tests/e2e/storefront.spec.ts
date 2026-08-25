@@ -18,7 +18,7 @@ interface MockProduct {
   availability: 'AVAILABLE' | 'LOW_STOCK' | 'COMING_SOON' | 'OUT_OF_STOCK';
 }
 
-const products: MockProduct[] = Array.from({ length: 40 }, (_, index) => ({
+const beautyProducts: MockProduct[] = Array.from({ length: 40 }, (_, index) => ({
   product_id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
   sku: `BC-${String(900 + index)}`,
   slug: `producto-e2e-${index + 1}`,
@@ -34,6 +34,24 @@ const products: MockProduct[] = Array.from({ length: 40 }, (_, index) => ({
   availability: index % 4 === 0 ? 'AVAILABLE' : index % 4 === 1 ? 'LOW_STOCK' : index % 4 === 2 ? 'COMING_SOON' : 'OUT_OF_STOCK',
 }));
 
+const styleProducts: MockProduct[] = Array.from({ length: 4 }, (_, index) => ({
+  product_id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+  sku: `ST-${String(index + 1).padStart(3, '0')}`,
+  slug: `style-e2e-${index + 1}`,
+  product_name: `Style E2E ${index + 1}`,
+  business_line: 'STYLE',
+  brand: null,
+  category: 'ROPA DEPORTIVA',
+  subcategory: null,
+  description: 'Producto Style controlado para navegación E2E.',
+  sale_price: 45000 + index * 5000,
+  main_image_url: image,
+  image_urls: [image],
+  availability: 'AVAILABLE',
+}));
+
+const products: MockProduct[] = [...beautyProducts, ...styleProducts];
+
 async function mockStorefrontRpc(page: Page): Promise<void> {
   await page.route('**/rest/v1/rpc/get_storefront_products_controlled', async (route: Route) => {
     const request = route.request();
@@ -41,10 +59,12 @@ async function mockStorefrontRpc(page: Page): Promise<void> {
       p_limit?: number;
       p_offset?: number;
       p_query?: string | null;
+      p_business_line?: string | null;
       p_brand?: string | null;
       p_category?: string | null;
     };
     let rows = [...products];
+    if (body.p_business_line) rows = rows.filter((product) => product.business_line === body.p_business_line);
     if (body.p_query) {
       const query = body.p_query.toLowerCase();
       rows = rows.filter((product) => [product.product_name, product.brand ?? '', product.sku].some((value) => value.toLowerCase().includes(query)));
@@ -75,6 +95,48 @@ test('home loads canonical product rails without legacy runtime data', async ({ 
   await expect(page.locator('[data-product-card]')).toHaveCount(20);
 });
 
+test('Beauty Care and Style navigation open the canonical catalog with the selected business line', async ({ page }) => {
+  await page.goto('/');
+  const footer = page.locator('footer');
+  await expect(footer.getByRole('link', { name: 'Beauty Care' })).toHaveAttribute('href', '#catalogo?business_line=BEAUTY_CARE');
+  await expect(footer.getByRole('link', { name: 'Style' })).toHaveAttribute('href', '#catalogo?business_line=STYLE');
+
+  await page.getByRole('link', { name: 'Explorar Beauty Care' }).click();
+  await expect(page).toHaveURL(/#catalogo\?business_line=BEAUTY_CARE/);
+  await expect(page.getByLabel('Línea')).toHaveValue('BEAUTY_CARE');
+  await expect(page.locator('[data-product-card]')).toHaveCount(24);
+
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Algo especial para cada momento.' })).toBeVisible();
+  await page.getByRole('link', { name: 'Ver Style' }).click();
+  await expect(page).toHaveURL(/#catalogo\?business_line=STYLE/);
+  await expect(page.getByLabel('Línea')).toHaveValue('STYLE');
+  await expect(page.locator('[data-product-card]')).toHaveCount(4);
+  await expect(page.getByText('Style E2E 1')).toBeVisible();
+});
+
+test('brand cards navigate to filtered references and browser history restores catalog state', async ({ page }) => {
+  await page.goto('/#marcas');
+  await page.getByRole('link', { name: /referencias de Bloomshell/ }).click();
+  await expect(page).toHaveURL(/business_line=BEAUTY_CARE.*brand=Bloomshell/);
+  await expect(page.locator('[data-product-card]')).toHaveCount(12);
+  await expect(page.getByLabel('Marca')).toHaveValue('Bloomshell');
+
+  await page.getByLabel('Marca').selectOption('Atenea');
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await expect(page).toHaveURL(/brand=Atenea/);
+  await expect(page.locator('[data-product-card]')).toHaveCount(12);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/brand=Bloomshell/);
+  await expect(page.getByLabel('Marca')).toHaveValue('Bloomshell');
+  await expect(page.locator('[data-product-card]')).toHaveCount(12);
+
+  await page.goForward();
+  await expect(page).toHaveURL(/brand=Atenea/);
+  await expect(page.getByLabel('Marca')).toHaveValue('Atenea');
+});
+
 test('catalog supports search, filters and pagination through the controlled RPC', async ({ page }) => {
   await page.goto('/#catalogo');
   await expect(page.getByRole('heading', { name: 'Encuentra tu próximo favorito.' })).toBeVisible();
@@ -88,6 +150,7 @@ test('catalog supports search, filters and pagination through the controlled RPC
   await expect(page).toHaveURL(/q=Labial\+E2E/);
 
   await page.getByRole('button', { name: 'Limpiar' }).click();
+  await expect(page.getByLabel('Línea')).toHaveValue('BEAUTY_CARE');
   await expect(page.locator('[data-product-card]')).toHaveCount(24);
   await page.getByRole('button', { name: 'Siguiente →' }).click();
   await expect(page).toHaveURL(/page=2/);

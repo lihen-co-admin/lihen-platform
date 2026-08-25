@@ -1,3 +1,4 @@
+import { buildCatalogHref } from './catalog-navigation';
 import { getStorefrontProducts } from './storefront-api';
 import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
@@ -24,7 +25,7 @@ async function hydrateRail(config: RailConfig): Promise<void> {
     host.innerHTML = `
       <div class="product-rail__heading">
         <div><p class="lihen-eyebrow">${config.eyebrow}</p><h2 class="lihen-display">${config.title}</h2></div>
-        <a href="#catalogo">Ver catálogo</a>
+        <a href="${buildCatalogHref({ businessLine: config.query?.businessLine as 'BEAUTY_CARE' | 'STYLE' | undefined, brand: config.query?.brand })}">Ver catálogo</a>
       </div>
       <div class="product-rail__viewport" tabindex="0">
         <div class="product-rail__track">${page.items.map((product, index) => renderProductCard(product, index < 2)).join('')}</div>

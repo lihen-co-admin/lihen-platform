@@ -1,3 +1,5 @@
+import { buildCatalogHref } from './catalog-navigation';
+
 export interface NavigationLink {
   readonly label: string;
   readonly href: string;
@@ -63,8 +65,8 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
       {
         title: 'Explora',
         links: [
-          { label: 'Ver catálogo', href: '#catalogo' },
-          { label: 'Beauty Care', href: '#catalogo?business_line=BEAUTY_CARE' },
+          { label: 'Ver catálogo', href: buildCatalogHref({ businessLine: 'BEAUTY_CARE' }) },
+          { label: 'Beauty Care', href: buildCatalogHref({ businessLine: 'BEAUTY_CARE' }) },
           { label: 'Accesorios', href: '#catalogo?category=ACCESORIOS+PARA+MAQUILLAJE' },
         ],
       },
@@ -82,7 +84,7 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
     kind: 'mega',
     key: 'beauty',
     label: 'Belleza',
-    href: '#catalogo?business_line=BEAUTY_CARE',
+    href: buildCatalogHref({ businessLine: 'BEAUTY_CARE' }),
     eyebrow: 'Beauty Care',
     title: 'Belleza para tu forma de cuidarte',
     description: 'Navegación basada en las categorías canónicas actualmente publicadas para Beauty Care.',
@@ -96,7 +98,7 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
     kind: 'mega',
     key: 'style',
     label: 'Moda',
-    href: '#style',
+    href: buildCatalogHref({ businessLine: 'STYLE' }),
     eyebrow: 'LIHEN Style',
     title: 'Tu estilo también vive aquí',
     description: 'La línea Style conserva su lugar en la experiencia LIHEN y se alimentará únicamente con referencias canónicas publicadas.',
@@ -105,14 +107,14 @@ export const storefrontNavigation: readonly StorefrontNavigationItem[] = [
       {
         title: 'Explora Style',
         links: [
-          { label: 'Colección Style', href: '#style' },
-          { label: 'Novedades Style', href: '#style' },
+          { label: 'Colección Style', href: buildCatalogHref({ businessLine: 'STYLE' }) },
+          { label: 'Novedades Style', href: buildCatalogHref({ businessLine: 'STYLE' }) },
         ],
       },
       {
         title: 'Compra informada',
         links: [
-          { label: 'Consulta disponibilidad', href: '#style' },
+          { label: 'Consulta disponibilidad', href: buildCatalogHref({ businessLine: 'STYLE' }) },
           { label: 'Atención personalizada', href: '#experiencia' },
         ],
       },

@@ -28,10 +28,14 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
   const { hydrateHomeProductRails } = await import('./home-product-rails');
   void hydrateHomeProductRails(main);
   document.title = 'LIHEN.CO | Beauty Care & Style';
+  const anchor = location.hash.replace(/^#/, '').split('?')[0];
+  if (anchor && anchor !== 'inicio') {
+    requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: 'start' }));
+  }
 }
 
 export function bindStorefrontRouter(root: HTMLElement): void {
   window.addEventListener('hashchange', () => {
-    void renderCurrentRoute(root);
+    void renderCurrentRoute(root, true);
   });
 }
