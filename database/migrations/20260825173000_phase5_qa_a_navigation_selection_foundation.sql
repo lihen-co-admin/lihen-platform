@@ -73,7 +73,9 @@ begin
       or (
         v_collection='CARE'
         and p.business_line='BEAUTY_CARE'
-        and lower(concat_ws(' ',p.name,coalesce(b.name,p.brand,''),coalesce(c.name,p.category,''),coalesce(p.subcategory,''),coalesce(p.description,''))) similar to '%(cuidado|skincare|skin care|serum|sérum|shampoo|champu|champú|acondicionador|tratamiento|mascarilla|crema|locion|loción|corporal|capilar|cabello|piel|exfoliante|mantequilla|gel de ducha|hidratante|protector solar|bloqueador)%'
+        and lower(concat_ws(' ',p.name,coalesce(p.subcategory,''),coalesce(p.description,'')))
+          ~ '(cuidado|skincare|skin care|shampoo|champu|champú|acondicionador|acondi|tratamiento|mascarilla|crema|locion|loción|corporal|capilar|cabello|piel|exfoliante|mantequilla|gel de ducha|protector solar|bloqueador|aceite corporal|aceite de puntas|bioterapia|biomascarilla|bruma facial|tonico|tónico|limpiador|agua micelar|desodorante|antitranspirante|jabon|jabón|contorno de ojos|balsamo|bálsamo|leave in|termoprotector|protector termico|protector térmico|queratina|keratina|ampolla|hidratante|serum|sérum)'
+        and lower(p.name) !~ '(gloss|labial|rubor|tinta|sombra|delineador|pestañ|ceja|corrector|iluminador|lip[[:space:]-]|polvo compacto|base maquillaje|base de maquillaje)'
       )
     )
   order by p.business_line,coalesce(b.name,p.brand,''),coalesce(c.name,p.category,''),p.name,p.id
