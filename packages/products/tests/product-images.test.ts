@@ -77,6 +77,28 @@ describe('FASE 1.7 product images', () => {
     ])).toThrow(/more than one main image/i);
   });
 
+  it('preserves Media V2 provenance and rendition metadata when changing main state', () => {
+    const image = new ProductImage({
+      id: 'img-media-v2',
+      productId: 'p-1',
+      publicUrl: 'https://example.com/card.webp',
+      isMain: false,
+      sortOrder: 0,
+      sourceType: 'CATALOG_EVIDENCE_CROP',
+      sourceId: 'source-1',
+      assetRole: 'DERIVATIVE',
+      derivativeProfile: 'WEB_CARD',
+    });
+
+    const main = image.withMain(true);
+
+    expect(main.isMain).toBe(true);
+    expect(main.sourceType).toBe('CATALOG_EVIDENCE_CROP');
+    expect(main.sourceId).toBe('source-1');
+    expect(main.assetRole).toBe('DERIVATIVE');
+    expect(main.derivativeProfile).toBe('WEB_CARD');
+  });
+
   it('maps legacy main_image_url into a canonical main ProductImage without writing anything', () => {
     const image = LegacyMainImageBackfillMapper.toProductImage({
       imageId: 'legacy-img-1',

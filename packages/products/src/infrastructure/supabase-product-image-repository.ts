@@ -1,5 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { ProductImage } from '../domain/product-image';
+import type {
+  ProductImageAssetRole,
+  ProductImageDerivativeProfile,
+  ProductImageSourceType,
+  ProductImageStatus,
+} from '../domain/product-image';
 import {
   ProductImageIdConflictError,
   ProductImageNotFoundError,
@@ -25,8 +31,13 @@ function mapProductImageRow(row: Record<string, unknown>): ProductImage {
     ...(row.alt_text ? { altText: String(row.alt_text) } : {}),
     isMain: Boolean(row.is_main),
     sortOrder: Number(row.sort_order),
-    sourceType: String(row.source_type) as 'MANUAL' | 'LEGACY_MAIN_IMAGE_URL' | 'STORAGE',
-    status: String(row.status) as 'ACTIVE' | 'ARCHIVED',
+    sourceType: String(row.source_type) as ProductImageSourceType,
+    status: String(row.status) as ProductImageStatus,
+    ...(row.source_id ? { sourceId: String(row.source_id) } : {}),
+    ...(row.asset_role ? { assetRole: String(row.asset_role) as ProductImageAssetRole } : {}),
+    ...(row.derivative_profile
+      ? { derivativeProfile: String(row.derivative_profile) as ProductImageDerivativeProfile }
+      : {}),
   });
 }
 

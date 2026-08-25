@@ -1,5 +1,25 @@
-export type ProductImageSourceType = 'MANUAL' | 'LEGACY_MAIN_IMAGE_URL' | 'STORAGE';
+export type ProductImageSourceType =
+  | 'MANUAL'
+  | 'LEGACY_MAIN_IMAGE_URL'
+  | 'STORAGE'
+  | 'ORIGINAL'
+  | 'OFFICIAL_WEB'
+  | 'SUPPLIER_PDF'
+  | 'CATALOG_EVIDENCE_CROP'
+  | 'VERIFIED_EXTERNAL'
+  | 'HUMAN_PROVIDED';
+
 export type ProductImageStatus = 'ACTIVE' | 'ARCHIVED';
+
+export type ProductImageAssetRole =
+  | 'MASTER_COPY'
+  | 'PUBLISHED_PRIMARY'
+  | 'DERIVATIVE';
+
+export type ProductImageDerivativeProfile =
+  | 'WEB_CARD'
+  | 'WEB_DETAIL'
+  | 'CATALOG_PDF';
 
 export interface ProductImageProps {
   readonly id: string;
@@ -10,6 +30,9 @@ export interface ProductImageProps {
   readonly sortOrder: number;
   readonly sourceType: ProductImageSourceType;
   readonly status?: ProductImageStatus;
+  readonly sourceId?: string;
+  readonly assetRole?: ProductImageAssetRole;
+  readonly derivativeProfile?: ProductImageDerivativeProfile;
 }
 
 export class ProductImage {
@@ -21,6 +44,9 @@ export class ProductImage {
   public readonly sortOrder: number;
   public readonly sourceType: ProductImageSourceType;
   public readonly status: ProductImageStatus;
+  public readonly sourceId: string | undefined;
+  public readonly assetRole: ProductImageAssetRole;
+  public readonly derivativeProfile: ProductImageDerivativeProfile | undefined;
 
   public constructor(props: ProductImageProps) {
     if (!props.productId.trim()) throw new Error('Product image productId is required.');
@@ -37,6 +63,9 @@ export class ProductImage {
     this.sortOrder = props.sortOrder;
     this.sourceType = props.sourceType;
     this.status = props.status ?? 'ACTIVE';
+    this.sourceId = props.sourceId?.trim() || undefined;
+    this.assetRole = props.assetRole ?? 'DERIVATIVE';
+    this.derivativeProfile = props.derivativeProfile;
   }
 
   public withMain(isMain: boolean): ProductImage {
@@ -49,6 +78,9 @@ export class ProductImage {
       sortOrder: this.sortOrder,
       sourceType: this.sourceType,
       status: this.status,
+      ...(this.sourceId ? { sourceId: this.sourceId } : {}),
+      assetRole: this.assetRole,
+      ...(this.derivativeProfile ? { derivativeProfile: this.derivativeProfile } : {}),
     });
   }
 }
