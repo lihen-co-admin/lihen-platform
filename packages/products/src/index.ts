@@ -77,3 +77,5 @@ export * from './domain/events/product-sale-price-changed.event';
 export * from './strategies/product-import-decision.strategy';
 
 export * from './domain/style-product-readiness';
+
+export * from './domain/style-product-identity-taxonomy-dry-run';
