@@ -1,6 +1,19 @@
 import type { StorefrontBrand } from './storefront-brand';
 import type { StorefrontProduct, StorefrontProductPage, StorefrontProductQuery } from './storefront-product';
+import { legacyMedia, type StorefrontMedia, type StorefrontMediaProfile } from './storefront-media';
 import { getStorefrontRuntimeConfig } from './storefront-runtime-config';
+
+
+function normalizeMedia(value: unknown): StorefrontMedia | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.url !== 'string' || !row.url.trim()) return null;
+  const width = Number(row.width);
+  const height = Number(row.height);
+  if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) return null;
+  if (!['WEB_CARD', 'WEB_DETAIL', 'CATALOG_PDF'].includes(String(row.profile))) return null;
+  return { url: row.url, width, height, profile: row.profile as StorefrontMediaProfile };
+}
 
 function normalizeProduct(value: unknown): StorefrontProduct | null {
   if (!value || typeof value !== 'object') return null;
@@ -21,6 +34,9 @@ function normalizeProduct(value: unknown): StorefrontProduct | null {
     sale_price: typeof row.sale_price === 'number' || typeof row.sale_price === 'string' ? row.sale_price : 0,
     main_image_url: row.main_image_url,
     image_urls: Array.isArray(row.image_urls) ? row.image_urls.filter((url): url is string => typeof url === 'string') : [row.main_image_url],
+    card_media: normalizeMedia(row.card_media) ?? legacyMedia(row.main_image_url),
+    detail_media: normalizeMedia(row.detail_media),
+    gallery_media: Array.isArray(row.gallery_media) ? row.gallery_media.map(normalizeMedia).filter((media): media is StorefrontMedia => media !== null) : [],
     availability: row.availability as StorefrontProduct['availability'],
   };
 }
@@ -29,22 +45,26 @@ export async function getStorefrontProducts(query: StorefrontProductQuery = {}):
   const config = getStorefrontRuntimeConfig();
   const requestedLimit = Math.min(Math.max(query.limit ?? 24, 1), 100);
   const fetchLimit = Math.min(requestedLimit + 1, 100);
-  const response = await fetch(`${config.url}/rest/v1/rpc/get_storefront_products_controlled`, {
+  const body = JSON.stringify({
+    p_limit: fetchLimit,
+    p_offset: Math.max(query.offset ?? 0, 0),
+    p_query: query.query?.trim() || null,
+    p_business_line: query.businessLine || null,
+    p_brand: query.brand || null,
+    p_category: query.category || null,
+  });
+  const request = (rpc: string) => fetch(`${config.url}/rest/v1/rpc/${rpc}`, {
     method: 'POST',
     headers: {
       apikey: config.publishableKey,
       Authorization: `Bearer ${config.publishableKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      p_limit: fetchLimit,
-      p_offset: Math.max(query.offset ?? 0, 0),
-      p_query: query.query?.trim() || null,
-      p_business_line: query.businessLine || null,
-      p_brand: query.brand || null,
-      p_category: query.category || null,
-    }),
+    body,
   });
+
+  let response = await request('get_storefront_products_media_v2_controlled');
+  if (response.status === 404) response = await request('get_storefront_products_controlled');
 
   if (!response.ok) {
     throw new Error(`No fue posible cargar el catálogo (${response.status}).`);

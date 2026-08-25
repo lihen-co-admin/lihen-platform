@@ -95,3 +95,7 @@ body.selection-open { overflow: hidden; }
   .product-card__name { font-size: .9rem; }
   .product-card__availability { top: .5rem; left: .5rem; font-size: .56rem; }
 }
+
+/* F5-M2: never visually upscale a WEB_CARD fallback inside the detail hero. */
+.product-dialog__hero--fallback { display: grid; place-items: center; min-height: 176px; aspect-ratio: auto; }
+.product-dialog__hero--fallback img { width: auto; height: auto; max-width: min(100%, 345px); max-height: 176px; object-fit: contain; }

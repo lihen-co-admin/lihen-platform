@@ -1,3 +1,5 @@
+import type { StorefrontMedia } from './storefront-media';
+
 export type StorefrontAvailability = 'AVAILABLE' | 'LOW_STOCK' | 'COMING_SOON' | 'OUT_OF_STOCK';
 
 export interface StorefrontProduct {
@@ -13,6 +15,9 @@ export interface StorefrontProduct {
   sale_price: string | number;
   main_image_url: string;
   image_urls: string[];
+  card_media: StorefrontMedia | null;
+  detail_media: StorefrontMedia | null;
+  gallery_media: StorefrontMedia[];
   availability: StorefrontAvailability;
 }
 

@@ -1,5 +1,6 @@
 import { availabilityLabel, escapeHtml, money, type StorefrontProduct } from './storefront-product';
 import { buildProductWhatsAppUrl } from './whatsapp';
+import { legacyMedia, mediaAttributes, type StorefrontMedia } from './storefront-media';
 import { isSelected, toggleSelection, type SelectedProduct } from './selection-store';
 
 function asSelectedProduct(product: StorefrontProduct): SelectedProduct {
@@ -24,7 +25,15 @@ export function openProductDetail(product: StorefrontProduct): void {
   const dialog = document.createElement('dialog');
   dialog.className = 'product-dialog';
   dialog.dataset.productDialog = product.product_id;
-  const images = product.image_urls.length > 0 ? product.image_urls : [product.main_image_url];
+  const cardFallback = product.card_media ?? legacyMedia(product.main_image_url);
+  const detailMedia = product.detail_media;
+  const images: StorefrontMedia[] = product.gallery_media.length > 0
+    ? product.gallery_media
+    : detailMedia
+      ? [detailMedia]
+      : [cardFallback];
+  const detailFallback = !detailMedia;
+  const heroMedia = images[0] ?? cardFallback;
   const selected = isSelected(product.product_id);
   const name = escapeHtml(product.product_name);
 
@@ -32,8 +41,8 @@ export function openProductDetail(product: StorefrontProduct): void {
     <div class="product-dialog__panel">
       <button class="product-dialog__close" type="button" data-dialog-close aria-label="Cerrar">×</button>
       <div class="product-dialog__gallery">
-        <div class="product-dialog__hero"><img src="${images[0]}" alt="${name}" decoding="async" /></div>
-        ${images.length > 1 ? `<div class="product-dialog__thumbs">${images.map((url, index) => `<button type="button" data-dialog-image="${index}" aria-label="Ver imagen ${index + 1}"><img src="${url}" alt="" loading="lazy" decoding="async" /></button>`).join('')}</div>` : ''}
+        <div class="product-dialog__hero ${detailFallback ? 'product-dialog__hero--fallback' : ''}"><img ${mediaAttributes(heroMedia, '(max-width: 720px) 92vw, 560px', { priority: true, fallback: detailFallback })} alt="${name}" /></div>
+        ${images.length > 1 ? `<div class="product-dialog__thumbs">${images.map((media, index) => `<button type="button" data-dialog-image="${index}" aria-label="Ver imagen ${index + 1}"><img ${mediaAttributes(media, '70px')} alt="" /></button>`).join('')}</div>` : ''}
       </div>
       <div class="product-dialog__content">
         <p class="lihen-eyebrow">${escapeHtml(product.brand ?? 'LIHEN.CO')}</p>
@@ -62,7 +71,13 @@ export function openProductDetail(product: StorefrontProduct): void {
     button.addEventListener('click', () => {
       const index = Number(button.dataset.dialogImage ?? '0');
       const hero = dialog.querySelector<HTMLImageElement>('.product-dialog__hero img');
-      if (hero && images[index]) hero.src = images[index];
+      const media = images[index];
+      if (hero && media) {
+        hero.src = media.url;
+        hero.srcset = `${media.url} ${media.width}w`;
+        hero.width = media.width;
+        hero.height = media.height;
+      }
     });
   });
   dialog.querySelector<HTMLButtonElement>('[data-dialog-select]')?.addEventListener('click', (event) => {

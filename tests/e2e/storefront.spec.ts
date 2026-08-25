@@ -15,6 +15,9 @@ interface MockProduct {
   sale_price: number;
   main_image_url: string;
   image_urls: string[];
+  card_media: { url:string; width:number; height:number; profile:'WEB_CARD' };
+  detail_media: { url:string; width:number; height:number; profile:'WEB_DETAIL' } | null;
+  gallery_media: Array<{ url:string; width:number; height:number; profile:'WEB_DETAIL' }>;
   availability: 'AVAILABLE' | 'LOW_STOCK' | 'COMING_SOON' | 'OUT_OF_STOCK';
 }
 
@@ -31,6 +34,9 @@ const beautyProducts: MockProduct[] = Array.from({ length: 40 }, (_, index) => (
   sale_price: 10000 + index * 1000,
   main_image_url: image,
   image_urls: [image, `${image}%23${index + 1}`],
+  card_media: { url:image, width:600, height:600, profile:'WEB_CARD' },
+  detail_media: { url:image, width:600, height:600, profile:'WEB_DETAIL' },
+  gallery_media: [{ url:image, width:600, height:600, profile:'WEB_DETAIL' }],
   availability: index % 4 === 0 ? 'AVAILABLE' : index % 4 === 1 ? 'LOW_STOCK' : index % 4 === 2 ? 'COMING_SOON' : 'OUT_OF_STOCK',
 }));
 
@@ -47,6 +53,9 @@ const styleProducts: MockProduct[] = Array.from({ length: 4 }, (_, index) => ({
   sale_price: 45000 + index * 5000,
   main_image_url: image,
   image_urls: [image],
+  card_media: { url:image, width:600, height:600, profile:'WEB_CARD' },
+  detail_media: null,
+  gallery_media: [],
   availability: 'AVAILABLE',
 }));
 
@@ -74,7 +83,7 @@ function mockBrandsForLine(businessLine: string): MockBrand[] {
 }
 
 async function mockStorefrontRpc(page: Page): Promise<void> {
-  await page.route('**/rest/v1/rpc/get_storefront_products_controlled', async (route: Route) => {
+  await page.route('**/rest/v1/rpc/get_storefront_products_media_v2_controlled', async (route: Route) => {
     const request = route.request();
     const body = request.postDataJSON() as {
       p_limit?: number;
@@ -124,6 +133,11 @@ test('home loads canonical product rails without legacy runtime data', async ({ 
   await expect(page.getByRole('link', { name: /LIHEN.CO/i }).first()).toBeVisible();
   await expect(page.getByText('Descubre productos del catálogo.')).toBeVisible();
   await expect(page.locator('[data-product-card]')).toHaveCount(20);
+  const firstImage = page.locator('[data-product-card] img').first();
+  await expect(firstImage).toHaveAttribute('srcset', /600w/);
+  await expect(firstImage).toHaveAttribute('sizes', /vw|px/);
+  await expect(firstImage).toHaveAttribute('width', '600');
+  await expect(firstImage).toHaveAttribute('height', '600');
 });
 
 test('Beauty Care and Style navigation open the canonical catalog with the selected business line', async ({ page }) => {
@@ -209,6 +223,8 @@ test('product detail, selection persistence and WhatsApp consultation work toget
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: 'Labial E2E LIHEN' })).toBeVisible();
   await expect(dialog.getByText('BC-900')).toBeVisible();
+  await expect(dialog.locator('.product-dialog__hero img')).toHaveAttribute('srcset', /600w/);
+  await expect(dialog.locator('.product-dialog__hero img')).not.toHaveAttribute('data-media-fallback', 'true');
   await dialog.getByRole('button', { name: 'Agregar a mi selección' }).click();
   await dialog.getByRole('button', { name: 'Cerrar' }).click();
 
