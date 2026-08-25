@@ -29,6 +29,8 @@ export interface StorefrontProductQuery {
   brand?: string | null;
   category?: string | null;
   collection?: 'CARE' | null;
+  maxPrice?: number | null;
+  availableOnly?: boolean | null;
 }
 
 export interface StorefrontProductPage {

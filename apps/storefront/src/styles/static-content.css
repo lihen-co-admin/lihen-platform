@@ -35,3 +35,21 @@
   .content-page__panel { align-items: flex-start; flex-direction: column; }
   .site-footer__grid { grid-template-columns: 1fr; }
 }
+
+
+.gifts-catalog { min-height: 68vh; padding: clamp(3rem, 6vw, 5rem) 0 var(--lihen-section-space); background: #fff; }
+.gifts-catalog__hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--lihen-color-line); }
+.gifts-catalog__hero h1 { max-width: 920px; margin: .55rem 0 1rem; font-size: clamp(2.7rem, 5.5vw, 5rem); }
+.gifts-catalog__hero > p:not(.lihen-eyebrow) { max-width: 780px; margin: 0; color: var(--lihen-color-muted); font-size: 1.08rem; }
+.gifts-catalog__layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); padding-top: 2rem; }
+.gifts-filters { align-self: start; position: sticky; top: 92px; display: grid; gap: 1.5rem; padding: 1.25rem; border: 1px solid var(--lihen-color-line); border-radius: var(--lihen-radius-md); background: var(--lihen-color-ivory); }
+.gifts-filters > div { display: grid; gap: .6rem; }
+.gifts-filters label { display: flex; align-items: center; gap: .55rem; color: var(--lihen-color-muted); font-size: .9rem; cursor: pointer; }
+.gifts-filters input { accent-color: var(--lihen-color-rose-deep); }
+.gifts-filters__label { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.gifts-filters__available { padding-top: 1rem; border-top: 1px solid var(--lihen-color-line); font-weight: 700; color: var(--lihen-color-text) !important; }
+.gifts-results__heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1rem; }
+.gifts-results__heading h2 { margin: .2rem 0 0; font-family: var(--lihen-font-display); font-size: clamp(1.8rem, 3vw, 2.6rem); }
+.gifts-results__heading > span { color: var(--lihen-color-muted); font-size: .86rem; white-space: nowrap; }
+@media (max-width: 820px) { .gifts-catalog__layout { grid-template-columns: 1fr; } .gifts-filters { position: static; grid-template-columns: repeat(2, minmax(0,1fr)); } .gifts-filters__available { grid-column: 1 / -1; } }
+@media (max-width: 540px) { .gifts-filters { grid-template-columns: 1fr; } .gifts-filters__available { grid-column: auto; } .gifts-results__heading { align-items: flex-start; flex-direction: column; } }

@@ -1,30 +1,8 @@
-import bloomshellLogoUrl from '../assets/home/brands/bloomshell.webp';
-import ateneaLogoUrl from '../assets/home/brands/atenea.webp';
-import purpureLogoUrl from '../assets/home/brands/purpure-by-angie-bedoya.webp';
-import viveBeautyLogoUrl from '../assets/home/brands/vive-beauty.webp';
-import girlyLogoUrl from '../assets/home/brands/girly.webp';
-import centellaLogoUrl from '../assets/home/brands/madagascar-centella.webp';
-import kabaLogoUrl from '../assets/home/brands/kaba.webp';
-import destinyLogoUrl from '../assets/home/brands/destiny-by-la-segura.webp';
-import aniKLogoUrl from '../assets/home/brands/ani-k.webp';
-import dluchiLogoUrl from '../assets/home/brands/d-luchi.webp';
 import { buildCatalogHref, type CatalogBusinessLine } from './catalog-navigation';
+import { bundledBrandLogoFallbacks } from './brand-logo-assets';
 import { getStorefrontBrands } from './storefront-api';
 import type { StorefrontBrand } from './storefront-brand';
 import { escapeHtml } from './storefront-product';
-
-const bundledBrandLogoFallbacks: Readonly<Record<string, string>> = {
-  Bloomshell: bloomshellLogoUrl,
-  Atenea: ateneaLogoUrl,
-  'Purpure by Angie Bedoya': purpureLogoUrl,
-  'Vive Beauty': viveBeautyLogoUrl,
-  Girly: girlyLogoUrl,
-  'Madagascar Centella': centellaLogoUrl,
-  Kaba: kabaLogoUrl,
-  'Destiny by La Segura': destinyLogoUrl,
-  'Ani-K': aniKLogoUrl,
-  "D'Luchi": dluchiLogoUrl,
-};
 
 function initials(name: string): string {
   return name

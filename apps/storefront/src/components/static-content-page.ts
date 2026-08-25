@@ -1,4 +1,3 @@
-import { buildCatalogHref } from './catalog-navigation';
 
 export type StorefrontContentPage =
   | 'gifts'
@@ -28,43 +27,6 @@ function renderTrustActions(): string {
       <a class="lihen-button lihen-button--dark" href="${whatsappUrl}" target="_blank" rel="noopener noreferrer">Hablar con LIHEN</a>
       <a class="lihen-button lihen-button--outline" href="#pqrs">Peticiones y solicitudes</a>
     </div>
-  `;
-}
-
-function renderGiftsPage(): string {
-  return `
-    <section class="content-page content-page--gifts" aria-labelledby="gifts-title">
-      <div class="content-page__hero lihen-shell">
-        <p class="lihen-eyebrow">Ideas para regalar</p>
-        <h1 class="lihen-display" id="gifts-title">Detalles para regalar con intención.</h1>
-        <p>Explora Beauty Care y Style desde una experiencia pensada para descubrir opciones de LIHEN sin crear una segunda lista de productos fuera del catálogo canónico.</p>
-      </div>
-      <div class="content-page__cards lihen-shell">
-        <a class="content-page__card" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">
-          <span>Beauty Care</span>
-          <strong>Regalos para cuidar, consentir y sorprender.</strong>
-          <small>Explorar productos publicados</small>
-        </a>
-        <a class="content-page__card" href="${buildCatalogHref({ businessLine: 'STYLE' })}">
-          <span>Style</span>
-          <strong>Opciones para acompañar el estilo de cada persona.</strong>
-          <small>Explorar colección Style</small>
-        </a>
-        <a class="content-page__card" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE', category: 'ACCESORIOS PARA MAQUILLAJE' })}">
-          <span>Accesorios</span>
-          <strong>Detalles prácticos que también pueden convertirse en regalo.</strong>
-          <small>Explorar accesorios</small>
-        </a>
-      </div>
-      <div class="content-page__panel lihen-shell">
-        <div>
-          <p class="lihen-eyebrow">¿No sabes cuál elegir?</p>
-          <h2 class="lihen-display">Te ayudamos a encontrar una opción.</h2>
-          <p>Cuéntanos para quién es el regalo y qué tipo de producto buscas. Confirmamos contigo referencias, disponibilidad y entrega.</p>
-        </div>
-        <a class="lihen-button lihen-button--dark" href="${whatsappUrl}" target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-      </div>
-    </section>
   `;
 }
 
@@ -202,7 +164,7 @@ function renderConsumerPage(): string {
 export function renderStaticContentPage(page: StorefrontContentPage): string {
   switch (page) {
     case 'gifts':
-      return renderGiftsPage();
+      return '<div data-gifts-page></div>';
     case 'about':
       return renderAboutPage();
     case 'terms':

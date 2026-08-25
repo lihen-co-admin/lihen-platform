@@ -1,4 +1,4 @@
-import { getStorefrontProducts } from './storefront-api';
+import { getStorefrontBrands, getStorefrontProducts } from './storefront-api';
 import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
 import { openProductDetail } from './product-detail';
@@ -51,7 +51,8 @@ function writeState(state: CatalogState, mode: 'push' | 'replace' = 'push'): voi
 }
 
 function options(values: readonly string[], selected: string, emptyLabel: string): string {
-  return `<option value="">${emptyLabel}</option>${values.map((value) => `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('')}`;
+  const merged = selected && !values.includes(selected) ? [selected, ...values] : [...values];
+  return `<option value="">${emptyLabel}</option>${merged.map((value) => `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('')}`;
 }
 
 function queryFromState(state: CatalogState): StorefrontProductQuery {
@@ -99,6 +100,18 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
   if (!grid || !status || !pagination || !form || !clear) return;
 
   let state = readState();
+
+  const hydrateBrands = async (): Promise<void> => {
+    const select = form.elements.namedItem('brand');
+    if (!(select instanceof HTMLSelectElement)) return;
+    try {
+      const brands = await getStorefrontBrands(state.businessLine === 'STYLE' ? 'STYLE' : 'BEAUTY_CARE', 100);
+      const names = brands.map((brand) => brand.brand_name);
+      select.innerHTML = options(names, state.brand, 'Todas las marcas');
+    } catch {
+      // Conserva las opciones de respaldo si la proyección de marcas no responde.
+    }
+  };
 
   const load = async (): Promise<void> => {
     grid.setAttribute('aria-busy', 'true');
@@ -152,7 +165,7 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
       page: 1,
     };
     writeState(state);
-    void load();
+    void hydrateBrands().then(load);
   });
 
   clear.addEventListener('click', () => {
@@ -165,5 +178,6 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
     void load();
   });
 
+  await hydrateBrands();
   await load();
 }

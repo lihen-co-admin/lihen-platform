@@ -50,7 +50,7 @@ const styleProducts: MockProduct[] = Array.from({ length: 4 }, (_, index) => ({
   category: 'ROPA DEPORTIVA',
   subcategory: null,
   description: 'Producto Style controlado para navegación E2E.',
-  sale_price: 45000 + index * 5000,
+  sale_price: index < 2 ? 25000 + index * 5000 : 45000 + (index - 2) * 5000,
   main_image_url: image,
   image_urls: [image],
   card_media: { url:image, width:600, height:600, profile:'WEB_CARD' },
@@ -93,6 +93,8 @@ async function mockStorefrontRpc(page: Page): Promise<void> {
       p_brand?: string | null;
       p_category?: string | null;
       p_collection?: string | null;
+      p_max_price?: number | null;
+      p_available_only?: boolean | null;
     };
     let rows = [...products];
     if (body.p_business_line) rows = rows.filter((product) => product.business_line === body.p_business_line);
@@ -103,11 +105,16 @@ async function mockStorefrontRpc(page: Page): Promise<void> {
     if (body.p_brand) rows = rows.filter((product) => product.brand === body.p_brand);
     if (body.p_category) rows = rows.filter((product) => product.category === body.p_category);
     if (body.p_collection === 'CARE') rows = rows.filter((product) => /cuidado|shampoo|capilar/i.test(`${product.product_name} ${product.description}`));
+    if (typeof body.p_max_price === 'number') rows = rows.filter((product) => product.sale_price <= body.p_max_price!);
+    if (body.p_available_only) rows = rows.filter((product) => product.availability === 'AVAILABLE' || product.availability === 'LOW_STOCK');
+    const availabilityRank = { AVAILABLE: 1, LOW_STOCK: 2, COMING_SOON: 3, OUT_OF_STOCK: 4 } as const;
+    rows.sort((a, b) => availabilityRank[a.availability] - availabilityRank[b.availability] || a.product_name.localeCompare(b.product_name));
     const offset = Math.max(body.p_offset ?? 0, 0);
     const limit = Math.max(body.p_limit ?? 24, 1);
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows.slice(offset, offset + limit)) });
   };
 
+  await page.route('**/rest/v1/rpc/get_storefront_products_qa_b_controlled', fulfillProducts);
   await page.route('**/rest/v1/rpc/get_storefront_products_qa_a_controlled', fulfillProducts);
   await page.route('**/rest/v1/rpc/get_storefront_products_media_v2_controlled', fulfillProducts);
 
@@ -292,13 +299,27 @@ test('storefront provides canonical metadata and no obvious legacy markers', asy
 });
 
 
+
+test('commercial catalog prioritizes available products before unavailable references', async ({ page }) => {
+  await page.goto('/#catalogo?business_line=BEAUTY_CARE&brand=Bloomshell');
+  const badges = page.locator('.product-card__availability');
+  await expect(badges.first()).toHaveText('Disponible');
+  const labels = await badges.allTextContents();
+  const firstUnavailable = labels.findIndex((label) => label === 'Próximamente' || label === 'Agotado');
+  const lastAvailable = Math.max(...labels.map((label, index) => (label === 'Disponible' || label === 'Últimas unidades') ? index : -1));
+  expect(firstUnavailable === -1 || lastAvailable < firstUnavailable).toBe(true);
+});
+
 test('gifts, about and trust pages are real routes instead of empty anchors', async ({ page }) => {
   await page.goto('/');
 
   await page.getByRole('link', { name: 'Ideas para regalar' }).first().click();
   await expect(page).toHaveURL(/#regalos$/);
-  await expect(page.getByRole('heading', { name: 'Detalles para regalar con intención.' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Explorar productos publicados' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Regalos que se sienten especiales, sin salirte del presupuesto.' })).toBeVisible();
+  await expect(page.getByText(/productos · hasta \$30\.000/)).toBeVisible();
+  await expect(page.getByText('Style E2E 1')).toBeVisible();
+  await expect(page.getByText('Style E2E 2')).toBeVisible();
+  await expect(page.getByText('Producto E2E 22')).not.toBeVisible();
 
   await page.getByRole('link', { name: 'Nosotros' }).last().click();
   await expect(page).toHaveURL(/#nosotros$/);

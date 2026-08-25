@@ -62,7 +62,13 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
   }
 
   if (route.kind === 'content') {
-    main.innerHTML = renderStaticContentPage(route.page);
+    if (route.page === 'gifts') {
+      const { renderGiftsPage, bindGiftsPage } = await import('./gifts-page');
+      main.innerHTML = renderGiftsPage();
+      await bindGiftsPage(main);
+    } else {
+      main.innerHTML = renderStaticContentPage(route.page);
+    }
     document.title = titleForContentPage(route.page);
     main.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: 'auto' });
