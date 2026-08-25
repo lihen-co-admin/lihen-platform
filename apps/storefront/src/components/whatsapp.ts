@@ -1,20 +1,42 @@
 import type { SelectedProduct } from './selection-store';
-import { money } from './storefront-product';
 
 const WHATSAPP_BASE = 'https://wa.me/message/2JDWBH57SQG4F1';
 
-export function buildSelectionWhatsAppUrl(items: SelectedProduct[]): string {
-  const detail = items.map((item, index) => `${index + 1}. ${item.name}${item.brand ? ` · ${item.brand}` : ''} · ${money(item.price)} · ${item.sku}`).join('\n');
-  const message = [
-    'Hola, LIHEN.CO 👋',
-    'Quiero consultar disponibilidad de esta selección:',
+function numericPrice(value: string | number): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+
+function whatsappMoney(value: number): string {
+  if (!Number.isFinite(value)) return '$0';
+  return `$${new Intl.NumberFormat('es-CO', {
+    maximumFractionDigits: 0,
+  }).format(value)}`;
+}
+
+export function buildSelectionWhatsAppMessage(items: readonly SelectedProduct[]): string {
+  const detail = items.map((item) => `• ${item.quantity} × ${item.name} — ${whatsappMoney(numericPrice(item.price) * item.quantity)}`).join('\n');
+  const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalValue = items.reduce((sum, item) => sum + numericPrice(item.price) * item.quantity, 0);
+
+  return [
+    '🌸 ¡Hola LIHEN.CO!',
+    '',
+    'Quiero consultar disponibilidad de estos productos:',
     '',
     detail,
     '',
-    '¿Me ayudan a confirmar disponibilidad y entrega? Gracias ✨',
+    `Total de referencias: ${items.length}`,
+    `Cantidad total: ${totalUnits} ${totalUnits === 1 ? 'unidad' : 'unidades'}`,
+    `Valor de referencia: ${whatsappMoney(totalValue)}`,
+    '',
+    '¿Me confirmas disponibilidad, por favor?',
   ].join('\n');
+}
 
-  return `${WHATSAPP_BASE}?text=${encodeURIComponent(message)}`;
+export function buildSelectionWhatsAppUrl(items: SelectedProduct[]): string {
+  return `${WHATSAPP_BASE}?text=${encodeURIComponent(buildSelectionWhatsAppMessage(items))}`;
 }
 
 export function buildProductWhatsAppUrl(item: SelectedProduct): string {

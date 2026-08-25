@@ -25,12 +25,12 @@ const beautyProducts: MockProduct[] = Array.from({ length: 40 }, (_, index) => (
   product_id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
   sku: `BC-${String(900 + index)}`,
   slug: `producto-e2e-${index + 1}`,
-  product_name: index === 0 ? 'Labial E2E LIHEN' : `Producto E2E ${index + 1}`,
+  product_name: index === 0 ? 'Labial E2E LIHEN' : index === 1 ? 'Shampoo Cuidado E2E' : `Producto E2E ${index + 1}`,
   business_line: 'BEAUTY_CARE',
   brand: index < 12 ? 'Bloomshell' : index < 24 ? 'Atenea' : 'Kaba',
   category: index % 2 === 0 ? 'LABIALES, BRILLOS, DELINEADORES, HIDRATANTES Y TINTAS' : 'ACCESORIOS PARA MAQUILLAJE',
   subcategory: null,
-  description: 'Producto controlado para la suite E2E del Storefront.',
+  description: index === 1 ? 'Shampoo de cuidado capilar controlado para QA-A.' : 'Producto controlado para la suite E2E del Storefront.',
   sale_price: 10000 + index * 1000,
   main_image_url: image,
   image_urls: [image, `${image}%23${index + 1}`],
@@ -83,7 +83,7 @@ function mockBrandsForLine(businessLine: string): MockBrand[] {
 }
 
 async function mockStorefrontRpc(page: Page): Promise<void> {
-  await page.route('**/rest/v1/rpc/get_storefront_products_media_v2_controlled', async (route: Route) => {
+  const fulfillProducts = async (route: Route): Promise<void> => {
     const request = route.request();
     const body = request.postDataJSON() as {
       p_limit?: number;
@@ -92,19 +92,24 @@ async function mockStorefrontRpc(page: Page): Promise<void> {
       p_business_line?: string | null;
       p_brand?: string | null;
       p_category?: string | null;
+      p_collection?: string | null;
     };
     let rows = [...products];
     if (body.p_business_line) rows = rows.filter((product) => product.business_line === body.p_business_line);
     if (body.p_query) {
       const query = body.p_query.toLowerCase();
-      rows = rows.filter((product) => [product.product_name, product.brand ?? '', product.sku].some((value) => value.toLowerCase().includes(query)));
+      rows = rows.filter((product) => [product.product_name, product.brand ?? '', product.sku, product.description].some((value) => value.toLowerCase().includes(query)));
     }
     if (body.p_brand) rows = rows.filter((product) => product.brand === body.p_brand);
     if (body.p_category) rows = rows.filter((product) => product.category === body.p_category);
+    if (body.p_collection === 'CARE') rows = rows.filter((product) => /cuidado|shampoo|capilar/i.test(`${product.product_name} ${product.description}`));
     const offset = Math.max(body.p_offset ?? 0, 0);
     const limit = Math.max(body.p_limit ?? 24, 1);
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows.slice(offset, offset + limit)) });
-  });
+  };
+
+  await page.route('**/rest/v1/rpc/get_storefront_products_qa_a_controlled', fulfillProducts);
+  await page.route('**/rest/v1/rpc/get_storefront_products_media_v2_controlled', fulfillProducts);
 
   await page.route('**/rest/v1/rpc/get_storefront_brands_controlled', async (route: Route) => {
     const body = route.request().postDataJSON() as { p_business_line?: string | null; p_limit?: number };
@@ -138,6 +143,15 @@ test('home loads canonical product rails without legacy runtime data', async ({ 
   await expect(firstImage).toHaveAttribute('sizes', /vw|px/);
   await expect(firstImage).toHaveAttribute('width', '600');
   await expect(firstImage).toHaveAttribute('height', '600');
+});
+
+test('Cuidado navigation opens the canonical catalog with the care preset', async ({ page }) => {
+  await page.goto('/#inicio');
+  await page.getByRole('link', { name: /Cuidado Rutinas para ti/ }).click();
+  await expect(page).toHaveURL(/business_line=BEAUTY_CARE.*collection=CARE/);
+  await expect(page.getByText('Mostrando productos de cuidado personal y capilar detectados en el catálogo publicado.')).toBeVisible();
+  await expect(page.locator('[data-product-card]')).toHaveCount(1);
+  await expect(page.getByText('Shampoo Cuidado E2E')).toBeVisible();
 });
 
 test('Beauty Care and Style navigation open the canonical catalog with the selected business line', async ({ page }) => {
@@ -229,11 +243,25 @@ test('product detail, selection persistence and WhatsApp consultation work toget
   await dialog.getByRole('button', { name: 'Cerrar' }).click();
 
   await page.getByRole('button', { name: 'Mi selección', exact: true }).click();
-  await expect(page.getByRole('complementary', { name: 'Mi selección' }).getByText('Labial E2E LIHEN')).toBeVisible();
-  const whatsapp = page.getByRole('link', { name: /Consultar 1 producto por WhatsApp/ });
+  const drawer = page.getByRole('complementary', { name: 'Mi selección' });
+  await expect(drawer.getByText('Labial E2E LIHEN')).toBeVisible();
+  await drawer.getByRole('button', { name: 'Aumentar cantidad de Labial E2E LIHEN' }).click();
+  await expect(drawer.getByText('2 unidades seleccionadas')).toBeVisible();
+  const whatsapp = drawer.getByRole('link', { name: /Consultar 1 referencia por WhatsApp/ });
   await expect(whatsapp).toHaveAttribute('href', /wa\.me/);
-  await expect(whatsapp).toHaveAttribute('href', /Labial|producto/i);
+  const href = await whatsapp.getAttribute('href');
+  expect(decodeURIComponent(href ?? '')).toContain('🌸 ¡Hola LIHEN.CO!');
+  expect(decodeURIComponent(href ?? '')).toContain('• 2 × Labial E2E LIHEN — $20.000');
+  expect(decodeURIComponent(href ?? '')).toContain('Cantidad total: 2 unidades');
+  expect(decodeURIComponent(href ?? '')).toContain('Valor de referencia: $20.000');
 
+  await drawer.getByRole('button', { name: 'Vaciar selección' }).click();
+  await expect(drawer.getByText('Tu selección está vacía.')).toBeVisible();
+  await expect(page.locator('[data-product-select].is-selected')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Mi selección', exact: true }).locator('[data-selection-count]')).toHaveText('0');
+
+  await page.getByRole('button', { name: 'Cerrar selección' }).click();
+  await page.getByRole('button', { name: 'Agregar a mi selección' }).first().click();
   await page.reload();
   await page.getByRole('button', { name: 'Mi selección', exact: true }).click();
   await expect(page.getByRole('complementary', { name: 'Mi selección' }).getByText('Labial E2E LIHEN')).toBeVisible();

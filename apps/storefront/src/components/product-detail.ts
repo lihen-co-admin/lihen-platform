@@ -11,6 +11,7 @@ function asSelectedProduct(product: StorefrontProduct): SelectedProduct {
     brand: product.brand,
     price: product.sale_price,
     imageUrl: product.main_image_url,
+    quantity: 1,
   };
 }
 

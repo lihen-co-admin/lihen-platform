@@ -49,7 +49,7 @@ export function renderHomePage(): string {
         <a class="home-category home-category--rose" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">
           <span>Beauty Care</span><small>Maquillaje y cuidado</small>
         </a>
-        <a class="home-category home-category--cream" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE' })}">
+        <a class="home-category home-category--cream" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE', collection: 'CARE' })}">
           <span>Cuidado</span><small>Rutinas para ti</small>
         </a>
         <a class="home-category home-category--lilac" href="${buildCatalogHref({ businessLine: 'STYLE' })}">

@@ -99,3 +99,14 @@ body.selection-open { overflow: hidden; }
 /* F5-M2: never visually upscale a WEB_CARD fallback inside the detail hero. */
 .product-dialog__hero--fallback { display: grid; place-items: center; min-height: 176px; aspect-ratio: auto; }
 .product-dialog__hero--fallback img { width: auto; height: auto; max-width: min(100%, 345px); max-height: 176px; object-fit: contain; }
+
+/* F5 QA-A: synchronized selection quantities and care preset. */
+.selection-item__content { min-width: 0; }
+.selection-item__quantity { display: inline-grid; grid-template-columns: 32px minmax(32px, auto) 32px; align-items: center; width: fit-content; border: 1px solid var(--lihen-color-line); border-radius: 999px; overflow: hidden; margin-top: .35rem; }
+.selection-item__quantity button { min-width: 32px; min-height: 32px; padding: 0; font-size: 1rem; }
+.selection-item__quantity span { display: grid; place-items: center; min-width: 32px; color: var(--lihen-color-ink); font-size: .78rem; font-weight: 700; }
+.selection-item__remove { align-self: start; }
+.selection-summary { margin: .5rem 0 0; color: var(--lihen-color-muted); font-size: .75rem; text-align: center; }
+.catalog-preset { display: flex; gap: .7rem; align-items: baseline; flex-wrap: wrap; margin: 0 0 1rem; padding: .8rem 1rem; border: 1px solid var(--lihen-color-line); border-radius: var(--lihen-radius-sm); background: var(--lihen-color-ivory); }
+.catalog-preset strong { font-family: var(--lihen-font-display); font-size: 1.05rem; }
+.catalog-preset span { color: var(--lihen-color-muted); font-size: .82rem; }

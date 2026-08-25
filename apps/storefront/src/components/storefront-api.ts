@@ -52,6 +52,7 @@ export async function getStorefrontProducts(query: StorefrontProductQuery = {}):
     p_business_line: query.businessLine || null,
     p_brand: query.brand || null,
     p_category: query.category || null,
+    p_collection: query.collection || null,
   });
   const request = (rpc: string) => fetch(`${config.url}/rest/v1/rpc/${rpc}`, {
     method: 'POST',
@@ -63,8 +64,28 @@ export async function getStorefrontProducts(query: StorefrontProductQuery = {}):
     body,
   });
 
-  let response = await request('get_storefront_products_media_v2_controlled');
-  if (response.status === 404) response = await request('get_storefront_products_controlled');
+  let response = await request('get_storefront_products_qa_a_controlled');
+  if (response.status === 404) {
+    const legacyBody = JSON.stringify({
+      p_limit: fetchLimit,
+      p_offset: Math.max(query.offset ?? 0, 0),
+      p_query: query.query?.trim() || null,
+      p_business_line: query.businessLine || null,
+      p_brand: query.brand || null,
+      p_category: query.category || null,
+    });
+    const legacyRequest = (rpc: string) => fetch(`${config.url}/rest/v1/rpc/${rpc}`, {
+      method: 'POST',
+      headers: {
+        apikey: config.publishableKey,
+        Authorization: `Bearer ${config.publishableKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: legacyBody,
+    });
+    response = await legacyRequest('get_storefront_products_media_v2_controlled');
+    if (response.status === 404) response = await legacyRequest('get_storefront_products_controlled');
+  }
 
   if (!response.ok) {
     throw new Error(`No fue posible cargar el catálogo (${response.status}).`);

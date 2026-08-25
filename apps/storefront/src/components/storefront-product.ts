@@ -28,6 +28,7 @@ export interface StorefrontProductQuery {
   businessLine?: string | null;
   brand?: string | null;
   category?: string | null;
+  collection?: 'CARE' | null;
 }
 
 export interface StorefrontProductPage {

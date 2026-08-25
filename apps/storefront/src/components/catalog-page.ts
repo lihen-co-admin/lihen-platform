@@ -11,6 +11,7 @@ interface CatalogState {
   businessLine: string;
   brand: string;
   category: string;
+  collection: 'CARE' | '';
   page: number;
 }
 
@@ -32,6 +33,7 @@ function readState(): CatalogState {
     businessLine: params.get('business_line') ?? 'BEAUTY_CARE',
     brand: params.get('brand') ?? '',
     category: params.get('category') ?? '',
+    collection: params.get('collection') === 'CARE' ? 'CARE' : '',
     page: Math.max(Number(params.get('page') ?? '1') || 1, 1),
   };
 }
@@ -42,6 +44,7 @@ function writeState(state: CatalogState, mode: 'push' | 'replace' = 'push'): voi
   if (state.businessLine) params.set('business_line', state.businessLine);
   if (state.brand) params.set('brand', state.brand);
   if (state.category) params.set('category', state.category);
+  if (state.collection) params.set('collection', state.collection);
   if (state.page > 1) params.set('page', String(state.page));
   const query = params.toString();
   history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', `#catalogo${query ? `?${query}` : ''}`);
@@ -59,6 +62,7 @@ function queryFromState(state: CatalogState): StorefrontProductQuery {
     businessLine: state.businessLine || null,
     brand: state.brand || null,
     category: state.category || null,
+    collection: state.collection || null,
   };
 }
 
@@ -70,6 +74,7 @@ export function renderCatalogPage(): string {
         <div><p class="lihen-eyebrow">Catálogo canónico</p><h1 class="lihen-display" id="catalog-title">Encuentra tu próximo favorito.</h1><p>Consulta productos publicados desde una sola fuente de LIHEN Platform.</p></div>
         <a class="catalog-page__home" href="#inicio">← Volver al inicio</a>
       </div>
+      ${state.collection === 'CARE' ? '<div class="catalog-preset" role="status"><strong>Cuidado</strong><span>Mostrando productos de cuidado personal y capilar detectados en el catálogo publicado.</span></div>' : ''}
       <form class="catalog-filters" data-catalog-filters role="search">
         <label class="catalog-search"><span>Buscar</span><input type="search" name="q" value="${escapeHtml(state.query)}" placeholder="Producto, marca o SKU" autocomplete="off" /></label>
         <label><span>Línea</span><select name="business_line"><option value="BEAUTY_CARE" ${state.businessLine === 'BEAUTY_CARE' ? 'selected' : ''}>Beauty Care</option><option value="STYLE" ${state.businessLine === 'STYLE' ? 'selected' : ''}>Style</option></select></label>
@@ -143,6 +148,7 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
       businessLine: String(data.get('business_line') ?? 'BEAUTY_CARE'),
       brand: String(data.get('brand') ?? ''),
       category: String(data.get('category') ?? ''),
+      collection: state.collection,
       page: 1,
     };
     writeState(state);
@@ -154,7 +160,7 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
     form.reset();
     const businessLineSelect = form.elements.namedItem('business_line');
     if (businessLineSelect instanceof HTMLSelectElement) businessLineSelect.value = businessLine;
-    state = { query: '', businessLine, brand: '', category: '', page: 1 };
+    state = { query: '', businessLine, brand: '', category: '', collection: state.collection, page: 1 };
     writeState(state);
     void load();
   });
