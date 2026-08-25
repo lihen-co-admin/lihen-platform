@@ -1,3 +1,4 @@
+import type { StorefrontBrand } from './storefront-brand';
 import type { StorefrontProduct, StorefrontProductPage, StorefrontProductQuery } from './storefront-product';
 import { getStorefrontRuntimeConfig } from './storefront-runtime-config';
 
@@ -57,4 +58,49 @@ export async function getStorefrontProducts(query: StorefrontProductQuery = {}):
     items: normalized.slice(0, requestedLimit),
     hasMore: normalized.length > requestedLimit,
   };
+}
+
+
+function normalizeBrand(value: unknown): StorefrontBrand | null {
+  if (!value || typeof value !== 'object') return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.brand_id !== 'string' || typeof row.brand_name !== 'string') return null;
+  const count = typeof row.visible_product_count === 'number'
+    ? row.visible_product_count
+    : Number(row.visible_product_count);
+  if (!Number.isFinite(count) || count < 1) return null;
+
+  return {
+    brand_id: row.brand_id,
+    brand_name: row.brand_name,
+    logo_url: typeof row.logo_url === 'string' && row.logo_url.trim() ? row.logo_url : null,
+    visible_product_count: count,
+  };
+}
+
+export async function getStorefrontBrands(
+  businessLine: 'BEAUTY_CARE' | 'STYLE' = 'BEAUTY_CARE',
+  limit = 60,
+): Promise<StorefrontBrand[]> {
+  const config = getStorefrontRuntimeConfig();
+  const response = await fetch(`${config.url}/rest/v1/rpc/get_storefront_brands_controlled`, {
+    method: 'POST',
+    headers: {
+      apikey: config.publishableKey,
+      Authorization: `Bearer ${config.publishableKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      p_business_line: businessLine,
+      p_limit: Math.min(Math.max(limit, 1), 100),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`No fue posible cargar las marcas (${response.status}).`);
+  }
+
+  const payload: unknown = await response.json();
+  if (!Array.isArray(payload)) return [];
+  return payload.map(normalizeBrand).filter((brand): brand is StorefrontBrand => brand !== null);
 }

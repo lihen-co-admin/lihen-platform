@@ -3,46 +3,7 @@ import beautyDetailUrl from '../assets/home/products/beauty-detail.webp';
 import bannerRepresentationUrl from '../assets/home/banners/que-te-representa.webp';
 import bannerStyleUrl from '../assets/home/banners/estilo-que-te-impulsa.webp';
 import bannerIdentityUrl from '../assets/home/banners/nube-identidad.webp';
-import bloomshellLogoUrl from '../assets/home/brands/bloomshell.webp';
-import ateneaLogoUrl from '../assets/home/brands/atenea.webp';
-import purpureLogoUrl from '../assets/home/brands/purpure-by-angie-bedoya.webp';
-import viveBeautyLogoUrl from '../assets/home/brands/vive-beauty.webp';
-import girlyLogoUrl from '../assets/home/brands/girly.webp';
-import centellaLogoUrl from '../assets/home/brands/madagascar-centella.webp';
-import kabaLogoUrl from '../assets/home/brands/kaba.webp';
-import destinyLogoUrl from '../assets/home/brands/destiny-by-la-segura.webp';
-import aniKLogoUrl from '../assets/home/brands/ani-k.webp';
-import dluchiLogoUrl from '../assets/home/brands/d-luchi.webp';
 import { buildCatalogHref } from './catalog-navigation';
-
-interface HomeBrand {
-  name: string;
-  logoUrl: string;
-  productCount: number;
-}
-
-const visibleBeautyBrands: readonly HomeBrand[] = [
-  { name: 'Bloomshell', logoUrl: bloomshellLogoUrl, productCount: 140 },
-  { name: 'Atenea', logoUrl: ateneaLogoUrl, productCount: 38 },
-  { name: 'Purpure by Angie Bedoya', logoUrl: purpureLogoUrl, productCount: 32 },
-  { name: 'Vive Beauty', logoUrl: viveBeautyLogoUrl, productCount: 26 },
-  { name: 'Girly', logoUrl: girlyLogoUrl, productCount: 22 },
-  { name: 'Madagascar Centella', logoUrl: centellaLogoUrl, productCount: 10 },
-  { name: 'Kaba', logoUrl: kabaLogoUrl, productCount: 19 },
-  { name: 'Destiny by La Segura', logoUrl: destinyLogoUrl, productCount: 17 },
-  { name: 'Ani-K', logoUrl: aniKLogoUrl, productCount: 21 },
-  { name: "D'Luchi", logoUrl: dluchiLogoUrl, productCount: 11 },
-] as const;
-
-function renderBrand(brand: HomeBrand): string {
-  return `
-    <a class="home-brand" href="${buildCatalogHref({ businessLine: 'BEAUTY_CARE', brand: brand.name })}" aria-label="Ver ${brand.productCount} referencias de ${brand.name}">
-      <div class="home-brand__logo"><img src="${brand.logoUrl}" alt="${brand.name}" /></div>
-      <strong>${brand.name}</strong>
-      <span>${brand.productCount} referencias</span>
-    </a>
-  `;
-}
 
 export function renderHomePage(): string {
   return `
@@ -120,23 +81,26 @@ export function renderHomePage(): string {
       </div>
     </section>
 
-    <section class="lihen-section home-brands" id="marcas" aria-labelledby="home-brands-title">
+    <section class="lihen-section home-brands" id="marcas" aria-labelledby="home-brands-title" data-home-brands>
       <div class="home-brands__heading lihen-shell">
         <div>
           <p class="lihen-eyebrow">Explora el catálogo</p>
           <h2 class="lihen-display" id="home-brands-title">Compra por marcas.</h2>
-          <p>Una selección de marcas con productos visibles actualmente en LIHEN.</p>
+          <p>Marcas y conteos obtenidos desde la proyección canónica de productos publicados.</p>
         </div>
         <div class="home-brands__controls" aria-label="Mover carrusel de marcas">
           <button type="button" data-brand-prev aria-label="Ver marcas anteriores">‹</button>
           <button type="button" data-brand-next aria-label="Ver más marcas">›</button>
         </div>
       </div>
-      <div class="home-brands__viewport lihen-shell" data-brand-viewport tabindex="0" aria-label="Marcas disponibles">
-        <div class="home-brands__track" data-brand-track>
-          ${visibleBeautyBrands.map(renderBrand).join('')}
-        </div>
+      <div class="home-brands__toolbar lihen-shell" aria-label="Selector de marcas por colección">
+        <button type="button" class="is-active" data-brand-line="BEAUTY_CARE" aria-pressed="true">Beauty Care</button>
+        <button type="button" data-brand-line="STYLE" aria-pressed="false">Style</button>
       </div>
+      <div class="home-brands__viewport lihen-shell" data-brand-viewport tabindex="0" aria-label="Marcas disponibles">
+        <div class="home-brands__track" data-brand-track></div>
+      </div>
+      <p class="home-brands__status lihen-shell" data-brand-status role="status">Cargando marcas Beauty Care…</p>
       <p class="home-brands__note lihen-shell">Selecciona una marca para ver sus referencias publicadas en el catálogo.</p>
     </section>
 
@@ -224,13 +188,4 @@ export function bindHomePageInteractions(root: HTMLElement): void {
     start();
   }
 
-  const brandViewport = root.querySelector<HTMLElement>('[data-brand-viewport]');
-  const brandPrev = root.querySelector<HTMLButtonElement>('[data-brand-prev]');
-  const brandNext = root.querySelector<HTMLButtonElement>('[data-brand-next]');
-
-  if (brandViewport && brandPrev && brandNext) {
-    const step = (): number => Math.max(240, brandViewport.clientWidth * 0.72);
-    brandPrev.addEventListener('click', () => brandViewport.scrollBy({ left: -step(), behavior: 'smooth' }));
-    brandNext.addEventListener('click', () => brandViewport.scrollBy({ left: step(), behavior: 'smooth' }));
-  }
 }

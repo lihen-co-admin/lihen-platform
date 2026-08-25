@@ -71,8 +71,11 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
 
   main.innerHTML = renderHomePage();
   bindHomePageInteractions(main);
-  const { hydrateHomeProductRails } = await import('./home-product-rails');
-  void hydrateHomeProductRails(main);
+  const [{ hydrateHomeProductRails }, { hydrateHomeBrands }] = await Promise.all([
+    import('./home-product-rails'),
+    import('./home-brands'),
+  ]);
+  void Promise.all([hydrateHomeProductRails(main), hydrateHomeBrands(main)]);
   document.title = 'LIHEN.CO | Beauty Care & Style';
   const anchor = location.hash.replace(/^#/, '').split('?')[0];
   if (anchor && anchor !== 'inicio') {

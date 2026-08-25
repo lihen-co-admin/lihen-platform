@@ -52,6 +52,27 @@ const styleProducts: MockProduct[] = Array.from({ length: 4 }, (_, index) => ({
 
 const products: MockProduct[] = [...beautyProducts, ...styleProducts];
 
+interface MockBrand {
+  brand_id: string;
+  brand_name: string;
+  logo_url: string | null;
+  visible_product_count: number;
+}
+
+function mockBrandsForLine(businessLine: string): MockBrand[] {
+  const counts = new Map<string, number>();
+  for (const product of products) {
+    if (product.business_line !== businessLine || !product.brand) continue;
+    counts.set(product.brand, (counts.get(product.brand) ?? 0) + 1);
+  }
+  return Array.from(counts.entries()).map(([brand, count], index) => ({
+    brand_id: `20000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    brand_name: brand,
+    logo_url: null,
+    visible_product_count: count,
+  })).sort((a, b) => b.visible_product_count - a.visible_product_count || a.brand_name.localeCompare(b.brand_name));
+}
+
 async function mockStorefrontRpc(page: Page): Promise<void> {
   await page.route('**/rest/v1/rpc/get_storefront_products_controlled', async (route: Route) => {
     const request = route.request();
@@ -74,6 +95,16 @@ async function mockStorefrontRpc(page: Page): Promise<void> {
     const offset = Math.max(body.p_offset ?? 0, 0);
     const limit = Math.max(body.p_limit ?? 24, 1);
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(rows.slice(offset, offset + limit)) });
+  });
+
+  await page.route('**/rest/v1/rpc/get_storefront_brands_controlled', async (route: Route) => {
+    const body = route.request().postDataJSON() as { p_business_line?: string | null; p_limit?: number };
+    const rows = mockBrandsForLine(body.p_business_line ?? 'BEAUTY_CARE');
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(rows.slice(0, Math.max(body.p_limit ?? 60, 1))),
+    });
   });
 }
 
@@ -103,14 +134,14 @@ test('Beauty Care and Style navigation open the canonical catalog with the selec
 
   await page.getByRole('link', { name: 'Explorar Beauty Care' }).click();
   await expect(page).toHaveURL(/#catalogo\?business_line=BEAUTY_CARE/);
-  await expect(page.getByLabel('Línea')).toHaveValue('BEAUTY_CARE');
+  await expect(page.getByRole('combobox', { name: 'Línea', exact: true })).toHaveValue('BEAUTY_CARE');
   await expect(page.locator('[data-product-card]')).toHaveCount(24);
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Algo especial para cada momento.' })).toBeVisible();
   await page.getByRole('link', { name: 'Ver Style' }).click();
   await expect(page).toHaveURL(/#catalogo\?business_line=STYLE/);
-  await expect(page.getByLabel('Línea')).toHaveValue('STYLE');
+  await expect(page.getByRole('combobox', { name: 'Línea', exact: true })).toHaveValue('STYLE');
   await expect(page.locator('[data-product-card]')).toHaveCount(4);
   await expect(page.getByText('Style E2E 1')).toBeVisible();
 });
@@ -137,6 +168,21 @@ test('brand cards navigate to filtered references and browser history restores c
   await expect(page.getByLabel('Marca')).toHaveValue('Atenea');
 });
 
+test('brand explorer uses the canonical brand projection and circular accessible controls', async ({ page }) => {
+  await page.goto('/#marcas');
+  await expect(page.getByRole('link', { name: 'Ver 12 referencias de Bloomshell' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver 12 referencias de Atenea' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver 16 referencias de Kaba' })).toBeVisible();
+  await expect(page.locator('.home-brand__logo').first()).toHaveCSS('border-radius', '50%');
+
+  await page.getByRole('button', { name: 'Style', exact: true }).click();
+  await expect(page.getByText(/Aún no hay marcas Style con productos publicados/)).toBeVisible();
+  await expect(page.locator('.home-brand')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Beauty Care', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Ver 12 referencias de Bloomshell' })).toBeVisible();
+});
+
 test('catalog supports search, filters and pagination through the controlled RPC', async ({ page }) => {
   await page.goto('/#catalogo');
   await expect(page.getByRole('heading', { name: 'Encuentra tu próximo favorito.' })).toBeVisible();
@@ -150,7 +196,7 @@ test('catalog supports search, filters and pagination through the controlled RPC
   await expect(page).toHaveURL(/q=Labial\+E2E/);
 
   await page.getByRole('button', { name: 'Limpiar' }).click();
-  await expect(page.getByLabel('Línea')).toHaveValue('BEAUTY_CARE');
+  await expect(page.getByRole('combobox', { name: 'Línea', exact: true })).toHaveValue('BEAUTY_CARE');
   await expect(page.locator('[data-product-card]')).toHaveCount(24);
   await page.getByRole('button', { name: 'Siguiente →' }).click();
   await expect(page).toHaveURL(/page=2/);
