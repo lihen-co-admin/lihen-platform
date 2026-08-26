@@ -97,14 +97,22 @@ function validTimestamp(value: string | null | undefined): boolean {
   return blank(value) || Number.isFinite(new Date(value!).getTime());
 }
 
-function validUrl(value: string | null | undefined): boolean {
+function validUrlForProtocols(value: string | null | undefined, protocols: readonly string[]): boolean {
   if (blank(value)) return true;
   try {
     const parsed = new URL(value!);
-    return ['https:', 'http:', 'mailto:', 'tel:'].includes(parsed.protocol);
+    return protocols.includes(parsed.protocol);
   } catch {
     return false;
   }
+}
+
+function validTargetUrl(value: string | null | undefined): boolean {
+  return validUrlForProtocols(value, ['https:', 'http:', 'mailto:', 'tel:']);
+}
+
+function validImageUrl(value: string | null | undefined): boolean {
+  return validUrlForProtocols(value, ['https:', 'http:']);
 }
 
 export function getPublicHubBlockValidationIssues(draft: PublicHubBlockDraft): readonly PublicHubValidationIssue[] {
@@ -130,10 +138,10 @@ export function getPublicHubBlockValidationIssues(draft: PublicHubBlockDraft): r
     && new Date(draft.startsAt).getTime() >= new Date(draft.endsAt).getTime()) {
     issues.push({ code: 'INVALID_SCHEDULE', message: 'La fecha de inicio debe ser anterior a la fecha de finalización.' });
   }
-  if (!validUrl(draft.targetUrl)) {
+  if (!validTargetUrl(draft.targetUrl)) {
     issues.push({ code: 'INVALID_TARGET_URL', message: 'El destino debe contener una URL válida.' });
   }
-  if (!validUrl(draft.imageUrl)) {
+  if (!validImageUrl(draft.imageUrl)) {
     issues.push({ code: 'INVALID_IMAGE_URL', message: 'La imagen debe contener una URL válida.' });
   }
 

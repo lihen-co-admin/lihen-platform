@@ -54,3 +54,17 @@ describe('Public Hub block domain', () => {
     expect(isPublicHubBlockActiveAt({ status: 'HIDDEN' }, new Date())).toBe(false);
   });
 });
+
+it('allows navigation protocols but rejects unsafe image protocols', () => {
+  expect(getPublicHubBlockValidationIssues({
+    blockType: 'LINK',
+    title: 'WhatsApp',
+    targetUrl: 'tel:+573001112233',
+  })).toEqual([]);
+
+  expect(getPublicHubBlockValidationIssues({
+    blockType: 'BANNER',
+    title: 'Novedad',
+    imageUrl: 'mailto:ventas@lihen.co',
+  })).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'INVALID_IMAGE_URL' })]));
+});

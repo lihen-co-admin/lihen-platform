@@ -30,7 +30,7 @@ function cardLink(block: PublicHubBlock, body: string, className = 'hub-card'): 
   return `<a class="${className}" href="${escapeHtml(href)}"${linkAttributes(href)}>${body}</a>`;
 }
 
-function blockHtml(block: PublicHubBlock): string {
+export function renderPublicHubBlock(block: PublicHubBlock): string {
   const title = escapeHtml(block.title ?? '');
   const subtitle = escapeHtml(block.subtitle ?? '');
   const cta = escapeHtml(block.cta_label ?? 'Abrir');
@@ -93,7 +93,7 @@ export async function renderPublicHubPage(main: HTMLElement): Promise<void> {
     host.insertAdjacentHTML(
       'beforeend',
       blocks.length
-        ? `<nav class="hub-stack" aria-label="Accesos destacados de LIHEN">${blocks.map(blockHtml).join('')}</nav>`
+        ? `<section class="hub-stack" aria-label="Contenido destacado de LIHEN">${blocks.map(renderPublicHubBlock).join('')}</section>`
         : '<div class="hub-empty"><strong>Estamos preparando este espacio.</strong><span>Pronto encontrarás aquí nuestros accesos destacados.</span><a href="#catalogo">Explorar catálogo</a></div>',
     );
   } catch {
