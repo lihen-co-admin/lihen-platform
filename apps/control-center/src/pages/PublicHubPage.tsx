@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
 import {
   getPublicHubBlockPublicationState,
+  getPublicHubBlockValidationIssues,
   publicHubBlockTypes,
   type PublicHubBlockDraft,
   type PublicHubBlockProps,
@@ -76,6 +77,18 @@ function draftPreviewTitle(draft: PublicHubBlockDraft, products: readonly Produc
     return products.find((product) => product.id === draft.productId)?.name ?? 'Producto seleccionado';
   }
   return typeLabels[draft.blockType];
+}
+
+function changeDraftType(draft: PublicHubBlockDraft, blockType: PublicHubBlockType): PublicHubBlockDraft {
+  return {
+    ...draft,
+    blockType,
+    productId: blockType === 'PRODUCT' ? draft.productId ?? null : null,
+    collectionKey: blockType === 'PRODUCT_COLLECTION' ? draft.collectionKey ?? null : null,
+    body: blockType === 'TEXT' ? draft.body ?? null : null,
+    targetUrl: ['LINK', 'SOCIAL', 'CTA', 'BANNER'].includes(blockType) ? draft.targetUrl ?? null : null,
+    imageUrl: blockType === 'BANNER' ? draft.imageUrl ?? null : null,
+  };
 }
 
 export function PublicHubPage() {
@@ -206,6 +219,8 @@ export function PublicHubPage() {
     startsAt: draft.startsAt ?? null,
     endsAt: draft.endsAt ?? null,
   });
+  const draftIssues = getPublicHubBlockValidationIssues(draft);
+  const draftReady = draftIssues.length === 0;
 
   return (
     <section className="public-hub-admin">
@@ -236,7 +251,7 @@ export function PublicHubPage() {
           </div>
 
           <label>Tipo
-            <select value={draft.blockType} onChange={(event) => setDraft({ ...draft, blockType: event.target.value as PublicHubBlockType })}>
+            <select value={draft.blockType} onChange={(event) => setDraft(changeDraftType(draft, event.target.value as PublicHubBlockType))}>
               {publicHubBlockTypes.map((type) => <option key={type} value={type}>{typeLabels[type]}</option>)}
             </select>
           </label>
@@ -330,8 +345,17 @@ export function PublicHubPage() {
             <small>{previewStatus}</small>
           </aside>
 
+          <aside className={`hub-publish-readiness ${draftReady ? 'is-ready' : 'has-issues'}`} aria-live="polite">
+            <strong>{draftReady ? 'Listo para guardar' : 'Falta completar'}</strong>
+            {draftReady ? (
+              <span>El bloque cumple las reglas del Hub. Puedes guardarlo o publicarlo según el estado elegido.</span>
+            ) : (
+              <ul>{draftIssues.map((issue) => <li key={issue.code}>{issue.message}</li>)}</ul>
+            )}
+          </aside>
+
           <div className="form-actions">
-            <button disabled={busy}>{editing ? 'Guardar cambios' : 'Agregar bloque'}</button>
+            <button disabled={busy || !draftReady}>{editing ? 'Guardar cambios' : 'Agregar bloque'}</button>
           </div>
         </form>
 

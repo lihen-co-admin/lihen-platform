@@ -14,6 +14,28 @@ export type PublicHubBlockType = (typeof publicHubBlockTypes)[number];
 export const publicHubBlockStatuses = ['DRAFT', 'PUBLISHED', 'HIDDEN', 'ARCHIVED'] as const;
 export type PublicHubBlockStatus = (typeof publicHubBlockStatuses)[number];
 
+export type PublicHubValidationIssueCode =
+  | 'UNSUPPORTED_TYPE'
+  | 'UNSUPPORTED_STATUS'
+  | 'INVALID_SORT_ORDER'
+  | 'INVALID_STARTS_AT'
+  | 'INVALID_ENDS_AT'
+  | 'INVALID_SCHEDULE'
+  | 'INVALID_TARGET_URL'
+  | 'INVALID_IMAGE_URL'
+  | 'TARGET_REQUIRED'
+  | 'TITLE_OR_CTA_REQUIRED'
+  | 'PRODUCT_REQUIRED'
+  | 'COLLECTION_REQUIRED'
+  | 'HEADING_TITLE_REQUIRED'
+  | 'TEXT_BODY_REQUIRED'
+  | 'BANNER_CONTENT_REQUIRED';
+
+export interface PublicHubValidationIssue {
+  code: PublicHubValidationIssueCode;
+  message: string;
+}
+
 export interface PublicHubBlockProps {
   id: string;
   blockType: PublicHubBlockType;
@@ -71,58 +93,80 @@ function blank(value: string | null | undefined): boolean {
   return !value?.trim();
 }
 
-function assertValidUrl(value: string | null | undefined, field: string): void {
-  if (blank(value)) return;
+function validTimestamp(value: string | null | undefined): boolean {
+  return blank(value) || Number.isFinite(new Date(value!).getTime());
+}
+
+function validUrl(value: string | null | undefined): boolean {
+  if (blank(value)) return true;
   try {
     const parsed = new URL(value!);
-    if (!['https:', 'http:', 'mailto:', 'tel:'].includes(parsed.protocol)) {
-      throw new Error();
-    }
+    return ['https:', 'http:', 'mailto:', 'tel:'].includes(parsed.protocol);
   } catch {
-    throw new Error(`${field} debe contener una URL válida.`);
+    return false;
   }
 }
 
-export function validatePublicHubBlockDraft(draft: PublicHubBlockDraft): void {
+export function getPublicHubBlockValidationIssues(draft: PublicHubBlockDraft): readonly PublicHubValidationIssue[] {
+  const issues: PublicHubValidationIssue[] = [];
+
   if (!publicHubBlockTypes.includes(draft.blockType)) {
-    throw new Error('Tipo de bloque no soportado.');
+    issues.push({ code: 'UNSUPPORTED_TYPE', message: 'Tipo de bloque no soportado.' });
+    return issues;
   }
   if (draft.status && !publicHubBlockStatuses.includes(draft.status)) {
-    throw new Error('Estado de bloque no soportado.');
+    issues.push({ code: 'UNSUPPORTED_STATUS', message: 'Estado de bloque no soportado.' });
   }
   if (draft.sortOrder !== undefined && (!Number.isInteger(draft.sortOrder) || draft.sortOrder < 0)) {
-    throw new Error('El orden debe ser un entero mayor o igual a cero.');
+    issues.push({ code: 'INVALID_SORT_ORDER', message: 'El orden debe ser un entero mayor o igual a cero.' });
   }
-  if (draft.startsAt && draft.endsAt && new Date(draft.startsAt).getTime() >= new Date(draft.endsAt).getTime()) {
-    throw new Error('La fecha de inicio debe ser anterior a la fecha de finalización.');
+  if (!validTimestamp(draft.startsAt)) {
+    issues.push({ code: 'INVALID_STARTS_AT', message: 'La fecha de inicio no es válida.' });
   }
-
-  assertValidUrl(draft.targetUrl, 'El destino');
-  assertValidUrl(draft.imageUrl, 'La imagen');
+  if (!validTimestamp(draft.endsAt)) {
+    issues.push({ code: 'INVALID_ENDS_AT', message: 'La fecha de finalización no es válida.' });
+  }
+  if (validTimestamp(draft.startsAt) && validTimestamp(draft.endsAt) && draft.startsAt && draft.endsAt
+    && new Date(draft.startsAt).getTime() >= new Date(draft.endsAt).getTime()) {
+    issues.push({ code: 'INVALID_SCHEDULE', message: 'La fecha de inicio debe ser anterior a la fecha de finalización.' });
+  }
+  if (!validUrl(draft.targetUrl)) {
+    issues.push({ code: 'INVALID_TARGET_URL', message: 'El destino debe contener una URL válida.' });
+  }
+  if (!validUrl(draft.imageUrl)) {
+    issues.push({ code: 'INVALID_IMAGE_URL', message: 'La imagen debe contener una URL válida.' });
+  }
 
   switch (draft.blockType) {
     case 'LINK':
     case 'SOCIAL':
     case 'CTA':
-      if (blank(draft.targetUrl)) throw new Error('Este tipo de bloque necesita una URL de destino.');
-      if (blank(draft.title) && blank(draft.ctaLabel)) throw new Error('Este tipo de bloque necesita un título o CTA.');
+      if (blank(draft.targetUrl)) issues.push({ code: 'TARGET_REQUIRED', message: 'Este tipo de bloque necesita una URL de destino.' });
+      if (blank(draft.title) && blank(draft.ctaLabel)) issues.push({ code: 'TITLE_OR_CTA_REQUIRED', message: 'Este tipo de bloque necesita un título o CTA.' });
       break;
     case 'PRODUCT':
-      if (blank(draft.productId)) throw new Error('El bloque de producto necesita un producto canónico.');
+      if (blank(draft.productId)) issues.push({ code: 'PRODUCT_REQUIRED', message: 'El bloque de producto necesita un producto canónico.' });
       break;
     case 'PRODUCT_COLLECTION':
-      if (blank(draft.collectionKey)) throw new Error('La colección necesita una clave de colección.');
+      if (blank(draft.collectionKey)) issues.push({ code: 'COLLECTION_REQUIRED', message: 'La colección necesita una clave de colección.' });
       break;
     case 'HEADING':
-      if (blank(draft.title)) throw new Error('El encabezado necesita un título.');
+      if (blank(draft.title)) issues.push({ code: 'HEADING_TITLE_REQUIRED', message: 'El encabezado necesita un título.' });
       break;
     case 'TEXT':
-      if (blank(draft.body)) throw new Error('El bloque de texto necesita contenido.');
+      if (blank(draft.body)) issues.push({ code: 'TEXT_BODY_REQUIRED', message: 'El bloque de texto necesita contenido.' });
       break;
     case 'BANNER':
-      if (blank(draft.title) && blank(draft.imageUrl)) throw new Error('El banner necesita un título o una imagen.');
+      if (blank(draft.title) && blank(draft.imageUrl)) issues.push({ code: 'BANNER_CONTENT_REQUIRED', message: 'El banner necesita un título o una imagen.' });
       break;
   }
+
+  return issues;
+}
+
+export function validatePublicHubBlockDraft(draft: PublicHubBlockDraft): void {
+  const [issue] = getPublicHubBlockValidationIssues(draft);
+  if (issue) throw new Error(issue.message);
 }
 
 export function isPublicHubBlockActiveAt(

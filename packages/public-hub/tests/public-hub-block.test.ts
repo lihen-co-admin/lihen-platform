@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getPublicHubBlockPublicationState,
+  getPublicHubBlockValidationIssues,
   isPublicHubBlockActiveAt,
   validatePublicHubBlockDraft,
 } from '../src/domain/public-hub-block';
@@ -31,6 +32,22 @@ describe('Public Hub block domain', () => {
     expect(getPublicHubBlockPublicationState(scheduled, new Date('2026-09-01T12:00:00Z'))).toBe('SCHEDULED');
     expect(getPublicHubBlockPublicationState(expired, new Date('2026-09-01T12:00:00Z'))).toBe('EXPIRED');
     expect(getPublicHubBlockPublicationState({ status: 'PUBLISHED' }, new Date('2026-09-01T12:00:00Z'))).toBe('LIVE');
+  });
+
+
+  it('returns actionable validation issues for an incomplete product block', () => {
+    expect(getPublicHubBlockValidationIssues({ blockType: 'PRODUCT' })).toEqual([
+      expect.objectContaining({ code: 'PRODUCT_REQUIRED' }),
+    ]);
+  });
+
+  it('rejects malformed scheduling timestamps before persistence', () => {
+    expect(getPublicHubBlockValidationIssues({
+      blockType: 'LINK',
+      title: 'Tienda',
+      targetUrl: 'https://lihen.co',
+      startsAt: 'not-a-date',
+    })).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'INVALID_STARTS_AT' })]));
   });
 
   it('does not expose hidden content as active', () => {
