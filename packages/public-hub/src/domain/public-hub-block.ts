@@ -33,6 +33,23 @@ export interface PublicHubBlockProps {
   updatedAt?: string | null;
 }
 
+
+export const publicHubPublicationStates = ['DRAFT', 'HIDDEN', 'ARCHIVED', 'SCHEDULED', 'LIVE', 'EXPIRED'] as const;
+export type PublicHubPublicationState = (typeof publicHubPublicationStates)[number];
+
+export function getPublicHubBlockPublicationState(
+  block: Pick<PublicHubBlockProps, 'status' | 'startsAt' | 'endsAt'>,
+  at: Date,
+): PublicHubPublicationState {
+  if (block.status === 'DRAFT') return 'DRAFT';
+  if (block.status === 'HIDDEN') return 'HIDDEN';
+  if (block.status === 'ARCHIVED') return 'ARCHIVED';
+  const timestamp = at.getTime();
+  if (block.startsAt && new Date(block.startsAt).getTime() > timestamp) return 'SCHEDULED';
+  if (block.endsAt && new Date(block.endsAt).getTime() <= timestamp) return 'EXPIRED';
+  return 'LIVE';
+}
+
 export interface PublicHubBlockDraft {
   id?: string;
   blockType: PublicHubBlockType;
@@ -112,9 +129,5 @@ export function isPublicHubBlockActiveAt(
   block: Pick<PublicHubBlockProps, 'status' | 'startsAt' | 'endsAt'>,
   at: Date,
 ): boolean {
-  if (block.status !== 'PUBLISHED') return false;
-  const timestamp = at.getTime();
-  if (block.startsAt && new Date(block.startsAt).getTime() > timestamp) return false;
-  if (block.endsAt && new Date(block.endsAt).getTime() <= timestamp) return false;
-  return true;
+  return getPublicHubBlockPublicationState(block, at) === 'LIVE';
 }

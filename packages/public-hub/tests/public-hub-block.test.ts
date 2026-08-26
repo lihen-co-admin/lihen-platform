@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isPublicHubBlockActiveAt, validatePublicHubBlockDraft } from '../src/domain/public-hub-block';
+import {
+  getPublicHubBlockPublicationState,
+  isPublicHubBlockActiveAt,
+  validatePublicHubBlockDraft,
+} from '../src/domain/public-hub-block';
 
 describe('Public Hub block domain', () => {
   it('requires canonical product id for PRODUCT blocks', () => {
@@ -19,6 +23,14 @@ describe('Public Hub block domain', () => {
     expect(isPublicHubBlockActiveAt(block, new Date('2026-09-03T12:00:00Z'))).toBe(true);
     expect(isPublicHubBlockActiveAt(block, new Date('2026-08-31T23:59:59Z'))).toBe(false);
     expect(isPublicHubBlockActiveAt(block, new Date('2026-09-06T00:00:00Z'))).toBe(false);
+  });
+
+  it('classifies publication state without adding contradictory persisted flags', () => {
+    const scheduled = { status: 'PUBLISHED' as const, startsAt: '2026-09-02T00:00:00Z' };
+    const expired = { status: 'PUBLISHED' as const, endsAt: '2026-09-01T00:00:00Z' };
+    expect(getPublicHubBlockPublicationState(scheduled, new Date('2026-09-01T12:00:00Z'))).toBe('SCHEDULED');
+    expect(getPublicHubBlockPublicationState(expired, new Date('2026-09-01T12:00:00Z'))).toBe('EXPIRED');
+    expect(getPublicHubBlockPublicationState({ status: 'PUBLISHED' }, new Date('2026-09-01T12:00:00Z'))).toBe('LIVE');
   });
 
   it('does not expose hidden content as active', () => {
