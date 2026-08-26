@@ -4,6 +4,7 @@ import { renderStaticContentPage, type StorefrontContentPage } from './static-co
 type Route =
   | { kind: 'home' }
   | { kind: 'catalog' }
+  | { kind: 'hub' }
   | { kind: 'product'; ref: string }
   | { kind: 'content'; page: StorefrontContentPage };
 
@@ -25,6 +26,7 @@ function routeFromHash(): Route {
     return { kind: 'product', ref: decodeURIComponent(location.hash.slice('#producto/'.length).split('?')[0] ?? '') };
   }
   if (location.hash.startsWith('#catalogo')) return { kind: 'catalog' };
+  if (location.hash.startsWith('#descubre')) return { kind: 'hub' };
   const contentPage = contentRouteByHash[location.hash];
   if (contentPage) return { kind: 'content', page: contentPage };
   return { kind: 'home' };
@@ -62,6 +64,15 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
     const { renderProductPage } = await import('./product-page');
     const product = await renderProductPage(main, route.ref);
     document.title = product ? `${product.product_name} | LIHEN.CO` : 'Producto | LIHEN.CO';
+    main.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    return;
+  }
+
+  if (route.kind === 'hub') {
+    const { renderPublicHubPage } = await import('./public-hub-page');
+    await renderPublicHubPage(main);
+    document.title = 'Descubre LIHEN | LIHEN.CO';
     main.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: 'auto' });
     return;

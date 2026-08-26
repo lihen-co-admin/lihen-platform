@@ -24,6 +24,7 @@ import { OperationsPage } from '../pages/OperationsPage';
 import { CatalogsPage } from '../pages/CatalogsPage';
 import { CatalogPdfRenderPage } from '../pages/CatalogPdfRenderPage';
 import { CatalogInstitutionalContentPage } from '../pages/CatalogInstitutionalContentPage';
+import { PublicHubPage } from '../pages/PublicHubPage';
 
 export function App() {
   return (
@@ -45,6 +46,7 @@ export function App() {
           <Route path="/operations" element={<OperationsPage />} />
           <Route path="/catalogs" element={<CatalogsPage />} />
           <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
+          <Route path="/content/public-hub" element={<PublicHubPage />} />
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />

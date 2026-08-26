@@ -63,6 +63,10 @@ describe('architecture boundaries', () => {
     expectNoImport('packages/catalog/src/domain', reactOrSupabaseImport);
   });
 
+  it('public hub domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/public-hub/src/domain', reactOrSupabaseImport);
+  });
+
   it('shared does not depend on business domains', () => {
     expectNoImport('packages/shared/src', /from\s+['"]@lihen\/(?:products|suppliers|inventory|sales|finance|catalog)/);
   });

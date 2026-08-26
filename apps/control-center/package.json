@@ -24,7 +24,8 @@
     "@lihen/procurement": "workspace:*",
     "@lihen/orders": "workspace:*",
     "@lihen/sales": "workspace:*",
-    "@lihen/finance": "workspace:*"
+    "@lihen/finance": "workspace:*",
+    "@lihen/public-hub": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

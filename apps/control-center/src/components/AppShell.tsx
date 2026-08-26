@@ -23,6 +23,7 @@ export function AppShell() {
           <NavLink to="/finance">Caja y finanzas</NavLink>
           <NavLink to="/operations">Integridad y auditoría</NavLink>
           <NavLink to="/catalogs">Catálogos</NavLink>
+          <NavLink to="/content/public-hub">Hub público</NavLink>
           <NavLink to="/brands">Marcas</NavLink>
           <NavLink to="/categories">Categorías</NavLink>
           <NavLink to="/dev-auth-probe">DEV Auth Probe</NavLink>

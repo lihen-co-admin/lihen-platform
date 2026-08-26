@@ -1,0 +1,27 @@
+import { describe, expect, it } from 'vitest';
+import { isPublicHubBlockActiveAt, validatePublicHubBlockDraft } from '../src/domain/public-hub-block';
+
+describe('Public Hub block domain', () => {
+  it('requires canonical product id for PRODUCT blocks', () => {
+    expect(() => validatePublicHubBlockDraft({ blockType: 'PRODUCT' })).toThrow(/producto canónico/i);
+  });
+
+  it('requires destination for LINK blocks', () => {
+    expect(() => validatePublicHubBlockDraft({ blockType: 'LINK', title: 'Tienda' })).toThrow(/URL de destino/i);
+  });
+
+  it('accepts a scheduled published block only inside its window', () => {
+    const block = {
+      status: 'PUBLISHED' as const,
+      startsAt: '2026-09-01T00:00:00Z',
+      endsAt: '2026-09-06T00:00:00Z',
+    };
+    expect(isPublicHubBlockActiveAt(block, new Date('2026-09-03T12:00:00Z'))).toBe(true);
+    expect(isPublicHubBlockActiveAt(block, new Date('2026-08-31T23:59:59Z'))).toBe(false);
+    expect(isPublicHubBlockActiveAt(block, new Date('2026-09-06T00:00:00Z'))).toBe(false);
+  });
+
+  it('does not expose hidden content as active', () => {
+    expect(isPublicHubBlockActiveAt({ status: 'HIDDEN' }, new Date())).toBe(false);
+  });
+});

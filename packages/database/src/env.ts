@@ -25,6 +25,7 @@ export const browserEnvSchema = z.object({
   VITE_PRODUCT_IMAGE_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_PRODUCT_IMAGE_STORAGE_UPLOAD_MODE: productWriteModeSchema.default('blocked'),
   VITE_VISUAL_INTELLIGENCE_MODE: productWriteModeSchema.default('blocked'),
+  VITE_PUBLIC_HUB_MODE: productWriteModeSchema.default('blocked'),
   VITE_INVENTORY_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_SUPPLIER_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_PURCHASE_WRITE_MODE: productWriteModeSchema.default('blocked'),

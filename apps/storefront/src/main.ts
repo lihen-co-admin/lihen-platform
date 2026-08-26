@@ -3,6 +3,7 @@ import './styles/navigation.css';
 import './styles/home.css';
 import './styles/products.css';
 import './styles/static-content.css';
+import './styles/public-hub.css';
 import './styles/shell.css';
 import { bindSiteShellInteractions, renderSiteShell } from './components/site-shell';
 import { renderCurrentRoute } from './components/storefront-router';
