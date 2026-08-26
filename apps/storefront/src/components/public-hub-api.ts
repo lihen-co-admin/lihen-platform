@@ -26,6 +26,22 @@ function nullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
 
+function isSafeTargetUrl(value: string | null): boolean {
+  return value === null || /^(https?:\/\/|mailto:|tel:|#)/i.test(value);
+}
+
+function isSafeImageUrl(value: string | null): boolean {
+  return value === null || /^https?:\/\//i.test(value);
+}
+
+function isMoneyValue(value: unknown): value is number | string | null {
+  if (value === null) return true;
+  if (typeof value === 'number') return Number.isFinite(value) && value >= 0;
+  if (typeof value !== 'string' || !value.trim()) return false;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0;
+}
+
 function isPublicHubBlock(value: unknown): value is PublicHubBlock {
   if (!value || typeof value !== 'object') return false;
   const row = value as Record<string, unknown>;
@@ -38,19 +54,21 @@ function isPublicHubBlock(value: unknown): value is PublicHubBlock {
     && nullableString(row.body)
     && nullableString(row.cta_label)
     && nullableString(row.target_url)
+    && isSafeTargetUrl(row.target_url as string | null)
     && nullableString(row.image_url)
+    && isSafeImageUrl(row.image_url as string | null)
     && nullableString(row.product_id)
     && nullableString(row.product_slug)
     && nullableString(row.product_name)
     && nullableString(row.product_brand)
-    && (row.product_sale_price === null || (typeof row.product_sale_price === 'number' && Number.isFinite(row.product_sale_price)) || typeof row.product_sale_price === 'string')
+    && isMoneyValue(row.product_sale_price)
     && nullableString(row.product_availability)
     && nullableString(row.collection_key);
 }
 
 export function parsePublicHubPayload(payload: unknown): PublicHubBlock[] {
   if (!Array.isArray(payload)) return [];
-  return payload.filter(isPublicHubBlock).sort((left, right) => left.sort_order - right.sort_order);
+  return payload.filter(isPublicHubBlock).sort((left, right) => left.sort_order - right.sort_order || left.block_id.localeCompare(right.block_id));
 }
 
 export async function getPublicHub(): Promise<PublicHubBlock[]> {

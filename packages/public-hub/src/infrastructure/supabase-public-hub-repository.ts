@@ -26,6 +26,21 @@ type AdminHubBlockRow = {
   updated_at: string | null;
 };
 
+
+function toPublicHubPersistenceError(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String((error as { message?: unknown } | null)?.message ?? error ?? '');
+  if (message.includes('LIHEN_PUBLIC_HUB_PRODUCT_NOT_PUBLISHABLE')) {
+    return new Error('Este producto todavía no está listo para publicarse en el Hub. Revisa su visibilidad web, precio y media WEB_CARD.');
+  }
+  if (message.includes('LIHEN_PUBLIC_HUB_WRITE_FORBIDDEN')) {
+    return new Error('Tu perfil no tiene permisos para modificar el Hub público.');
+  }
+  if (message.includes('LIHEN_PUBLIC_HUB_BLOCK_NOT_FOUND')) {
+    return new Error('El bloque ya no existe o fue actualizado fuera de esta vista.');
+  }
+  return error instanceof Error ? error : new Error(message || 'No fue posible completar la operación del Hub público.');
+}
+
 function mapRow(row: AdminHubBlockRow): PublicHubBlockProps {
   return {
     id: row.id,
@@ -83,7 +98,7 @@ export class SupabasePublicHubRepository implements PublicHubRepository {
       p_starts_at: draft.startsAt ?? null,
       p_ends_at: draft.endsAt ?? null,
     });
-    if (error) throw error;
+    if (error) throw toPublicHubPersistenceError(error);
     if (typeof data !== 'string') throw new Error('El Hub no devolvió el identificador del bloque.');
     return data;
   }
@@ -95,7 +110,7 @@ export class SupabasePublicHubRepository implements PublicHubRepository {
       p_block_id: id,
       p_status: status,
     });
-    if (error) throw error;
+    if (error) throw toPublicHubPersistenceError(error);
   }
 
   async reorder(ids: readonly string[], operationKey: string): Promise<void> {
@@ -104,6 +119,6 @@ export class SupabasePublicHubRepository implements PublicHubRepository {
       p_operation_key: operationKey,
       p_ordered_ids: [...ids],
     });
-    if (error) throw error;
+    if (error) throw toPublicHubPersistenceError(error);
   }
 }
