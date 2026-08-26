@@ -1,4 +1,9 @@
-import type { ControlCenterOperationCatalogEntry, ControlCenterOperationPreview } from '../composition/operations';
+import type {
+  ControlCenterOperationCatalogEntry,
+  ControlCenterOperationExecutionReadiness,
+  ControlCenterOperationPayloadValidation,
+  ControlCenterOperationPreview,
+} from '../composition/operations';
 
 export function parseOperationPayload(input: string): Record<string, unknown> {
   const trimmed = input.trim();
@@ -27,4 +32,25 @@ export function canConfirmPreview(preview: ControlCenterOperationPreview | null)
 
 export function catalogIsExecutionSafe(entries: readonly ControlCenterOperationCatalogEntry[]): boolean {
   return entries.length > 0 && entries.every((entry) => entry.executionEnabled === false);
+}
+
+export function validationMessage(validation: ControlCenterOperationPayloadValidation): string {
+  if (validation.valid) return 'Payload válido para PREVIEW. La ejecución continúa deshabilitada.';
+  if (validation.missingRequiredKeys.length > 0) {
+    return `Faltan campos requeridos: ${validation.missingRequiredKeys.join(', ')}.`;
+  }
+  if (validation.unexpectedKeys.length > 0) {
+    return `Hay campos no esperados: ${validation.unexpectedKeys.join(', ')}.`;
+  }
+  return `Payload bloqueado: ${validation.validationNote}.`;
+}
+
+export function executionReadinessIsHeld(entries: readonly ControlCenterOperationExecutionReadiness[]): boolean {
+  return entries.length > 0 && entries.every((entry) =>
+    entry.catalogExecutionEnabled === false
+    && entry.releaseStatus === 'HELD'
+    && entry.allowedEnvironment === 'DEV_ONLY'
+    && entry.maxExecutionAttemptsPerHour === 0
+    && entry.readinessStatus === 'READY_BUT_HELD'
+  );
 }

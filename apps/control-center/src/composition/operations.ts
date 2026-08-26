@@ -82,6 +82,60 @@ export interface ControlCenterOperationTimelineRow {
   readonly occurredAt: Date;
 }
 
+export interface ControlCenterOperationContractArgument {
+  readonly name: string;
+  readonly required: boolean;
+}
+
+export interface ControlCenterOperationContract {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly actionKind: string;
+  readonly functionName: string;
+  readonly executionEnabled: boolean;
+  readonly requiresConfirmation: boolean;
+  readonly identityArguments: string;
+  readonly resultSignature: string;
+  readonly operationKeyFirst: boolean;
+  readonly payloadArguments: readonly ControlCenterOperationContractArgument[];
+}
+
+export interface ControlCenterOperationPayloadValidation {
+  readonly operationCode: string;
+  readonly valid: boolean;
+  readonly payloadIsObject: boolean;
+  readonly missingRequiredKeys: readonly string[];
+  readonly unexpectedKeys: readonly string[];
+  readonly expectedArguments: readonly ControlCenterOperationContractArgument[];
+  readonly executionEnabled: boolean;
+  readonly validationNote: string;
+}
+
+export interface ControlCenterOperationExecutionReadiness {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly catalogExecutionEnabled: boolean;
+  readonly releaseStatus: string;
+  readonly allowedEnvironment: string;
+  readonly requiresExplicitRelease: boolean;
+  readonly maxExecutionAttemptsPerHour: number;
+  readonly readinessStatus: string;
+}
+
+export interface Phase64PreExecutionReadiness {
+  readonly readinessStatus: string;
+  readonly requiredGates: number;
+  readonly passedGates: number;
+  readonly operations: number;
+  readonly executionDisabled: number;
+  readonly held: number;
+  readonly zeroAttemptBudget: number;
+  readonly validContracts: number;
+  readonly executionReleaseStatus: string;
+}
+
 function numberValue(value: unknown): number {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') return Number(value);
@@ -186,6 +240,95 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
           description: String(row.description ?? ''),
         };
       });
+    },
+
+    async getControlCenterOperationContracts(): Promise<readonly ControlCenterOperationContract[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_contracts_controlled');
+      if (error) throw new Error(`No fue posible leer los contratos operacionales: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        const args = Array.isArray(row.payload_arguments) ? row.payload_arguments : [];
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          actionKind: String(row.action_kind ?? ''),
+          functionName: String(row.function_name ?? ''),
+          executionEnabled: booleanValue(row.execution_enabled),
+          requiresConfirmation: booleanValue(row.requires_confirmation),
+          identityArguments: String(row.identity_arguments ?? ''),
+          resultSignature: String(row.result_signature ?? ''),
+          operationKeyFirst: booleanValue(row.operation_key_first),
+          payloadArguments: args.map((arg) => {
+            const item = rowObject(arg);
+            return { name: String(item.name ?? ''), required: booleanValue(item.required) };
+          }),
+        };
+      });
+    },
+
+    async validateOperationPayload(
+      operationCode: string,
+      requestPayload: Record<string, unknown>,
+    ): Promise<ControlCenterOperationPayloadValidation> {
+      const { data, error } = await client.rpc('validate_control_center_operation_payload_controlled', {
+        p_operation_code: operationCode,
+        p_request_payload: requestPayload,
+      });
+      if (error) throw new Error(`No fue posible validar el payload operacional: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('La validación no devolvió resultado.');
+      const args = Array.isArray(row.expected_arguments) ? row.expected_arguments : [];
+      return {
+        operationCode: String(row.operation_code ?? ''),
+        valid: booleanValue(row.valid),
+        payloadIsObject: booleanValue(row.payload_is_object),
+        missingRequiredKeys: Array.isArray(row.missing_required_keys) ? row.missing_required_keys.map(String) : [],
+        unexpectedKeys: Array.isArray(row.unexpected_keys) ? row.unexpected_keys.map(String) : [],
+        expectedArguments: args.map((arg) => {
+          const item = rowObject(arg);
+          return { name: String(item.name ?? ''), required: booleanValue(item.required) };
+        }),
+        executionEnabled: booleanValue(row.execution_enabled),
+        validationNote: String(row.validation_note ?? ''),
+      };
+    },
+
+    async getControlCenterExecutionReadiness(): Promise<readonly ControlCenterOperationExecutionReadiness[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_execution_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el guard de ejecución: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          catalogExecutionEnabled: booleanValue(row.catalog_execution_enabled),
+          releaseStatus: String(row.release_status ?? ''),
+          allowedEnvironment: String(row.allowed_environment ?? ''),
+          requiresExplicitRelease: booleanValue(row.requires_explicit_release),
+          maxExecutionAttemptsPerHour: numberValue(row.max_execution_attempts_per_hour),
+          readinessStatus: String(row.readiness_status ?? ''),
+        };
+      });
+    },
+
+    async getPhase64PreExecutionReadiness(): Promise<Phase64PreExecutionReadiness> {
+      const { data, error } = await client.rpc('get_phase6_4_pre_execution_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el gate 6.4: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('El gate 6.4 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        requiredGates: numberValue(row.required_gates),
+        passedGates: numberValue(row.passed_gates),
+        operations: numberValue(row.operations),
+        executionDisabled: numberValue(row.execution_disabled),
+        held: numberValue(row.held),
+        zeroAttemptBudget: numberValue(row.zero_attempt_budget),
+        validContracts: numberValue(row.valid_contracts),
+        executionReleaseStatus: String(row.execution_release_status ?? ''),
+      };
     },
 
     async prepareOperation(

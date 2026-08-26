@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { canConfirmPreview, catalogIsExecutionSafe, operationRiskClass, parseOperationPayload } from '../src/pages/operation-console-policy';
+import {
+  canConfirmPreview,
+  catalogIsExecutionSafe,
+  executionReadinessIsHeld,
+  operationRiskClass,
+  parseOperationPayload,
+  validationMessage,
+} from '../src/pages/operation-console-policy';
 
 const catalogEntry = {
   operationCode: 'ORDER_CONFIRM',
@@ -37,5 +44,26 @@ describe('operation console policy', () => {
   it('requires every catalog operation to remain execution disabled', () => {
     expect(catalogIsExecutionSafe([catalogEntry])).toBe(true);
     expect(catalogIsExecutionSafe([{ ...catalogEntry, executionEnabled: true }])).toBe(false);
+  });
+
+  it('explains missing and unexpected payload keys', () => {
+    expect(validationMessage({
+      operationCode: 'ORDER_CONFIRM', valid: false, payloadIsObject: true,
+      missingRequiredKeys: ['p_order_id'], unexpectedKeys: [], expectedArguments: [],
+      executionEnabled: false, validationNote: 'MISSING_REQUIRED_KEYS',
+    })).toContain('p_order_id');
+    expect(validationMessage({
+      operationCode: 'ORDER_CONFIRM', valid: false, payloadIsObject: true,
+      missingRequiredKeys: [], unexpectedKeys: ['hack'], expectedArguments: [],
+      executionEnabled: false, validationNote: 'UNEXPECTED_KEYS',
+    })).toContain('hack');
+  });
+
+  it('accepts readiness only while every operation is explicitly held', () => {
+    expect(executionReadinessIsHeld([{
+      operationCode: 'ORDER_CONFIRM', domainCode: 'ORDERS', riskLevel: 'HIGH',
+      catalogExecutionEnabled: false, releaseStatus: 'HELD', allowedEnvironment: 'DEV_ONLY',
+      requiresExplicitRelease: true, maxExecutionAttemptsPerHour: 0, readinessStatus: 'READY_BUT_HELD',
+    }])).toBe(true);
   });
 });

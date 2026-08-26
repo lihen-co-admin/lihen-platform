@@ -4,12 +4,23 @@ import {
   operationsComposition,
   type ControlCenterOperationCatalogEntry,
   type ControlCenterOperationConfirmation,
+  type ControlCenterOperationContract,
+  type ControlCenterOperationExecutionReadiness,
+  type ControlCenterOperationPayloadValidation,
+  type Phase64PreExecutionReadiness,
   type ControlCenterOperationPreview,
   type ControlCenterOperationTimelineRow,
   type OperationalAuditRow,
   type OperationalIntegrityCheck,
 } from '../composition/operations';
-import { canConfirmPreview, catalogIsExecutionSafe, operationRiskClass, parseOperationPayload } from './operation-console-policy';
+import {
+  canConfirmPreview,
+  catalogIsExecutionSafe,
+  executionReadinessIsHeld,
+  operationRiskClass,
+  parseOperationPayload,
+  validationMessage,
+} from './operation-console-policy';
 
 function makeOperationKey(operationCode: string): string {
   return `cc-${operationCode.toLowerCase()}-${Date.now()}`;
@@ -20,6 +31,10 @@ export function OperationsPage() {
   const [audit, setAudit] = useState<readonly OperationalAuditRow[]>([]);
   const [catalog, setCatalog] = useState<readonly ControlCenterOperationCatalogEntry[]>([]);
   const [timeline, setTimeline] = useState<readonly ControlCenterOperationTimelineRow[]>([]);
+  const [contracts, setContracts] = useState<readonly ControlCenterOperationContract[]>([]);
+  const [executionReadiness, setExecutionReadiness] = useState<readonly ControlCenterOperationExecutionReadiness[]>([]);
+  const [phase64, setPhase64] = useState<Phase64PreExecutionReadiness | null>(null);
+  const [payloadValidation, setPayloadValidation] = useState<ControlCenterOperationPayloadValidation | null>(null);
   const [selectedOperationCode, setSelectedOperationCode] = useState('');
   const [operationKey, setOperationKey] = useState('');
   const [payloadText, setPayloadText] = useState('{}');
@@ -41,12 +56,18 @@ export function OperationsPage() {
       operationsComposition.getAudit(),
       operationsComposition.getControlCenterOperationCatalog(),
       operationsComposition.getControlCenterAuditTimeline(),
+      operationsComposition.getControlCenterOperationContracts(),
+      operationsComposition.getControlCenterExecutionReadiness(),
+      operationsComposition.getPhase64PreExecutionReadiness(),
     ])
-      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline]) => {
+      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline, nextContracts, nextExecutionReadiness, nextPhase64]) => {
         setChecks(nextChecks);
         setAudit(nextAudit);
         setCatalog(nextCatalog);
         setTimeline(nextTimeline);
+        setContracts(nextContracts);
+        setExecutionReadiness(nextExecutionReadiness);
+        setPhase64(nextPhase64);
         const first = nextCatalog[0];
         if (first) {
           setSelectedOperationCode(first.operationCode);
@@ -62,6 +83,11 @@ export function OperationsPage() {
     [catalog, selectedOperationCode],
   );
 
+  const selectedContract = useMemo(
+    () => contracts.find((entry) => entry.operationCode === selectedOperationCode) ?? null,
+    [contracts, selectedOperationCode],
+  );
+
   const domains = useMemo(
     () => Array.from(new Set(catalog.map((entry) => entry.domainCode))).sort(),
     [catalog],
@@ -69,12 +95,14 @@ export function OperationsPage() {
 
   const failures = checks.reduce((sum, check) => sum + (check.status === 'PASS' ? 0 : check.issueCount), 0);
   const executionSafe = catalogIsExecutionSafe(catalog);
+  const releaseHeld = executionReadinessIsHeld(executionReadiness);
 
   function handleOperationChange(nextCode: string) {
     setSelectedOperationCode(nextCode);
     setOperationKey(makeOperationKey(nextCode));
     setPreview(null);
     setConfirmation(null);
+    setPayloadValidation(null);
     setError('');
   }
 
@@ -86,6 +114,11 @@ export function OperationsPage() {
     try {
       const payload = parseOperationPayload(payloadText);
       setSubmitting(true);
+      const validation = await operationsComposition.validateOperationPayload(selectedOperationCode, payload);
+      setPayloadValidation(validation);
+      if (!validation.valid) {
+        throw new Error(validationMessage(validation));
+      }
       const result = await operationsComposition.prepareOperation(operationKey.trim(), selectedOperationCode, payload);
       setPreview(result);
     } catch (reason) {
@@ -124,16 +157,16 @@ export function OperationsPage() {
     <section className="stack operation-console">
       <PageHeader
         title="Integridad y operaciones controladas"
-        description="FASE 6.1 · catálogo administrativo, PREVIEW/CONFIRM sin ejecución y timeline auditable de solo lectura."
+        description="FASE 6.1–6.4 · contratos validados, PREVIEW/CONFIRM, auditoría y release de ejecución explícitamente retenido."
       />
 
-      <div className={failures === 0 && executionSafe ? 'info-state' : 'warning-state'}>
+      <div className={failures === 0 && executionSafe && releaseHeld ? 'info-state' : 'warning-state'}>
         <strong>
-          {failures === 0 && executionSafe
-            ? 'Control operacional: PASS · ejecución de negocio deshabilitada'
+          {failures === 0 && executionSafe && releaseHeld
+            ? 'Control operacional: PASS · release de ejecución HELD'
             : 'Revisar integridad o política de ejecución'}
         </strong>
-        <p>PREVIEW y CONFIRM preparan metadata administrativa. Esta pantalla no ejecuta operaciones de negocio.</p>
+        <p>El payload se valida contra la firma real del RPC antes de PREVIEW. No existe liberación de ejecución en esta pantalla.</p>
       </div>
       {error ? <div className="error-state">{error}</div> : null}
       {loading ? <div className="card">Cargando contratos operacionales…</div> : null}
@@ -143,6 +176,8 @@ export function OperationsPage() {
         <article className={executionSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Ejecución habilitada</span><strong>{catalog.filter((entry) => entry.executionEnabled).length}</strong><small>Debe permanecer en 0</small></article>
         <article className="metric-card metric-card--pass"><span>Dominios</span><strong>{domains.length}</strong><small>Catálogo controlado</small></article>
         <article className="metric-card metric-card--pass"><span>Timeline</span><strong>{timeline.length}</strong><small>Últimos registros visibles</small></article>
+        <article className={releaseHeld ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Release</span><strong>{releaseHeld ? 'HELD' : 'REVISAR'}</strong><small>6.3 · presupuesto 0</small></article>
+        <article className={phase64?.readinessStatus === 'PASS' ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Pre-execution</span><strong>{phase64?.readinessStatus ?? '—'}</strong><small>6.4 · {phase64?.passedGates ?? 0}/{phase64?.requiredGates ?? 0} gates</small></article>
       </div>
 
       <div className="card stack">
@@ -163,9 +198,27 @@ export function OperationsPage() {
         </tbody></table></div>
       </div>
 
+      <div className="card stack">
+        <div className="operation-section-heading">
+          <div><span className="card-label">FASE 6.2</span><h2>Contrato del payload</h2></div>
+          <span className={selectedContract?.operationKeyFirst ? 'status-pass' : 'status-alert'}>{selectedContract?.operationKeyFirst ? 'RPC CONTRACT OK' : 'REVISAR'}</span>
+        </div>
+        <p className="muted-text">Los campos esperados se derivan de la firma real del RPC controlado. <code>p_operation_key</code> se gestiona fuera del payload.</p>
+        {selectedContract ? <>
+          <div className="operation-contract-meta">
+            <div><span>RPC</span><strong className="code-text">{selectedContract.functionName}</strong></div>
+            <div><span>Resultado</span><strong className="code-text">{selectedContract.resultSignature}</strong></div>
+          </div>
+          <div className="operation-argument-list">
+            {selectedContract.payloadArguments.map((argument) => <span key={argument.name} className={argument.required ? 'operation-argument operation-argument--required' : 'operation-argument'}>{argument.name}{argument.required ? ' *' : ''}</span>)}
+          </div>
+        </> : <p>No hay contrato seleccionado.</p>}
+        {payloadValidation ? <div className={payloadValidation.valid ? 'success-state' : 'warning-state'}><strong>{payloadValidation.valid ? 'Payload válido para PREVIEW' : 'Payload bloqueado'}</strong><p>{validationMessage(payloadValidation)}</p></div> : null}
+      </div>
+
       <div className="operation-grid">
         <form className="card stack" onSubmit={handlePreview}>
-          <div><span className="card-label">FASE 6.1B</span><h2>Preparar operación</h2></div>
+          <div><span className="card-label">FASE 6.1B + 6.2</span><h2>Preparar operación</h2></div>
           <p className="muted-text">PREVIEW crea una intención privada. CONFIRM confirma esa intención, pero todavía no ejecuta el RPC de negocio.</p>
           <label className="operation-field">Operación
             <select value={selectedOperationCode} onChange={(event) => handleOperationChange(event.target.value)} disabled={submitting}>
@@ -198,6 +251,17 @@ export function OperationsPage() {
           {confirmation ? <div className="success-state"><strong>{confirmation.status}</strong><div>{confirmation.executionNote}</div><small>Ejecución real: {confirmation.executionEnabled ? 'habilitada' : 'deshabilitada'}</small></div> : null}
           <div className="warning-state"><strong>No existe botón EXECUTE</strong><p>La ejecución real permanece fuera de este gate y deberá habilitarse mediante un corte separado.</p></div>
         </div>
+      </div>
+
+      <div className="card stack">
+        <div className="operation-section-heading">
+          <div><span className="card-label">FASE 6.3 + 6.4</span><h2>Guard de liberación</h2></div>
+          <span className={releaseHeld && phase64?.readinessStatus === 'PASS' ? 'status-pass' : 'status-alert'}>{phase64?.executionReleaseStatus ?? 'HELD'}</span>
+        </div>
+        <p className="muted-text">Las operaciones pueden estar estructuralmente listas sin estar liberadas. El presupuesto de ejecución permanece en cero.</p>
+        <div className="table-wrap"><table><thead><tr><th>Operación</th><th>Riesgo</th><th>Release</th><th>Entorno</th><th>Intentos/h</th><th>Readiness</th></tr></thead><tbody>
+          {executionReadiness.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.releaseStatus}</td><td>{row.allowedEnvironment}</td><td>{row.maxExecutionAttemptsPerHour}</td><td><span className={row.readinessStatus === 'READY_BUT_HELD' ? 'status-pass' : 'status-alert'}>{row.readinessStatus}</span></td></tr>)}
+        </tbody></table></div>
       </div>
 
       <div className="card stack">
