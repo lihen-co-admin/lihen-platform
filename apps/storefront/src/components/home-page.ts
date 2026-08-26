@@ -4,6 +4,7 @@ import bannerRepresentationUrl from '../assets/home/banners/que-te-representa.we
 import bannerStyleUrl from '../assets/home/banners/estilo-que-te-impulsa.webp';
 import bannerIdentityUrl from '../assets/home/banners/nube-identidad.webp';
 import { buildCatalogHref } from './catalog-navigation';
+import { carouselArrowIcon } from './carousel-navigation';
 
 export function renderHomePage(): string {
   return `
@@ -34,8 +35,10 @@ export function renderHomePage(): string {
           <img src="${bannerIdentityUrl}" alt="Identidad visual LIHEN.CO" />
         </a>
 
-        <button class="home-hero__arrow home-hero__arrow--prev" type="button" data-home-prev aria-label="Destacado anterior">‹</button>
-        <button class="home-hero__arrow home-hero__arrow--next" type="button" data-home-next aria-label="Siguiente destacado">›</button>
+        <div class="home-hero__controls" aria-label="Mover destacados">
+          <button class="lihen-carousel-button home-hero__arrow" type="button" data-home-prev aria-label="Destacado anterior">${carouselArrowIcon('previous')}</button>
+          <button class="lihen-carousel-button home-hero__arrow" type="button" data-home-next aria-label="Siguiente destacado">${carouselArrowIcon('next')}</button>
+        </div>
         <div class="home-hero__dots" data-home-dots aria-label="Seleccionar destacado"></div>
       </div>
     </section>
@@ -88,17 +91,19 @@ export function renderHomePage(): string {
           <h2 class="lihen-display" id="home-brands-title">Compra por marcas.</h2>
           <p>Marcas y conteos obtenidos desde la proyección canónica de productos publicados.</p>
         </div>
-        <div class="home-brands__controls" aria-label="Mover carrusel de marcas">
-          <button type="button" data-brand-prev aria-label="Ver marcas anteriores">‹</button>
-          <button type="button" data-brand-next aria-label="Ver más marcas">›</button>
-        </div>
       </div>
       <div class="home-brands__toolbar lihen-shell" aria-label="Selector de marcas por colección">
         <button type="button" class="is-active" data-brand-line="BEAUTY_CARE" aria-pressed="true">Beauty Care</button>
         <button type="button" data-brand-line="STYLE" aria-pressed="false">Style</button>
       </div>
-      <div class="home-brands__viewport lihen-shell" data-brand-viewport tabindex="0" aria-label="Marcas disponibles">
-        <div class="home-brands__track" data-brand-track></div>
+      <div class="home-brands__carousel lihen-shell">
+        <div class="home-brands__viewport" data-brand-viewport tabindex="0" aria-label="Marcas disponibles">
+          <div class="home-brands__track" data-brand-track></div>
+        </div>
+        <div class="home-brands__controls" aria-label="Mover carrusel de marcas">
+          <button class="lihen-carousel-button" type="button" data-brand-prev aria-label="Ver marcas anteriores">${carouselArrowIcon('previous')}</button>
+          <button class="lihen-carousel-button" type="button" data-brand-next aria-label="Ver más marcas">${carouselArrowIcon('next')}</button>
+        </div>
       </div>
       <p class="home-brands__status lihen-shell" data-brand-status role="status">Cargando marcas Beauty Care…</p>
       <p class="home-brands__note lihen-shell">Selecciona una marca para ver sus referencias publicadas en el catálogo.</p>

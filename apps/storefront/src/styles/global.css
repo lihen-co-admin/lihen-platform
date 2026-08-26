@@ -103,3 +103,68 @@ img, svg { display: block; max-width: 100%; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+
+/* QA visual navigation audit — one arrow language across LIHEN.CO. */
+.lihen-carousel-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(130, 48, 71, .16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .94);
+  color: var(--lihen-color-ink);
+  box-shadow: 0 8px 24px rgba(42, 29, 21, .09);
+  cursor: pointer;
+  transition:
+    transform var(--lihen-transition-fast),
+    border-color var(--lihen-transition-fast),
+    background-color var(--lihen-transition-fast),
+    color var(--lihen-transition-fast),
+    opacity var(--lihen-transition-fast),
+    box-shadow var(--lihen-transition-fast);
+}
+
+.lihen-carousel-button__icon {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lihen-carousel-button__icon path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lihen-carousel-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(130, 48, 71, .34);
+  background: var(--lihen-color-ivory);
+  color: var(--lihen-color-rose-deep);
+  box-shadow: 0 10px 28px rgba(130, 48, 71, .12);
+}
+
+.lihen-carousel-button:active:not(:disabled) {
+  transform: translateY(0) scale(.97);
+}
+
+.lihen-carousel-button:disabled {
+  opacity: .32;
+  cursor: default;
+  box-shadow: none;
+}
+
+@media (max-width: 720px) {
+  .lihen-carousel-button {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+}

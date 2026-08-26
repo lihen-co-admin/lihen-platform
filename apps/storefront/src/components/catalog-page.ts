@@ -28,12 +28,13 @@ const knownBrands = ['Bloomshell', 'MONTOC', 'Anyeluz', 'Milagros', 'Atenea', 'O
 function readState(): CatalogState {
   const hash = location.hash.startsWith('#catalogo') ? location.hash.slice('#catalogo'.length) : '';
   const params = new URLSearchParams(hash.startsWith('?') ? hash.slice(1) : hash);
+  const collection = params.get('collection') === 'CARE' ? 'CARE' : '';
   return {
     query: params.get('q') ?? '',
-    businessLine: params.get('business_line') ?? 'BEAUTY_CARE',
+    businessLine: collection === 'CARE' ? 'BEAUTY_CARE' : params.get('business_line') ?? 'BEAUTY_CARE',
     brand: params.get('brand') ?? '',
     category: params.get('category') ?? '',
-    collection: params.get('collection') === 'CARE' ? 'CARE' : '',
+    collection,
     page: Math.max(Number(params.get('page') ?? '1') || 1, 1),
   };
 }
@@ -78,7 +79,7 @@ export function renderCatalogPage(): string {
       ${state.collection === 'CARE' ? '<div class="catalog-preset" role="status"><strong>Cuidado</strong><span>Mostrando productos de cuidado personal y capilar detectados en el catálogo publicado.</span></div>' : ''}
       <form class="catalog-filters" data-catalog-filters role="search">
         <label class="catalog-search"><span>Buscar</span><input type="search" name="q" value="${escapeHtml(state.query)}" placeholder="Producto, marca o SKU" autocomplete="off" /></label>
-        <label><span>Línea</span><select name="business_line"><option value="BEAUTY_CARE" ${state.businessLine === 'BEAUTY_CARE' ? 'selected' : ''}>Beauty Care</option><option value="STYLE" ${state.businessLine === 'STYLE' ? 'selected' : ''}>Style</option></select></label>
+        <label><span>Línea</span><select name="business_line" ${state.collection === 'CARE' ? 'disabled aria-describedby="care-line-note"' : ''}><option value="BEAUTY_CARE" ${state.businessLine === 'BEAUTY_CARE' ? 'selected' : ''}>Beauty Care</option><option value="STYLE" ${state.businessLine === 'STYLE' ? 'selected' : ''}>Style</option></select>${state.collection === 'CARE' ? '<small id="care-line-note" class="catalog-filter-note">Cuidado pertenece a Beauty Care.</small>' : ''}</label>
         <label><span>Marca</span><select name="brand">${options(knownBrands, state.brand, 'Todas las marcas')}</select></label>
         <label><span>Categoría</span><select name="category">${options(knownCategories, state.category, 'Todas las categorías')}</select></label>
         <button class="lihen-button lihen-button--dark" type="submit">Buscar</button>
@@ -158,7 +159,7 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
     const data = new FormData(form);
     state = {
       query: String(data.get('q') ?? '').trim(),
-      businessLine: String(data.get('business_line') ?? 'BEAUTY_CARE'),
+      businessLine: state.collection === 'CARE' ? 'BEAUTY_CARE' : String(data.get('business_line') ?? 'BEAUTY_CARE'),
       brand: String(data.get('brand') ?? ''),
       category: String(data.get('category') ?? ''),
       collection: state.collection,

@@ -47,6 +47,13 @@ export async function hydrateHomeBrands(root: HTMLElement): Promise<void> {
   const step = (): number => Math.max(190, viewport.clientWidth * 0.74);
   const canAutoScroll = (): boolean => track.scrollWidth > viewport.clientWidth + 4;
 
+  const updateNavigation = (): void => {
+    const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const canScroll = maxScroll > 4;
+    prev.disabled = !canScroll || viewport.scrollLeft <= 4;
+    next.disabled = !canScroll || viewport.scrollLeft >= maxScroll - 4;
+  };
+
   const startAuto = (): void => {
     stopAuto();
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !canAutoScroll()) return;
@@ -84,7 +91,10 @@ export async function hydrateHomeBrands(root: HTMLElement): Promise<void> {
       }
       track.innerHTML = brands.map((brand) => renderBrand(brand, businessLine)).join('');
       status.hidden = true;
-      requestAnimationFrame(startAuto);
+      requestAnimationFrame(() => {
+        updateNavigation();
+        startAuto();
+      });
     } catch (error) {
       status.textContent = error instanceof Error ? error.message : 'No fue posible cargar las marcas.';
     }
@@ -100,6 +110,8 @@ export async function hydrateHomeBrands(root: HTMLElement): Promise<void> {
     viewport.scrollBy({ left: step(), behavior: 'smooth' });
     startAuto();
   });
+  viewport.addEventListener('scroll', updateNavigation, { passive: true });
+  window.addEventListener('resize', updateNavigation);
   viewport.addEventListener('mouseenter', stopAuto);
   viewport.addEventListener('mouseleave', startAuto);
   viewport.addEventListener('focusin', stopAuto);

@@ -9,7 +9,7 @@ export type StorefrontContentPage =
   | 'pqrs'
   | 'consumer';
 
-const whatsappUrl = 'https://wa.me/message/2JDWBH57SQG4F1';
+const whatsappUrl = 'https://wa.me/573057384163';
 const sicUrl = 'https://sedeelectronica.sic.gov.co/';
 
 function renderReviewNotice(): string {

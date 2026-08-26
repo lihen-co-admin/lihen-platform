@@ -20,7 +20,7 @@ export function renderSiteFooter(): string {
         </div>
         <div>
           <h2>Contacto</h2>
-          <a href="https://wa.me/message/2JDWBH57SQG4F1" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a href="https://wa.me/573057384163" target="_blank" rel="noopener noreferrer">WhatsApp</a>
           <a href="mailto:hl.lihen.co@gmail.com">hl.lihen.co@gmail.com</a>
           <a href="#pqrs">Peticiones, quejas y reclamos</a>
           <a href="#consumidor">Derechos del consumidor</a>

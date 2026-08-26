@@ -118,6 +118,10 @@ export function isSelected(productId: string): boolean {
   return readSelection().some((item) => item.productId === productId);
 }
 
+export function getSelectionQuantity(productId: string): number {
+  return readSelection().find((item) => item.productId === productId)?.quantity ?? 0;
+}
+
 export function subscribeSelection(listener: (items: SelectedProduct[]) => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);

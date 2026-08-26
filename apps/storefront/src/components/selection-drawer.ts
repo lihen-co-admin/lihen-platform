@@ -31,18 +31,36 @@ function renderItems(items: SelectedProduct[]): string {
 }
 
 function syncProductSelectionControls(items: SelectedProduct[]): void {
-  const selectedIds = new Set(items.map((item) => item.productId));
+  const byId = new Map(items.map((item) => [item.productId, item]));
   document.querySelectorAll<HTMLButtonElement>('[data-product-select]').forEach((control) => {
-    const active = selectedIds.has(control.dataset.productSelect ?? '');
+    const item = byId.get(control.dataset.productSelect ?? '');
+    const active = Boolean(item);
     control.classList.toggle('is-selected', active);
     control.setAttribute('aria-pressed', String(active));
     control.setAttribute('aria-label', `${active ? 'Quitar de' : 'Agregar a'} mi selección`);
-    control.textContent = active ? '✓' : '+';
+    control.textContent = '+';
+    control.hidden = active;
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-product-card]').forEach((card) => {
+    const productId = card.dataset.productCard ?? '';
+    const selection = card.querySelector<HTMLElement>('[data-product-selection]');
+    const selectable = selection?.dataset.productSelectable !== 'false';
+    card.classList.toggle('is-selected', selectable && byId.has(productId));
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-product-selection]').forEach((container) => {
+    const productId = container.dataset.productSelection ?? '';
+    const item = byId.get(productId);
+    const quantityControls = container.querySelector<HTMLElement>('[data-product-quantity-controls]');
+    if (quantityControls) quantityControls.hidden = !item;
+    const quantity = container.querySelector<HTMLElement>(`[data-product-quantity="${CSS.escape(productId)}"]`);
+    if (quantity) quantity.textContent = String(item?.quantity ?? 1);
   });
 
   document.querySelectorAll<HTMLButtonElement>('[data-product-dialog] [data-dialog-select]').forEach((control) => {
     const dialog = control.closest<HTMLElement>('[data-product-dialog]');
-    const active = selectedIds.has(dialog?.dataset.productDialog ?? '');
+    const active = byId.has(dialog?.dataset.productDialog ?? '');
     control.setAttribute('aria-pressed', String(active));
     control.textContent = active ? '✓ En mi selección' : 'Agregar a mi selección';
   });

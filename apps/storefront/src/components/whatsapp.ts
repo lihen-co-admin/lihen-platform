@@ -1,6 +1,6 @@
 import type { SelectedProduct } from './selection-store';
 
-const WHATSAPP_BASE = 'https://wa.me/message/2JDWBH57SQG4F1';
+const WHATSAPP_BASE = 'https://wa.me/573057384163';
 
 function numericPrice(value: string | number): number {
   const parsed = typeof value === 'number' ? value : Number(value);
@@ -21,7 +21,7 @@ export function buildSelectionWhatsAppMessage(items: readonly SelectedProduct[])
   const totalValue = items.reduce((sum, item) => sum + numericPrice(item.price) * item.quantity, 0);
 
   return [
-    '🌸 ¡Hola LIHEN.CO!',
+    '¡Hola LIHEN.CO!',
     '',
     'Quiero consultar disponibilidad de estos productos:',
     '',
