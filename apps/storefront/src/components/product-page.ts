@@ -1,12 +1,18 @@
 import { getStorefrontProducts } from './storefront-api';
 import { availabilityLabel, escapeHtml, money, type StorefrontProduct } from './storefront-product';
-import { legacyMedia, mediaAttributes, type StorefrontMedia } from './storefront-media';
+import { legacyMedia, mediaAttributes } from './storefront-media';
 import { isSelected, subscribeSelection, toggleSelection, type SelectedProduct } from './selection-store';
 import { buildProductWhatsAppUrl } from './whatsapp';
 import { carouselArrowIcon } from './carousel-navigation';
 import { getStorefrontProductEnrichment, type StorefrontProductEnrichment } from './product-enrichment';
 import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
+import {
+  PRODUCT_INFORMATION_FAQ_ANSWER,
+  PRODUCT_INFORMATION_VERIFICATION_COPY,
+  productDetailGallery,
+  productDetailPendingItems,
+} from './product-detail-policy';
 
 function selectedFromProduct(product: StorefrontProduct): SelectedProduct {
   return {
@@ -18,20 +24,6 @@ function selectedFromProduct(product: StorefrontProduct): SelectedProduct {
     imageUrl: product.main_image_url,
     quantity: 1,
   };
-}
-
-function galleryFor(product: StorefrontProduct): StorefrontMedia[] {
-  const fallback = product.card_media ?? legacyMedia(product.main_image_url);
-  const limit = product.business_line === 'STYLE' ? 10 : 5;
-  const source = product.gallery_media.length > 0
-    ? product.gallery_media
-    : product.detail_media
-      ? [product.detail_media]
-      : [fallback];
-
-  return source
-    .filter((media, index, all) => all.findIndex((candidate) => candidate.url === media.url) === index)
-    .slice(0, limit);
 }
 
 async function findProduct(ref: string): Promise<StorefrontProduct | null> {
@@ -49,14 +41,8 @@ async function findProduct(ref: string): Promise<StorefrontProduct | null> {
   return null;
 }
 
-function pendingItems(product: StorefrontProduct): string[] {
-  return product.business_line === 'STYLE'
-    ? ['Material y composición.', 'Talla, ajuste y medidas.', 'Colores o variantes verificadas.', 'Cuidados de la prenda.']
-    : ['Beneficios y atributos comerciales.', 'Presentación o contenido de la referencia.', 'Uso, cuidados o recomendaciones.'];
-}
-
 function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnrichment, related: StorefrontProduct[]): string {
-  const images = galleryFor(product);
+  const images = productDetailGallery(product);
   const hero = images[0] ?? legacyMedia(product.main_image_url);
   const lineLabel = product.business_line === 'STYLE' ? 'Style' : 'Beauty Care';
   const selectable = product.availability === 'AVAILABLE' || product.availability === 'LOW_STOCK';
@@ -66,7 +52,7 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
     ? `${detailCount} ${detailCount === 1 ? 'imagen verificada' : 'imágenes verificadas'}`
     : 'Vista de catálogo';
   const verifiedDescription = enrichment.summary ?? product.description?.trim() ?? null;
-  const hasIntelligence = enrichment.evidenceCount > 0;
+  const hasVerifiedEnrichment = enrichment.evidenceCount > 0;
   const heroIsDetail = hero.profile === 'WEB_DETAIL';
   const relatedHref = product.brand
     ? `#catalogo?business_line=${encodeURIComponent(product.business_line)}&brand=${encodeURIComponent(product.brand)}`
@@ -135,8 +121,7 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
                 <summary>Información</summary>
                 ${verifiedDescription
                   ? `<p>${escapeHtml(verifiedDescription)}</p>`
-                  : `<p>LIHEN Intelligence está verificando la información comercial de esta referencia antes de publicarla.</p>`}
-                ${hasIntelligence ? `<small class="product-page__evidence-note">${enrichment.evidenceCount} evidencias verificadas respaldan esta ficha.</small>` : ''}
+                  : `<p>${PRODUCT_INFORMATION_VERIFICATION_COPY}</p>`}
               </details>
 
               ${enrichment.benefits.length > 0 ? `
@@ -179,10 +164,10 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
                 </dl>
               </details>
 
-              ${!hasIntelligence ? `
+              ${!hasVerifiedEnrichment ? `
                 <details>
                   <summary>Información en verificación</summary>
-                  <ul>${pendingItems(product).map((item) => `<li>${item}</li>`).join('')}</ul>
+                  <ul>${productDetailPendingItems(product.business_line).map((item) => `<li>${item}</li>`).join('')}</ul>
                 </details>` : ''}
             </div>
           </div>
@@ -217,7 +202,7 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
           ${enrichment.faq.map((item) => `<details><summary>${escapeHtml(item.question)}</summary><p>${escapeHtml(item.answer)}</p></details>`).join('')}
           <details><summary>¿Cómo confirmo disponibilidad?</summary><p>Usa el botón de WhatsApp de esta ficha. El mensaje identifica la referencia consultada.</p></details>
           <details><summary>¿Puedo combinar Beauty Care y Style?</summary><p>Sí. Mi selección puede reunir referencias de ambas líneas antes de consultar por WhatsApp.</p></details>
-          <details><summary>¿Cómo valida LIHEN.CO la información del producto?</summary><p>LIHEN Intelligence prioriza fuentes oficiales y evidencia aprobada antes de mostrar beneficios, ingredientes, tallas, materiales o recomendaciones.</p></details>
+          <details><summary>¿Cómo valida LIHEN.CO la información del producto?</summary><p>${PRODUCT_INFORMATION_FAQ_ANSWER}</p></details>
         </div>
       </section>
     </div>
@@ -225,7 +210,7 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
 }
 
 function bindPage(root: HTMLElement, product: StorefrontProduct): void {
-  const images = galleryFor(product);
+  const images = productDetailGallery(product);
   let index = 0;
   const hero = root.querySelector<HTMLImageElement>('[data-product-hero]');
   const counter = root.querySelector<HTMLElement>('[data-product-counter]');
