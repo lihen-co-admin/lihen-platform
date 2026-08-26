@@ -57,7 +57,7 @@ function pendingItems(product: StorefrontProduct): string[] {
 
 function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnrichment, related: StorefrontProduct[]): string {
   const images = galleryFor(product);
-  const hero = images[0];
+  const hero = images[0] ?? legacyMedia(product.main_image_url);
   const lineLabel = product.business_line === 'STYLE' ? 'Style' : 'Beauty Care';
   const selectable = product.availability === 'AVAILABLE' || product.availability === 'LOW_STOCK';
   const selected = selectable && isSelected(product.product_id);
@@ -236,7 +236,7 @@ function bindPage(root: HTMLElement, product: StorefrontProduct): void {
   const show = (target: number): void => {
     if (images.length === 0) return;
     index = Math.min(Math.max(target, 0), images.length - 1);
-    const media = images[index];
+    const media = images[index] ?? images[0] ?? legacyMedia(product.main_image_url);
     if (hero) {
       hero.src = media.url;
       hero.srcset = `${media.url} ${media.width}w`;
@@ -296,7 +296,7 @@ export async function renderProductPage(root: HTMLElement, ref: string): Promise
     getStorefrontProducts({
       limit: 8,
       businessLine: product.business_line as 'BEAUTY_CARE' | 'STYLE',
-      brand: product.brand ?? undefined,
+      ...(product.brand ? { brand: product.brand } : {}),
     }),
   ]);
 

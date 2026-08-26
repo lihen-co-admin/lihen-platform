@@ -24,6 +24,7 @@ export const browserEnvSchema = z.object({
   VITE_PRODUCT_IMAGES_READ_MODE: productReadModeSchema.default('blocked'),
   VITE_PRODUCT_IMAGE_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_PRODUCT_IMAGE_STORAGE_UPLOAD_MODE: productWriteModeSchema.default('blocked'),
+  VITE_VISUAL_INTELLIGENCE_MODE: productWriteModeSchema.default('blocked'),
   VITE_INVENTORY_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_SUPPLIER_WRITE_MODE: productWriteModeSchema.default('blocked'),
   VITE_PURCHASE_WRITE_MODE: productWriteModeSchema.default('blocked'),
@@ -113,6 +114,14 @@ export function parseBrowserEnv(env: Record<string, unknown>): BrowserEnv {
 
   if (parsed.VITE_PRODUCT_IMAGE_STORAGE_UPLOAD_MODE === 'controlled' && parsed.VITE_PRODUCT_IMAGE_WRITE_MODE !== 'controlled') {
     throw new Error('Controlled product-image Storage uploads require VITE_PRODUCT_IMAGE_WRITE_MODE=controlled.');
+  }
+
+  if (parsed.VITE_VISUAL_INTELLIGENCE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
+    throw new Error('Controlled Visual Intelligence requires VITE_PRODUCT_READ_SOURCE=supabase.');
+  }
+
+  if (parsed.VITE_VISUAL_INTELLIGENCE_MODE === 'controlled' && parsed.VITE_AUTH_MODE !== 'supabase') {
+    throw new Error('Controlled Visual Intelligence requires VITE_AUTH_MODE=supabase.');
   }
 
   if (parsed.VITE_INVENTORY_WRITE_MODE === 'controlled' && parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {

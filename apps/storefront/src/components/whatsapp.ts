@@ -21,7 +21,7 @@ export function buildSelectionWhatsAppMessage(items: readonly SelectedProduct[])
   const totalValue = items.reduce((sum, item) => sum + numericPrice(item.price) * item.quantity, 0);
 
   return [
-    '¡Hola LIHEN.CO!',
+    '🌸 ¡Hola LIHEN.CO!',
     '',
     'Quiero consultar disponibilidad de estos productos:',
     '',
