@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   canConfirmPreview,
+  canRequestCanaryRelease,
+  canaryExecutionGuardBlocksAll,
   canarySimulationIsSafe,
   catalogIsExecutionSafe,
   dispatchContractsAreHeld,
   executionReadinessIsHeld,
   operationRiskClass,
   parseOperationPayload,
+  releaseAuthorizationGuardBlocksAll,
   validationMessage,
 } from '../src/pages/operation-console-policy';
 
@@ -86,6 +89,28 @@ describe('operation console policy', () => {
       maxCanaryAttemptsPerHour: 0, requiresManualRelease: true, allowedEnvironment: 'DEV_ONLY',
       dispatchAllowed: false, dispatchStatus: 'COMPILED_BUT_DISPATCH_HELD',
       simulationStatus: 'SIMULATION_READY_BUT_DISABLED',
+    }])).toBe(true);
+  });
+
+  it('blocks every canary operation until approval and final release exist', () => {
+    const guard = {
+      operationCode: 'ORDER_CREATE_DRAFT', domainCode: 'ORDERS', riskLevel: 'MEDIUM',
+      canaryEligible: true, canaryEnabled: false, maxCanaryAttemptsPerHour: 0,
+      approvalRequired: true, approvalState: 'NOT_REQUESTED', releaseScope: 'DEV_CANARY_ONLY',
+      dispatchAllowed: false, dispatchStatus: 'COMPILED_BUT_DISPATCH_HELD',
+      executionAllowed: false, guardStatus: 'BLOCKED_NO_APPROVAL',
+    } as const;
+    expect(canaryExecutionGuardBlocksAll([guard])).toBe(true);
+    expect(canRequestCanaryRelease(guard)).toBe(true);
+  });
+
+  it('keeps final release authorization blocked even after governance is present', () => {
+    expect(releaseAuthorizationGuardBlocksAll([{
+      operationCode: 'ORDER_CREATE_DRAFT', domainCode: 'ORDERS', riskLevel: 'MEDIUM',
+      canaryEligible: true, canaryEnabled: false, maxCanaryAttemptsPerHour: 0,
+      dispatchAllowed: false, approvalState: 'NOT_REQUESTED', releaseRequestId: null,
+      requestStatus: null, requestedEnvironment: null, expiresAt: null,
+      releaseAuthorized: false, guardStatus: 'BLOCKED_APPROVAL_NOT_GRANTED',
     }])).toBe(true);
   });
 });

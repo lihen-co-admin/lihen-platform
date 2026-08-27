@@ -2,7 +2,9 @@ import type {
   ControlCenterOperationCatalogEntry,
   ControlCenterOperationDispatchContract,
   ControlCenterOperationExecutionReadiness,
+  ControlCenterOperationCanaryExecutionGuard,
   ControlCenterOperationCanarySimulation,
+  ControlCenterOperationReleaseAuthorizationGuard,
   ControlCenterOperationPayloadValidation,
   ControlCenterOperationPreview,
 } from '../composition/operations';
@@ -77,5 +79,45 @@ export function canarySimulationIsSafe(entries: readonly ControlCenterOperationC
       entry.simulationStatus === 'SIMULATION_READY_BUT_DISABLED'
       || entry.simulationStatus === 'NOT_ELIGIBLE_BY_RISK'
     )
+  );
+}
+
+
+export function canaryExecutionGuardBlocksAll(entries: readonly ControlCenterOperationCanaryExecutionGuard[]): boolean {
+  return entries.length > 0 && entries.every((entry) =>
+    entry.executionAllowed === false
+    && entry.canaryEnabled === false
+    && entry.maxCanaryAttemptsPerHour === 0
+    && entry.dispatchAllowed === false
+    && (
+      entry.guardStatus === 'BLOCKED_NO_APPROVAL'
+      || entry.guardStatus === 'BLOCKED_BY_RISK'
+      || entry.guardStatus === 'BLOCKED_NOT_ELIGIBLE'
+    )
+  );
+}
+
+export function releaseAuthorizationGuardBlocksAll(entries: readonly ControlCenterOperationReleaseAuthorizationGuard[]): boolean {
+  return entries.length > 0 && entries.every((entry) =>
+    entry.releaseAuthorized === false
+    && entry.canaryEnabled === false
+    && entry.maxCanaryAttemptsPerHour === 0
+    && entry.dispatchAllowed === false
+    && entry.guardStatus.startsWith('BLOCKED_')
+  );
+}
+
+export function canRequestCanaryRelease(entry: ControlCenterOperationCanaryExecutionGuard | null): boolean {
+  return Boolean(
+    entry
+      && entry.riskLevel === 'MEDIUM'
+      && entry.canaryEligible
+      && entry.canaryEnabled === false
+      && entry.maxCanaryAttemptsPerHour === 0
+      && entry.approvalRequired
+      && entry.approvalState === 'NOT_REQUESTED'
+      && entry.dispatchAllowed === false
+      && entry.executionAllowed === false
+      && entry.guardStatus === 'BLOCKED_NO_APPROVAL',
   );
 }

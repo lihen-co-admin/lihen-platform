@@ -177,6 +177,86 @@ export interface ControlCenterOperationCanarySimulation {
   readonly simulationStatus: string;
 }
 
+
+export interface ControlCenterOperationCanaryExecutionGuard {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly canaryEligible: boolean;
+  readonly canaryEnabled: boolean;
+  readonly maxCanaryAttemptsPerHour: number;
+  readonly approvalRequired: boolean;
+  readonly approvalState: string;
+  readonly releaseScope: string;
+  readonly dispatchAllowed: boolean;
+  readonly dispatchStatus: string;
+  readonly executionAllowed: boolean;
+  readonly guardStatus: string;
+}
+
+export interface Phase75CanaryControlPlaneClosureReadiness {
+  readonly readinessStatus: string;
+  readonly requiredGates: number;
+  readonly passedGates: number;
+  readonly operations: number;
+  readonly blocked: number;
+  readonly canaryDisabled: number;
+  readonly zeroBudget: number;
+  readonly closureMode: string;
+}
+
+export interface Phase8ControlledReleaseEntryReadiness {
+  readonly readinessStatus: string;
+  readonly operations: number;
+  readonly blocked: number;
+  readonly notRequested: number;
+}
+
+export interface ControlCenterOperationReleaseAuthorizationGuard {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly canaryEligible: boolean;
+  readonly canaryEnabled: boolean;
+  readonly maxCanaryAttemptsPerHour: number;
+  readonly dispatchAllowed: boolean;
+  readonly approvalState: string;
+  readonly releaseRequestId: string | null;
+  readonly requestStatus: string | null;
+  readonly requestedEnvironment: string | null;
+  readonly expiresAt: Date | null;
+  readonly releaseAuthorized: boolean;
+  readonly guardStatus: string;
+}
+
+export interface Phase84ReleaseControlPlaneClosureReadiness {
+  readonly readinessStatus: string;
+  readonly requiredGates: number;
+  readonly passedGates: number;
+  readonly operations: number;
+  readonly blocked: number;
+  readonly requests: number;
+  readonly approvedRequests: number;
+  readonly closureMode: string;
+}
+
+export interface ControlCenterOperationReleaseRequest {
+  readonly releaseRequestId: string;
+  readonly operationCode: string;
+  readonly requestStatus: string;
+  readonly requestedEnvironment: string;
+  readonly expiresAt: Date;
+}
+
+export interface ControlCenterOperationReleaseDecision {
+  readonly releaseRequestId: string;
+  readonly operationCode: string;
+  readonly requestStatus: string;
+  readonly approvedBy: string | null;
+  readonly approvedAt: Date | null;
+  readonly expiresAt: Date;
+}
+
 export interface Phase64PreExecutionReadiness {
   readonly readinessStatus: string;
   readonly requiredGates: number;
@@ -465,6 +545,142 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
           simulationStatus: String(row.simulation_status ?? ''),
         };
       });
+    },
+
+
+    async getControlCenterCanaryExecutionGuard(): Promise<readonly ControlCenterOperationCanaryExecutionGuard[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_canary_execution_guard_controlled');
+      if (error) throw new Error(`No fue posible leer el guard canary: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          canaryEligible: booleanValue(row.canary_eligible),
+          canaryEnabled: booleanValue(row.canary_enabled),
+          maxCanaryAttemptsPerHour: numberValue(row.max_canary_attempts_per_hour),
+          approvalRequired: booleanValue(row.approval_required),
+          approvalState: String(row.approval_state ?? ''),
+          releaseScope: String(row.release_scope ?? ''),
+          dispatchAllowed: booleanValue(row.dispatch_allowed),
+          dispatchStatus: String(row.dispatch_status ?? ''),
+          executionAllowed: booleanValue(row.execution_allowed),
+          guardStatus: String(row.guard_status ?? ''),
+        };
+      });
+    },
+
+    async getPhase75CanaryControlPlaneClosureReadiness(): Promise<Phase75CanaryControlPlaneClosureReadiness> {
+      const { data, error } = await client.rpc('get_phase7_5_canary_control_plane_closure_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el cierre 7.5: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('El gate 7.5 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        requiredGates: numberValue(row.required_gates),
+        passedGates: numberValue(row.passed_gates),
+        operations: numberValue(row.operations),
+        blocked: numberValue(row.blocked),
+        canaryDisabled: numberValue(row.canary_disabled),
+        zeroBudget: numberValue(row.zero_budget),
+        closureMode: String(row.closure_mode ?? ''),
+      };
+    },
+
+    async getPhase8ControlledReleaseEntryReadiness(): Promise<Phase8ControlledReleaseEntryReadiness> {
+      const { data, error } = await client.rpc('get_phase8_controlled_release_entry_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer la entrada FASE 8: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('La entrada FASE 8 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        operations: numberValue(row.operations),
+        blocked: numberValue(row.blocked),
+        notRequested: numberValue(row.not_requested),
+      };
+    },
+
+    async getControlCenterReleaseAuthorizationGuard(): Promise<readonly ControlCenterOperationReleaseAuthorizationGuard[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_release_authorization_guard_controlled');
+      if (error) throw new Error(`No fue posible leer el guard de autorización: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          canaryEligible: booleanValue(row.canary_eligible),
+          canaryEnabled: booleanValue(row.canary_enabled),
+          maxCanaryAttemptsPerHour: numberValue(row.max_canary_attempts_per_hour),
+          dispatchAllowed: booleanValue(row.dispatch_allowed),
+          approvalState: String(row.approval_state ?? ''),
+          releaseRequestId: row.release_request_id ? String(row.release_request_id) : null,
+          requestStatus: row.request_status ? String(row.request_status) : null,
+          requestedEnvironment: row.requested_environment ? String(row.requested_environment) : null,
+          expiresAt: row.expires_at ? new Date(String(row.expires_at)) : null,
+          releaseAuthorized: booleanValue(row.release_authorized),
+          guardStatus: String(row.guard_status ?? ''),
+        };
+      });
+    },
+
+    async getPhase84ReleaseControlPlaneClosureReadiness(): Promise<Phase84ReleaseControlPlaneClosureReadiness> {
+      const { data, error } = await client.rpc('get_phase8_4_release_control_plane_closure_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el cierre 8.4: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('El gate 8.4 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        requiredGates: numberValue(row.required_gates),
+        passedGates: numberValue(row.passed_gates),
+        operations: numberValue(row.operations),
+        blocked: numberValue(row.blocked),
+        requests: numberValue(row.requests),
+        approvedRequests: numberValue(row.approved_requests),
+        closureMode: String(row.closure_mode ?? ''),
+      };
+    },
+
+    async requestCanaryRelease(
+      operationCode: string,
+      requestReason: string,
+    ): Promise<ControlCenterOperationReleaseRequest> {
+      const { data, error } = await client.rpc('request_control_center_canary_release_controlled', {
+        p_operation_code: operationCode,
+        p_request_reason: requestReason,
+      });
+      if (error) throw new Error(`No fue posible crear la solicitud de release: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('La solicitud de release no devolvió resultado.');
+      return {
+        releaseRequestId: String(row.release_request_id ?? ''),
+        operationCode: String(row.operation_code ?? ''),
+        requestStatus: String(row.request_status ?? ''),
+        requestedEnvironment: String(row.requested_environment ?? ''),
+        expiresAt: new Date(String(row.expires_at)),
+      };
+    },
+
+    async decideCanaryRelease(
+      releaseRequestId: string,
+      decision: 'APPROVED' | 'REJECTED',
+    ): Promise<ControlCenterOperationReleaseDecision> {
+      const { data, error } = await client.rpc('decide_control_center_canary_release_controlled', {
+        p_release_request_id: releaseRequestId,
+        p_decision: decision,
+      });
+      if (error) throw new Error(`No fue posible decidir la solicitud de release: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('La decisión de release no devolvió resultado.');
+      return {
+        releaseRequestId: String(row.release_request_id ?? ''),
+        operationCode: String(row.operation_code ?? ''),
+        requestStatus: String(row.request_status ?? ''),
+        approvedBy: row.approved_by ? String(row.approved_by) : null,
+        approvedAt: row.approved_at ? new Date(String(row.approved_at)) : null,
+        expiresAt: new Date(String(row.expires_at)),
+      };
     },
 
     async prepareOperation(
