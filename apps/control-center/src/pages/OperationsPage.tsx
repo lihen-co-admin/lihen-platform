@@ -11,12 +11,14 @@ import {
   type ControlCenterOperationExecutionReadiness,
   type ControlCenterOperationPayloadValidation,
   type ControlCenterOperationReleaseAuthorizationGuard,
+  type ControlCenterGovernanceAuditEvent,
   type Phase64PreExecutionReadiness,
   type Phase66ControlPlaneClosureReadiness,
   type Phase7ControlledExecutionEntryReadiness,
   type Phase75CanaryControlPlaneClosureReadiness,
   type Phase8ControlledReleaseEntryReadiness,
   type Phase84ReleaseControlPlaneClosureReadiness,
+  type Phase87ReleaseGovernanceHardeningClosureReadiness,
   type ControlCenterOperationPreview,
   type ControlCenterOperationTimelineRow,
   type OperationalAuditRow,
@@ -33,6 +35,7 @@ import {
   operationRiskClass,
   parseOperationPayload,
   releaseAuthorizationGuardBlocksAll,
+  releaseGovernanceHardeningIsSafe,
   validationMessage,
 } from './operation-console-policy';
 
@@ -57,6 +60,8 @@ export function OperationsPage() {
   const [phase8Entry, setPhase8Entry] = useState<Phase8ControlledReleaseEntryReadiness | null>(null);
   const [releaseGuard, setReleaseGuard] = useState<readonly ControlCenterOperationReleaseAuthorizationGuard[]>([]);
   const [phase84, setPhase84] = useState<Phase84ReleaseControlPlaneClosureReadiness | null>(null);
+  const [governanceAudit, setGovernanceAudit] = useState<readonly ControlCenterGovernanceAuditEvent[]>([]);
+  const [phase87, setPhase87] = useState<Phase87ReleaseGovernanceHardeningClosureReadiness | null>(null);
   const [payloadValidation, setPayloadValidation] = useState<ControlCenterOperationPayloadValidation | null>(null);
   const [selectedOperationCode, setSelectedOperationCode] = useState('');
   const [operationKey, setOperationKey] = useState('');
@@ -91,8 +96,10 @@ export function OperationsPage() {
       operationsComposition.getPhase8ControlledReleaseEntryReadiness(),
       operationsComposition.getControlCenterReleaseAuthorizationGuard(),
       operationsComposition.getPhase84ReleaseControlPlaneClosureReadiness(),
+      operationsComposition.getGovernanceAuditTimeline(50),
+      operationsComposition.getPhase87ReleaseGovernanceHardeningClosureReadiness(),
     ])
-      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline, nextContracts, nextExecutionReadiness, nextPhase64, nextDispatchContracts, nextPhase66, nextPhase7Entry, nextCanarySimulation, nextCanaryGuard, nextPhase75, nextPhase8Entry, nextReleaseGuard, nextPhase84]) => {
+      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline, nextContracts, nextExecutionReadiness, nextPhase64, nextDispatchContracts, nextPhase66, nextPhase7Entry, nextCanarySimulation, nextCanaryGuard, nextPhase75, nextPhase8Entry, nextReleaseGuard, nextPhase84, nextGovernanceAudit, nextPhase87]) => {
         setChecks(nextChecks);
         setAudit(nextAudit);
         setCatalog(nextCatalog);
@@ -109,6 +116,8 @@ export function OperationsPage() {
         setPhase8Entry(nextPhase8Entry);
         setReleaseGuard(nextReleaseGuard);
         setPhase84(nextPhase84);
+        setGovernanceAudit(nextGovernanceAudit);
+        setPhase87(nextPhase87);
         const first = nextCatalog[0];
         if (first) {
           setSelectedOperationCode(first.operationCode);
@@ -141,6 +150,7 @@ export function OperationsPage() {
   const canarySafe = canarySimulationIsSafe(canarySimulation);
   const canaryGuardSafe = canaryExecutionGuardBlocksAll(canaryGuard);
   const releaseGuardSafe = releaseAuthorizationGuardBlocksAll(releaseGuard);
+  const governanceHardeningSafe = releaseGovernanceHardeningIsSafe(phase87);
   const selectedCanaryGuard = canaryGuard.find((entry) => entry.operationCode === selectedOperationCode) ?? null;
   const releaseRequestEligible = canRequestCanaryRelease(selectedCanaryGuard);
 
@@ -204,13 +214,13 @@ export function OperationsPage() {
     <section className="stack operation-console">
       <PageHeader
         title="Integridad y operaciones controladas"
-        description="FASE 6.1–8.4 · control planes cerrados, aprobación manual preparada y ejecución final todavía bloqueada."
+        description="FASE 6.1–8.7 · governance endurecida, auditoría administrativa y ejecución final todavía bloqueada."
       />
 
-      <div className={failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe ? 'info-state' : 'warning-state'}>
+      <div className={failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe && governanceHardeningSafe ? 'info-state' : 'warning-state'}>
         <strong>
-          {failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe
-            ? 'Control operacional: PASS · FASE 6/7 cerradas · FASE 8 governance lista'
+          {failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe && governanceHardeningSafe
+            ? 'Control operacional: PASS · FASE 8 governance endurecida'
             : 'Revisar integridad o política de ejecución'}
         </strong>
         <p>El payload, dispatch, canary y release governance están controlados. La autorización final de ejecución sigue bloqueada.</p>
@@ -230,6 +240,7 @@ export function OperationsPage() {
         <article className={phase75?.readinessStatus === 'PASS' && canaryGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Cierre FASE 7</span><strong>{phase75?.readinessStatus ?? '—'}</strong><small>{phase75?.passedGates ?? 0}/{phase75?.requiredGates ?? 0} gates · ejecución bloqueada</small></article>
         <article className={phase8Entry?.readinessStatus === 'PASS' && releaseGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Release requests</span><strong>{phase84?.requests ?? 0}</strong><small>FASE 8 · autorizados {phase84?.approvedRequests ?? 0}</small></article>
         <article className={phase84?.readinessStatus === 'PASS' && releaseGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Cierre FASE 8</span><strong>{phase84?.readinessStatus ?? '—'}</strong><small>final execution no implementado</small></article>
+        <article className={governanceHardeningSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Hardening 8.7</span><strong>{phase87?.readinessStatus ?? '—'}</strong><small>{phase87?.passedGates ?? 0}/{phase87?.requiredGates ?? 0} gates · stale previews {phase87?.stalePreviewed ?? 0}</small></article>
       </div>
 
       <div className="card stack">
@@ -361,6 +372,20 @@ export function OperationsPage() {
           {releaseGuard.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.approvalState}</td><td>{row.requestStatus ?? '—'}</td><td><span className={row.releaseAuthorized ? 'status-alert' : 'status-pass'}>{row.releaseAuthorized ? 'YES' : 'NO'}</span></td><td>{row.guardStatus}</td></tr>)}
         </tbody></table></div>
         <div className="warning-state"><strong>Final execution release no implementado</strong><p>Incluso un request aprobado seguiría bloqueado por el guard final hasta un corte posterior, separado y explícito.</p></div>
+      </div>
+
+      <div className="card stack">
+        <div className="operation-section-heading">
+          <div><span className="card-label">FASE 8.5–8.7</span><h2>Governance audit</h2></div>
+          <span className={governanceHardeningSafe ? 'status-pass' : 'status-alert'}>{phase87?.closureMode ?? 'REVISAR'}</span>
+        </div>
+        <p className="muted-text">Operation keys quedan ligados al actor, los intents expirados persisten como EXPIRED y el timeline no expone request payloads.</p>
+        {governanceAudit.length === 0 ? <div className="empty-state"><strong>Sin eventos de governance</strong><p>No existen previews, confirmaciones ni solicitudes de release registradas en DEV.</p></div> : (
+          <div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Fuente</th><th>Operación</th><th>Estado</th><th>Actor</th></tr></thead><tbody>
+            {governanceAudit.map((row) => <tr key={`${row.eventSource}-${row.eventId}`}><td>{row.occurredAt.toLocaleString()}</td><td>{row.eventSource}</td><td>{row.operationCode}</td><td>{row.eventStatus}</td><td>{row.actorId}</td></tr>)}
+          </tbody></table></div>
+        )}
+        <div className="warning-state"><strong>Ejecución final sigue sin implementar</strong><p>8.7 endurece seguridad y trazabilidad; no crea una vía de ejecución.</p></div>
       </div>
 
       <div className="card stack">

@@ -31,7 +31,7 @@ export function renderSiteFooter(): string {
           <a href="#privacidad">Privacidad y datos</a>
           <a href="#cambios-devoluciones">Cambios y devoluciones</a>
           <a href="#envios">Política de envíos</a>
-          <a href="https://sedeelectronica.sic.gov.co/" target="_blank" rel="noopener noreferrer">Superintendencia de Industria y Comercio</a>
+          <a href="https://sedeelectronica.sic.gov.co/" target="_blank" rel="noopener noreferrer">Protección al consumidor – Superintendencia de Industria y Comercio</a>
         </div>
       </div>
       <div class="site-footer__bottom lihen-shell">

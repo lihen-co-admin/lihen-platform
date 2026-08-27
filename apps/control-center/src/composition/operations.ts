@@ -257,6 +257,34 @@ export interface ControlCenterOperationReleaseDecision {
   readonly expiresAt: Date;
 }
 
+
+export interface ControlCenterGovernanceAuditEvent {
+  readonly eventSource: string;
+  readonly eventId: string;
+  readonly operationCode: string;
+  readonly actorId: string;
+  readonly eventStatus: string;
+  readonly correlationKey: string;
+  readonly occurredAt: Date;
+  readonly eventMetadata: Record<string, unknown>;
+}
+
+export interface Phase87ReleaseGovernanceHardeningClosureReadiness {
+  readonly readinessStatus: string;
+  readonly requiredGates: number;
+  readonly passedGates: number;
+  readonly operations: number;
+  readonly executionDisabled: number;
+  readonly canaryDisabled: number;
+  readonly zeroCanaryBudget: number;
+  readonly releaseBlocked: number;
+  readonly releaseRequests: number;
+  readonly pendingRequests: number;
+  readonly approvedRequests: number;
+  readonly stalePreviewed: number;
+  readonly closureMode: string;
+}
+
 export interface Phase64PreExecutionReadiness {
   readonly readinessStatus: string;
   readonly requiredGates: number;
@@ -680,6 +708,53 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
         approvedBy: row.approved_by ? String(row.approved_by) : null,
         approvedAt: row.approved_at ? new Date(String(row.approved_at)) : null,
         expiresAt: new Date(String(row.expires_at)),
+      };
+    },
+
+
+    async getGovernanceAuditTimeline(limit = 50): Promise<readonly ControlCenterGovernanceAuditEvent[]> {
+      const { data, error } = await client.rpc('get_control_center_governance_audit_timeline_controlled', {
+        p_limit: limit,
+        p_offset: 0,
+        p_event_source: null,
+        p_operation_code: null,
+        p_actor_id: null,
+      });
+      if (error) throw new Error(`No fue posible leer el timeline de governance: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        return {
+          eventSource: String(row.event_source ?? ''),
+          eventId: String(row.event_id ?? ''),
+          operationCode: String(row.operation_code ?? ''),
+          actorId: String(row.actor_id ?? ''),
+          eventStatus: String(row.event_status ?? ''),
+          correlationKey: String(row.correlation_key ?? ''),
+          occurredAt: new Date(String(row.occurred_at)),
+          eventMetadata: rowObject(row.event_metadata),
+        };
+      });
+    },
+
+    async getPhase87ReleaseGovernanceHardeningClosureReadiness(): Promise<Phase87ReleaseGovernanceHardeningClosureReadiness> {
+      const { data, error } = await client.rpc('get_phase8_7_release_governance_hardening_closure_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el cierre 8.7: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('El gate 8.7 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        requiredGates: numberValue(row.required_gates),
+        passedGates: numberValue(row.passed_gates),
+        operations: numberValue(row.operations),
+        executionDisabled: numberValue(row.execution_disabled),
+        canaryDisabled: numberValue(row.canary_disabled),
+        zeroCanaryBudget: numberValue(row.zero_canary_budget),
+        releaseBlocked: numberValue(row.release_blocked),
+        releaseRequests: numberValue(row.release_requests),
+        pendingRequests: numberValue(row.pending_requests),
+        approvedRequests: numberValue(row.approved_requests),
+        stalePreviewed: numberValue(row.stale_previewed),
+        closureMode: String(row.closure_mode ?? ''),
       };
     },
 

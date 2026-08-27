@@ -94,6 +94,10 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
       await bindGiftsPage(main);
     } else {
       main.innerHTML = renderStaticContentPage(route.page);
+      if (route.page === 'shipping') {
+        const { hydrateDeliveryPolicy } = await import('./delivery-policy');
+        void hydrateDeliveryPolicy(main);
+      }
     }
     document.title = titleForContentPage(route.page);
     main.focus({ preventScroll: true });

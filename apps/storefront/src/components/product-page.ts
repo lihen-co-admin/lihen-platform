@@ -178,7 +178,7 @@ function renderPage(product: StorefrontProduct, enrichment: StorefrontProductEnr
         <div class="lihen-shell product-page__trust-grid">
           <article><span>01</span><h2>Atención personalizada</h2><p>Te acompañamos por WhatsApp antes de confirmar tu compra.</p></article>
           <article><span>02</span><h2>Información verificada</h2><p>Los atributos de producto se publican cuando existe una fuente aprobada.</p></article>
-          <article><span>03</span><h2>Selección unificada</h2><p>Puedes reunir Beauty Care y Style en una sola consulta.</p></article>
+          <article><span>03</span><h2>Entrega clara</h2><p>Envío gratis desde $100.000 COP según la política vigente; confirma destino y plazo antes del pago.</p></article>
         </div>
       </section>
 

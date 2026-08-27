@@ -5,6 +5,7 @@ import type {
   ControlCenterOperationCanaryExecutionGuard,
   ControlCenterOperationCanarySimulation,
   ControlCenterOperationReleaseAuthorizationGuard,
+  Phase87ReleaseGovernanceHardeningClosureReadiness,
   ControlCenterOperationPayloadValidation,
   ControlCenterOperationPreview,
 } from '../composition/operations';
@@ -119,5 +120,24 @@ export function canRequestCanaryRelease(entry: ControlCenterOperationCanaryExecu
       && entry.dispatchAllowed === false
       && entry.executionAllowed === false
       && entry.guardStatus === 'BLOCKED_NO_APPROVAL',
+  );
+}
+
+
+export function releaseGovernanceHardeningIsSafe(
+  readiness: Phase87ReleaseGovernanceHardeningClosureReadiness | null,
+): boolean {
+  return Boolean(
+    readiness
+      && readiness.readinessStatus === 'PASS'
+      && readiness.operations === 14
+      && readiness.executionDisabled === 14
+      && readiness.canaryDisabled === 14
+      && readiness.zeroCanaryBudget === 14
+      && readiness.releaseBlocked === 14
+      && readiness.pendingRequests === 0
+      && readiness.approvedRequests === 0
+      && readiness.stalePreviewed === 0
+      && readiness.closureMode === 'RELEASE_GOVERNANCE_HARDENED_FINAL_EXECUTION_STILL_NOT_IMPLEMENTED',
   );
 }

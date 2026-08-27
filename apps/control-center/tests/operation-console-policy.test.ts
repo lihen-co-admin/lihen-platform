@@ -10,6 +10,7 @@ import {
   operationRiskClass,
   parseOperationPayload,
   releaseAuthorizationGuardBlocksAll,
+  releaseGovernanceHardeningIsSafe,
   validationMessage,
 } from '../src/pages/operation-console-policy';
 
@@ -112,5 +113,23 @@ describe('operation console policy', () => {
       requestStatus: null, requestedEnvironment: null, expiresAt: null,
       releaseAuthorized: false, guardStatus: 'BLOCKED_APPROVAL_NOT_GRANTED',
     }])).toBe(true);
+  });
+
+  it('accepts the hardened 8.7 closure only while every release path remains blocked', () => {
+    expect(releaseGovernanceHardeningIsSafe({
+      readinessStatus: 'PASS',
+      requiredGates: 7,
+      passedGates: 7,
+      operations: 14,
+      executionDisabled: 14,
+      canaryDisabled: 14,
+      zeroCanaryBudget: 14,
+      releaseBlocked: 14,
+      releaseRequests: 0,
+      pendingRequests: 0,
+      approvedRequests: 0,
+      stalePreviewed: 0,
+      closureMode: 'RELEASE_GOVERNANCE_HARDENED_FINAL_EXECUTION_STILL_NOT_IMPLEMENTED',
+    })).toBe(true);
   });
 });
