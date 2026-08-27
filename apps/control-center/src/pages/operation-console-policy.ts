@@ -1,6 +1,8 @@
 import type {
   ControlCenterOperationCatalogEntry,
+  ControlCenterOperationDispatchContract,
   ControlCenterOperationExecutionReadiness,
+  ControlCenterOperationCanarySimulation,
   ControlCenterOperationPayloadValidation,
   ControlCenterOperationPreview,
 } from '../composition/operations';
@@ -52,5 +54,28 @@ export function executionReadinessIsHeld(entries: readonly ControlCenterOperatio
     && entry.allowedEnvironment === 'DEV_ONLY'
     && entry.maxExecutionAttemptsPerHour === 0
     && entry.readinessStatus === 'READY_BUT_HELD'
+  );
+}
+
+
+export function dispatchContractsAreHeld(entries: readonly ControlCenterOperationDispatchContract[]): boolean {
+  return entries.length > 0 && entries.every((entry) =>
+    entry.dispatchAllowed === false
+    && entry.releaseStatus === 'HELD'
+    && entry.allowedEnvironment === 'DEV_ONLY'
+    && entry.maxExecutionAttemptsPerHour === 0
+    && entry.dispatchStatus === 'COMPILED_BUT_DISPATCH_HELD'
+  );
+}
+
+export function canarySimulationIsSafe(entries: readonly ControlCenterOperationCanarySimulation[]): boolean {
+  return entries.length > 0 && entries.every((entry) =>
+    entry.canaryEnabled === false
+    && entry.dispatchAllowed === false
+    && entry.maxCanaryAttemptsPerHour === 0
+    && (
+      entry.simulationStatus === 'SIMULATION_READY_BUT_DISABLED'
+      || entry.simulationStatus === 'NOT_ELIGIBLE_BY_RISK'
+    )
   );
 }

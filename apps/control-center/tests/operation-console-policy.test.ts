@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   canConfirmPreview,
+  canarySimulationIsSafe,
   catalogIsExecutionSafe,
+  dispatchContractsAreHeld,
   executionReadinessIsHeld,
   operationRiskClass,
   parseOperationPayload,
@@ -64,6 +66,26 @@ describe('operation console policy', () => {
       operationCode: 'ORDER_CONFIRM', domainCode: 'ORDERS', riskLevel: 'HIGH',
       catalogExecutionEnabled: false, releaseStatus: 'HELD', allowedEnvironment: 'DEV_ONLY',
       requiresExplicitRelease: true, maxExecutionAttemptsPerHour: 0, readinessStatus: 'READY_BUT_HELD',
+    }])).toBe(true);
+  });
+
+  it('keeps every compiled dispatch contract held', () => {
+    expect(dispatchContractsAreHeld([{
+      operationCode: 'ORDER_CREATE_DRAFT', domainCode: 'ORDERS', riskLevel: 'MEDIUM',
+      functionName: 'create_order_draft_controlled', identityArguments: '', resultSignature: '',
+      payloadArguments: [], releaseStatus: 'HELD', allowedEnvironment: 'DEV_ONLY',
+      maxExecutionAttemptsPerHour: 0, dispatchAllowed: false,
+      dispatchStatus: 'COMPILED_BUT_DISPATCH_HELD',
+    }])).toBe(true);
+  });
+
+  it('accepts canary simulation only while canary and dispatch stay disabled', () => {
+    expect(canarySimulationIsSafe([{
+      operationCode: 'ORDER_CREATE_DRAFT', domainCode: 'ORDERS', riskLevel: 'MEDIUM',
+      functionName: 'create_order_draft_controlled', canaryEligible: true, canaryEnabled: false,
+      maxCanaryAttemptsPerHour: 0, requiresManualRelease: true, allowedEnvironment: 'DEV_ONLY',
+      dispatchAllowed: false, dispatchStatus: 'COMPILED_BUT_DISPATCH_HELD',
+      simulationStatus: 'SIMULATION_READY_BUT_DISABLED',
     }])).toBe(true);
   });
 });

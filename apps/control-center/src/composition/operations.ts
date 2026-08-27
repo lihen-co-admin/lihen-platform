@@ -124,6 +124,59 @@ export interface ControlCenterOperationExecutionReadiness {
   readonly readinessStatus: string;
 }
 
+
+export interface ControlCenterOperationDispatchContract {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly functionName: string;
+  readonly identityArguments: string;
+  readonly resultSignature: string;
+  readonly payloadArguments: readonly ControlCenterOperationContractArgument[];
+  readonly releaseStatus: string;
+  readonly allowedEnvironment: string;
+  readonly maxExecutionAttemptsPerHour: number;
+  readonly dispatchAllowed: boolean;
+  readonly dispatchStatus: string;
+}
+
+export interface Phase66ControlPlaneClosureReadiness {
+  readonly readinessStatus: string;
+  readonly requiredGates: number;
+  readonly passedGates: number;
+  readonly operations: number;
+  readonly executionDisabled: number;
+  readonly releaseHeld: number;
+  readonly dispatchContracts: number;
+  readonly dispatchHeld: number;
+  readonly closureMode: string;
+}
+
+export interface Phase7ControlledExecutionEntryReadiness {
+  readonly readinessStatus: string;
+  readonly operations: number;
+  readonly executionDisabled: number;
+  readonly canaryCandidateOperations: number;
+  readonly nonCanaryOperations: number;
+  readonly held: number;
+  readonly zeroAttemptBudget: number;
+}
+
+export interface ControlCenterOperationCanarySimulation {
+  readonly operationCode: string;
+  readonly domainCode: string;
+  readonly riskLevel: string;
+  readonly functionName: string;
+  readonly canaryEligible: boolean;
+  readonly canaryEnabled: boolean;
+  readonly maxCanaryAttemptsPerHour: number;
+  readonly requiresManualRelease: boolean;
+  readonly allowedEnvironment: string;
+  readonly dispatchAllowed: boolean;
+  readonly dispatchStatus: string;
+  readonly simulationStatus: string;
+}
+
 export interface Phase64PreExecutionReadiness {
   readonly readinessStatus: string;
   readonly requiredGates: number;
@@ -329,6 +382,89 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
         validContracts: numberValue(row.valid_contracts),
         executionReleaseStatus: String(row.execution_release_status ?? ''),
       };
+    },
+
+
+    async getControlCenterDispatchContracts(): Promise<readonly ControlCenterOperationDispatchContract[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_dispatch_contracts_controlled');
+      if (error) throw new Error(`No fue posible leer los contratos de dispatch: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        const args = Array.isArray(row.payload_arguments) ? row.payload_arguments : [];
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          functionName: String(row.function_name ?? ''),
+          identityArguments: String(row.identity_arguments ?? ''),
+          resultSignature: String(row.result_signature ?? ''),
+          payloadArguments: args.map((arg) => {
+            const item = rowObject(arg);
+            return { name: String(item.name ?? ''), required: booleanValue(item.required) };
+          }),
+          releaseStatus: String(row.release_status ?? ''),
+          allowedEnvironment: String(row.allowed_environment ?? ''),
+          maxExecutionAttemptsPerHour: numberValue(row.max_execution_attempts_per_hour),
+          dispatchAllowed: booleanValue(row.dispatch_allowed),
+          dispatchStatus: String(row.dispatch_status ?? ''),
+        };
+      });
+    },
+
+    async getPhase66ControlPlaneClosureReadiness(): Promise<Phase66ControlPlaneClosureReadiness> {
+      const { data, error } = await client.rpc('get_phase6_6_control_plane_closure_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer el cierre 6.6: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('El gate 6.6 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        requiredGates: numberValue(row.required_gates),
+        passedGates: numberValue(row.passed_gates),
+        operations: numberValue(row.operations),
+        executionDisabled: numberValue(row.execution_disabled),
+        releaseHeld: numberValue(row.release_held),
+        dispatchContracts: numberValue(row.dispatch_contracts),
+        dispatchHeld: numberValue(row.dispatch_held),
+        closureMode: String(row.closure_mode ?? ''),
+      };
+    },
+
+    async getPhase7ControlledExecutionEntryReadiness(): Promise<Phase7ControlledExecutionEntryReadiness> {
+      const { data, error } = await client.rpc('get_phase7_controlled_execution_entry_readiness_controlled');
+      if (error) throw new Error(`No fue posible leer la entrada FASE 7: ${error.message}`);
+      const row = firstRpcRow(data);
+      if (!row) throw new Error('La entrada FASE 7 no devolvió resultado.');
+      return {
+        readinessStatus: String(row.readiness_status ?? ''),
+        operations: numberValue(row.operations),
+        executionDisabled: numberValue(row.execution_disabled),
+        canaryCandidateOperations: numberValue(row.canary_candidate_operations),
+        nonCanaryOperations: numberValue(row.non_canary_operations),
+        held: numberValue(row.held),
+        zeroAttemptBudget: numberValue(row.zero_attempt_budget),
+      };
+    },
+
+    async getControlCenterCanarySimulation(): Promise<readonly ControlCenterOperationCanarySimulation[]> {
+      const { data, error } = await client.rpc('get_control_center_operation_canary_simulation_controlled');
+      if (error) throw new Error(`No fue posible leer la simulación canary: ${error.message}`);
+      return (Array.isArray(data) ? data : []).map((raw) => {
+        const row = rowObject(raw);
+        return {
+          operationCode: String(row.operation_code ?? ''),
+          domainCode: String(row.domain_code ?? ''),
+          riskLevel: String(row.risk_level ?? ''),
+          functionName: String(row.function_name ?? ''),
+          canaryEligible: booleanValue(row.canary_eligible),
+          canaryEnabled: booleanValue(row.canary_enabled),
+          maxCanaryAttemptsPerHour: numberValue(row.max_canary_attempts_per_hour),
+          requiresManualRelease: booleanValue(row.requires_manual_release),
+          allowedEnvironment: String(row.allowed_environment ?? ''),
+          dispatchAllowed: booleanValue(row.dispatch_allowed),
+          dispatchStatus: String(row.dispatch_status ?? ''),
+          simulationStatus: String(row.simulation_status ?? ''),
+        };
+      });
     },
 
     async prepareOperation(

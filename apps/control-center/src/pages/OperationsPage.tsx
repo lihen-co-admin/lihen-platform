@@ -3,11 +3,15 @@ import { PageHeader } from '../components/PageHeader';
 import {
   operationsComposition,
   type ControlCenterOperationCatalogEntry,
+  type ControlCenterOperationCanarySimulation,
   type ControlCenterOperationConfirmation,
   type ControlCenterOperationContract,
+  type ControlCenterOperationDispatchContract,
   type ControlCenterOperationExecutionReadiness,
   type ControlCenterOperationPayloadValidation,
   type Phase64PreExecutionReadiness,
+  type Phase66ControlPlaneClosureReadiness,
+  type Phase7ControlledExecutionEntryReadiness,
   type ControlCenterOperationPreview,
   type ControlCenterOperationTimelineRow,
   type OperationalAuditRow,
@@ -15,7 +19,9 @@ import {
 } from '../composition/operations';
 import {
   canConfirmPreview,
+  canarySimulationIsSafe,
   catalogIsExecutionSafe,
+  dispatchContractsAreHeld,
   executionReadinessIsHeld,
   operationRiskClass,
   parseOperationPayload,
@@ -34,6 +40,10 @@ export function OperationsPage() {
   const [contracts, setContracts] = useState<readonly ControlCenterOperationContract[]>([]);
   const [executionReadiness, setExecutionReadiness] = useState<readonly ControlCenterOperationExecutionReadiness[]>([]);
   const [phase64, setPhase64] = useState<Phase64PreExecutionReadiness | null>(null);
+  const [dispatchContracts, setDispatchContracts] = useState<readonly ControlCenterOperationDispatchContract[]>([]);
+  const [phase66, setPhase66] = useState<Phase66ControlPlaneClosureReadiness | null>(null);
+  const [phase7Entry, setPhase7Entry] = useState<Phase7ControlledExecutionEntryReadiness | null>(null);
+  const [canarySimulation, setCanarySimulation] = useState<readonly ControlCenterOperationCanarySimulation[]>([]);
   const [payloadValidation, setPayloadValidation] = useState<ControlCenterOperationPayloadValidation | null>(null);
   const [selectedOperationCode, setSelectedOperationCode] = useState('');
   const [operationKey, setOperationKey] = useState('');
@@ -59,8 +69,12 @@ export function OperationsPage() {
       operationsComposition.getControlCenterOperationContracts(),
       operationsComposition.getControlCenterExecutionReadiness(),
       operationsComposition.getPhase64PreExecutionReadiness(),
+      operationsComposition.getControlCenterDispatchContracts(),
+      operationsComposition.getPhase66ControlPlaneClosureReadiness(),
+      operationsComposition.getPhase7ControlledExecutionEntryReadiness(),
+      operationsComposition.getControlCenterCanarySimulation(),
     ])
-      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline, nextContracts, nextExecutionReadiness, nextPhase64]) => {
+      .then(([nextChecks, nextAudit, nextCatalog, nextTimeline, nextContracts, nextExecutionReadiness, nextPhase64, nextDispatchContracts, nextPhase66, nextPhase7Entry, nextCanarySimulation]) => {
         setChecks(nextChecks);
         setAudit(nextAudit);
         setCatalog(nextCatalog);
@@ -68,6 +82,10 @@ export function OperationsPage() {
         setContracts(nextContracts);
         setExecutionReadiness(nextExecutionReadiness);
         setPhase64(nextPhase64);
+        setDispatchContracts(nextDispatchContracts);
+        setPhase66(nextPhase66);
+        setPhase7Entry(nextPhase7Entry);
+        setCanarySimulation(nextCanarySimulation);
         const first = nextCatalog[0];
         if (first) {
           setSelectedOperationCode(first.operationCode);
@@ -96,6 +114,8 @@ export function OperationsPage() {
   const failures = checks.reduce((sum, check) => sum + (check.status === 'PASS' ? 0 : check.issueCount), 0);
   const executionSafe = catalogIsExecutionSafe(catalog);
   const releaseHeld = executionReadinessIsHeld(executionReadiness);
+  const dispatchHeld = dispatchContractsAreHeld(dispatchContracts);
+  const canarySafe = canarySimulationIsSafe(canarySimulation);
 
   function handleOperationChange(nextCode: string) {
     setSelectedOperationCode(nextCode);
@@ -157,16 +177,16 @@ export function OperationsPage() {
     <section className="stack operation-console">
       <PageHeader
         title="Integridad y operaciones controladas"
-        description="FASE 6.1–6.4 · contratos validados, PREVIEW/CONFIRM, auditoría y release de ejecución explícitamente retenido."
+        description="FASE 6.1–7.2 · control plane cerrado, dispatch retenido y canary en simulación segura sin ejecución real."
       />
 
-      <div className={failures === 0 && executionSafe && releaseHeld ? 'info-state' : 'warning-state'}>
+      <div className={failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe ? 'info-state' : 'warning-state'}>
         <strong>
-          {failures === 0 && executionSafe && releaseHeld
-            ? 'Control operacional: PASS · release de ejecución HELD'
+          {failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe
+            ? 'Control operacional: PASS · FASE 6 cerrada · FASE 7 en simulación segura'
             : 'Revisar integridad o política de ejecución'}
         </strong>
-        <p>El payload se valida contra la firma real del RPC antes de PREVIEW. No existe liberación de ejecución en esta pantalla.</p>
+        <p>El payload, dispatch y canary se validan sin liberar ejecución. No existe botón de ejecución real en esta pantalla.</p>
       </div>
       {error ? <div className="error-state">{error}</div> : null}
       {loading ? <div className="card">Cargando contratos operacionales…</div> : null}
@@ -178,6 +198,8 @@ export function OperationsPage() {
         <article className="metric-card metric-card--pass"><span>Timeline</span><strong>{timeline.length}</strong><small>Últimos registros visibles</small></article>
         <article className={releaseHeld ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Release</span><strong>{releaseHeld ? 'HELD' : 'REVISAR'}</strong><small>6.3 · presupuesto 0</small></article>
         <article className={phase64?.readinessStatus === 'PASS' ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Pre-execution</span><strong>{phase64?.readinessStatus ?? '—'}</strong><small>6.4 · {phase64?.passedGates ?? 0}/{phase64?.requiredGates ?? 0} gates</small></article>
+        <article className={phase66?.readinessStatus === 'PASS' && dispatchHeld ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Cierre FASE 6</span><strong>{phase66?.readinessStatus ?? '—'}</strong><small>{phase66?.passedGates ?? 0}/{phase66?.requiredGates ?? 0} gates · dispatch HELD</small></article>
+        <article className={phase7Entry?.readinessStatus === 'PASS' && canarySafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Canary candidatos</span><strong>{phase7Entry?.canaryCandidateOperations ?? 0}</strong><small>7.0–7.2 · ejecución 0</small></article>
       </div>
 
       <div className="card stack">
@@ -262,6 +284,29 @@ export function OperationsPage() {
         <div className="table-wrap"><table><thead><tr><th>Operación</th><th>Riesgo</th><th>Release</th><th>Entorno</th><th>Intentos/h</th><th>Readiness</th></tr></thead><tbody>
           {executionReadiness.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.releaseStatus}</td><td>{row.allowedEnvironment}</td><td>{row.maxExecutionAttemptsPerHour}</td><td><span className={row.readinessStatus === 'READY_BUT_HELD' ? 'status-pass' : 'status-alert'}>{row.readinessStatus}</span></td></tr>)}
         </tbody></table></div>
+      </div>
+
+      <div className="card stack">
+        <div className="operation-section-heading">
+          <div><span className="card-label">FASE 6.5 + 6.6</span><h2>Dispatch y cierre del control plane</h2></div>
+          <span className={phase66?.readinessStatus === 'PASS' && dispatchHeld ? 'status-pass' : 'status-alert'}>{phase66?.closureMode ?? 'REVISAR'}</span>
+        </div>
+        <p className="muted-text">Los contratos de dispatch están compilados desde los RPC reales, pero dispatch permanece deshabilitado para las 14 operaciones.</p>
+        <div className="table-wrap"><table><thead><tr><th>Operación</th><th>Riesgo</th><th>Release</th><th>Dispatch</th><th>Intentos/h</th></tr></thead><tbody>
+          {dispatchContracts.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.releaseStatus}</td><td><span className={row.dispatchAllowed ? 'status-alert' : 'status-pass'}>{row.dispatchStatus}</span></td><td>{row.maxExecutionAttemptsPerHour}</td></tr>)}
+        </tbody></table></div>
+      </div>
+
+      <div className="card stack">
+        <div className="operation-section-heading">
+          <div><span className="card-label">FASE 7.0–7.2</span><h2>Canary simulation</h2></div>
+          <span className={canarySafe ? 'status-pass' : 'status-alert'}>{canarySafe ? 'SIMULATION ONLY' : 'REVISAR'}</span>
+        </div>
+        <p className="muted-text">Solo las operaciones MEDIUM son candidatas. Ninguna tiene canary habilitado, presupuesto de intentos ni dispatch real.</p>
+        <div className="table-wrap"><table><thead><tr><th>Operación</th><th>Riesgo</th><th>Candidata</th><th>Entorno</th><th>Intentos/h</th><th>Simulación</th></tr></thead><tbody>
+          {canarySimulation.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.canaryEligible ? 'Sí' : 'No'}</td><td>{row.allowedEnvironment}</td><td>{row.maxCanaryAttemptsPerHour}</td><td><span className={row.simulationStatus === 'SIMULATION_READY_BUT_DISABLED' || row.simulationStatus === 'NOT_ELIGIBLE_BY_RISK' ? 'status-pass' : 'status-alert'}>{row.simulationStatus}</span></td></tr>)}
+        </tbody></table></div>
+        <div className="warning-state"><strong>Ejecución real continúa bloqueada</strong><p>FASE 7 prepara un canary futuro, pero este CUT no habilita canary, dispatch ni RPC de ejecución.</p></div>
       </div>
 
       <div className="card stack">
