@@ -53,6 +53,20 @@ export class SupabaseInventoryRepository implements InventoryRepository {
     }));
   }
 
+  public async listMovementsByExternalReferences(externalReferences: readonly string[]): Promise<readonly InventoryMovement[]> {
+    if (externalReferences.length === 0) return [];
+    const { data, error } = await this.client.from('inventory_movements')
+      .select('id,product_id,bucket,quantity_delta,reason,occurred_at,recorded_at,external_reference,notes')
+      .in('external_reference', [...externalReferences]).order('occurred_at', { ascending: false });
+    if (error) throw new Error(`Unable to read inventory movements by reference: ${error.message}`);
+    return ((data ?? []) as Record<string, unknown>[]).map((row) => ({
+      id: String(row.id), productId: String(row.product_id), bucket: String(row.bucket) as InventoryMovement['bucket'],
+      quantityDelta: Number(row.quantity_delta), reason: String(row.reason), occurredAt: new Date(String(row.occurred_at)),
+      recordedAt: new Date(String(row.recorded_at)), externalReference: row.external_reference ? String(row.external_reference) : null,
+      notes: row.notes ? String(row.notes) : null,
+    }));
+  }
+
   public async recordOnHandAdjustment(command: RecordInventoryAdjustmentCommand): Promise<InventoryBalance> {
     if (!this.controlledWriteEnabled) throw new InventoryWriteBlockedError();
     const { data, error } = await this.client.rpc('record_inventory_adjustment_controlled', {

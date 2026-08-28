@@ -3,6 +3,7 @@ import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
 import { openProductDetail } from './product-detail';
 import type { StorefrontProduct } from './storefront-product';
+import { publicScrollBehavior, resolvePublicExperienceState } from './public-experience-state';
 
 const GIFT_MAX_PRICE = 30000;
 const GIFT_PAGE_SIZE = 24;
@@ -33,7 +34,7 @@ export function renderGiftsPage(): string {
           <label class="gifts-filters__available"><input type="checkbox" data-gifts-available> Solo disponibles</label>
         </aside>
         <div class="gifts-results">
-          <div class="gifts-results__heading"><div><p class="lihen-eyebrow">Selección LIHEN</p><h2>Opciones dentro de tu presupuesto</h2></div><span data-gifts-status aria-live="polite">Cargando…</span></div>
+          <div class="gifts-results__heading"><div><p class="lihen-eyebrow">Selección LIHEN</p><h2>Opciones dentro de tu presupuesto</h2></div><span data-gifts-status role="status" aria-live="polite">Cargando…</span></div>
           <div class="catalog-grid gifts-results__grid" data-gifts-grid aria-busy="true"></div>
           <nav class="catalog-pagination" aria-label="Paginación de ideas para regalar" data-gifts-pagination></nav>
         </div>
@@ -61,8 +62,16 @@ export async function bindGiftsPage(root: HTMLElement): Promise<void> {
     const start = (currentPage - 1) * GIFT_PAGE_SIZE;
     const visibleItems = items.slice(start, start + GIFT_PAGE_SIZE);
     grid.innerHTML = visibleItems.map((product, index) => renderProductCard(product, index < 4)).join('');
-    grid.setAttribute('aria-busy', 'false');
-    status.textContent = `${items.length} ${items.length === 1 ? 'producto' : 'productos'} · hasta $${new Intl.NumberFormat('es-CO').format(maxPrice)}`;
+    const readyState = resolvePublicExperienceState({
+      isLoading: false,
+      itemCount: items.length,
+      emptyMessage: 'No hay productos publicados que cumplan estos filtros por ahora.',
+      readyMessage: `${items.length} ${items.length === 1 ? 'producto' : 'productos'} · hasta $${new Intl.NumberFormat('es-CO').format(maxPrice)}`,
+    });
+    grid.setAttribute('aria-busy', String(readyState.ariaBusy));
+    status.setAttribute('role', readyState.role);
+    status.setAttribute('aria-live', readyState.ariaLive);
+    status.textContent = readyState.message;
     if (items.length === 0) grid.innerHTML = '<div class="catalog-empty">No hay productos publicados que cumplan estos filtros por ahora.</div>';
     bindProductInteractions(grid, visibleItems, openProductDetail);
     pagination.innerHTML = items.length > GIFT_PAGE_SIZE ? `
@@ -73,18 +82,26 @@ export async function bindGiftsPage(root: HTMLElement): Promise<void> {
     pagination.querySelector<HTMLButtonElement>('[data-gifts-prev]')?.addEventListener('click', () => {
       currentPage -= 1;
       renderPage();
-      root.querySelector('#gifts-title')?.scrollIntoView({ behavior: 'smooth' });
+      root.querySelector('#gifts-title')?.scrollIntoView({ behavior: publicScrollBehavior() });
     });
     pagination.querySelector<HTMLButtonElement>('[data-gifts-next]')?.addEventListener('click', () => {
       currentPage += 1;
       renderPage();
-      root.querySelector('#gifts-title')?.scrollIntoView({ behavior: 'smooth' });
+      root.querySelector('#gifts-title')?.scrollIntoView({ behavior: publicScrollBehavior() });
     });
   };
 
   const load = async (): Promise<void> => {
-    grid.setAttribute('aria-busy', 'true');
-    status.textContent = 'Cargando…';
+    const loadingState = resolvePublicExperienceState({
+      isLoading: true,
+      itemCount: 0,
+      emptyMessage: 'No hay productos publicados que cumplan estos filtros por ahora.',
+      readyMessage: '',
+    });
+    grid.setAttribute('aria-busy', String(loadingState.ariaBusy));
+    status.setAttribute('role', loadingState.role);
+    status.setAttribute('aria-live', loadingState.ariaLive);
+    status.textContent = loadingState.message;
     pagination.innerHTML = '';
     currentPage = 1;
     const maxPrice = Math.min(Number(priceBand), GIFT_MAX_PRICE);
@@ -107,8 +124,18 @@ export async function bindGiftsPage(root: HTMLElement): Promise<void> {
       items = allItems;
       renderPage();
     } catch (error) {
-      grid.setAttribute('aria-busy', 'false');
-      status.textContent = error instanceof Error ? error.message : 'No fue posible cargar las ideas para regalar.';
+      const errorState = resolvePublicExperienceState({
+        isLoading: false,
+        itemCount: 0,
+        errorMessage:
+          error instanceof Error ? error.message : 'No fue posible cargar las ideas para regalar.',
+        emptyMessage: 'No hay productos publicados que cumplan estos filtros por ahora.',
+        readyMessage: '',
+      });
+      grid.setAttribute('aria-busy', String(errorState.ariaBusy));
+      status.setAttribute('role', errorState.role);
+      status.setAttribute('aria-live', errorState.ariaLive);
+      status.textContent = errorState.message;
       grid.innerHTML = '<div class="catalog-empty">Intenta nuevamente en unos segundos.</div>';
     }
   };

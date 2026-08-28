@@ -1,5 +1,8 @@
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
-import { PageHeader } from '../components/PageHeader';
+import { AdminPageHero } from '../components/AdminPageHero';
+import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
+import { OperationalNotice } from '../components/OperationalNotice';
+import { SummaryStrip } from '../components/SummaryStrip';
 import {
   operationsComposition,
   type ControlCenterOperationCatalogEntry,
@@ -24,6 +27,9 @@ import {
   type OperationalAuditRow,
   type OperationalIntegrityCheck,
 } from '../composition/operations';
+import { evaluateGovernanceReadiness } from '../domain/governance-readiness';
+import { evaluateGovernanceAssurance, evaluateGovernanceEvidence } from '../domain/governance-evidence';
+import { evaluateGovernanceOperationPolicy } from '../domain/governance-operation-policy';
 import {
   canConfirmPreview,
   canaryExecutionGuardBlocksAll,
@@ -151,8 +157,46 @@ export function OperationsPage() {
   const canaryGuardSafe = canaryExecutionGuardBlocksAll(canaryGuard);
   const releaseGuardSafe = releaseAuthorizationGuardBlocksAll(releaseGuard);
   const governanceHardeningSafe = releaseGovernanceHardeningIsSafe(phase87);
+  const governanceReadiness = evaluateGovernanceReadiness({
+    integrityIssueCount: failures,
+    operationCount: catalog.length,
+    executionEnabledCount: catalog.filter((entry) => entry.executionEnabled).length,
+    executionReleaseHeld: releaseHeld,
+    dispatchHeld,
+    canarySimulationSafe: canarySafe,
+    canaryGuardBlocksAll: canaryGuardSafe,
+    releaseGuardBlocksAll: releaseGuardSafe,
+    phase64Status: phase64?.readinessStatus ?? null,
+    phase66Status: phase66?.readinessStatus ?? null,
+    phase75Status: phase75?.readinessStatus ?? null,
+    phase84Status: phase84?.readinessStatus ?? null,
+    phase87Status: phase87?.readinessStatus ?? null,
+  });
+  const governanceEvidence = evaluateGovernanceEvidence({
+    governanceAudit: governanceAudit.map((event) => ({
+      id: event.eventId,
+      operationCode: event.operationCode,
+      actorId: event.actorId,
+      status: event.eventStatus,
+      correlationKey: event.correlationKey,
+      occurredAt: event.occurredAt,
+    })),
+    operationTimeline: timeline.map((event) => ({
+      domainCode: event.domainCode,
+      operationType: event.operationType,
+      operationKey: event.operationKey,
+      actorId: event.actorId,
+      occurredAt: event.occurredAt,
+    })),
+    now: new Date(),
+  });
+  const governanceAssurance = evaluateGovernanceAssurance(governanceReadiness.status, governanceEvidence.status);
   const selectedCanaryGuard = canaryGuard.find((entry) => entry.operationCode === selectedOperationCode) ?? null;
   const releaseRequestEligible = canRequestCanaryRelease(selectedCanaryGuard);
+  const governanceOperationPolicy = evaluateGovernanceOperationPolicy({
+    assuranceStatus: governanceAssurance.status,
+    releaseRequestEligible,
+  });
 
   function handleOperationChange(nextCode: string) {
     setSelectedOperationCode(nextCode);
@@ -166,6 +210,10 @@ export function OperationsPage() {
   async function handlePreview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
+    if (!governanceOperationPolicy.prepareAllowed) {
+      setError('Governance assurance está BLOCKED. No se permite preparar nuevas intenciones hasta resolver las señales críticas.');
+      return;
+    }
     setPreview(null);
     setConfirmation(null);
     try {
@@ -187,6 +235,10 @@ export function OperationsPage() {
 
   async function handleConfirm() {
     if (!preview || !canConfirmPreview(preview)) return;
+    if (!governanceOperationPolicy.confirmAllowed) {
+      setError('La confirmación requiere Governance assurance READY. REVIEW/BLOCKED permanece en modo de investigación.');
+      return;
+    }
     setError('');
     try {
       setSubmitting(true);
@@ -200,6 +252,48 @@ export function OperationsPage() {
     }
   }
 
+  const controlPlaneHealthy = governanceAssurance.status === 'READY' && executionSafe && governanceHardeningSafe;
+
+  const intelligenceInsights: readonly IntelligenceInsight[] = [
+    controlPlaneHealthy
+      ? {
+          id: 'operations-control-plane-pass',
+          severity: 'SUCCESS',
+          title: 'Gobernanza operativa íntegra',
+          explanation: 'Payload, dispatch, canary y release governance permanecen bajo control y la ejecución final continúa bloqueada.',
+          source: 'Integrity checks + release governance',
+        }
+      : {
+          id: 'operations-control-plane-review',
+          severity: 'WARNING',
+          title: 'Revisión de integridad requerida',
+          explanation: 'Existe al menos una señal de integridad, dispatch, canary o release governance que requiere revisión antes de cualquier readiness posterior.',
+          source: 'Integrity checks + release governance',
+        },
+    {
+      id: 'operations-execution-held',
+      severity: 'INFO',
+      title: 'Ejecución final protegida',
+      explanation: `${catalog.filter((entry) => entry.executionEnabled).length} operaciones tienen ejecución habilitada. El valor esperado en esta etapa es 0.`,
+      source: 'Operation catalog',
+    },
+    phase87?.readinessStatus === 'PASS'
+      ? {
+          id: 'operations-phase87-pass',
+          severity: 'SUCCESS',
+          title: 'Hardening 8.7 en PASS',
+          explanation: `${phase87.passedGates}/${phase87.requiredGates} gates superados. Este estado endurece trazabilidad y autorización, pero no crea una vía de ejecución.`,
+          source: 'Phase 8.7 readiness',
+        }
+      : {
+          id: 'operations-phase87-review',
+          severity: 'WARNING',
+          title: 'Hardening 8.7 requiere revisión',
+          explanation: 'El cierre de governance no está reportando PASS en la lectura actual.',
+          source: 'Phase 8.7 readiness',
+        },
+  ];
+
   async function handleDomainFilter(nextDomain: string) {
     setDomainFilter(nextDomain);
     setError('');
@@ -212,19 +306,32 @@ export function OperationsPage() {
 
   return (
     <section className="stack operation-console">
-      <PageHeader
-        title="Integridad y operaciones controladas"
-        description="FASE 6.1–8.7 · governance endurecida, auditoría administrativa y ejecución final todavía bloqueada."
+      <AdminPageHero
+        eyebrow="CONTROL Y GOBERNANZA"
+        title="Integridad y auditoría"
+        description="Supervisa contratos, trazabilidad, canary y release governance sin abrir una vía de ejecución desde el Control Center."
+        accent="lilac"
+        status={<span className={controlPlaneHealthy ? 'status-pass' : 'status-alert'}>{controlPlaneHealthy ? 'CONTROL PLANE PASS' : 'REVISAR'}</span>}
       />
 
-      <div className={failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe && governanceHardeningSafe ? 'info-state' : 'warning-state'}>
-        <strong>
-          {failures === 0 && executionSafe && releaseHeld && dispatchHeld && canarySafe && canaryGuardSafe && releaseGuardSafe && governanceHardeningSafe
-            ? 'Control operacional: PASS · FASE 8 governance endurecida'
-            : 'Revisar integridad o política de ejecución'}
-        </strong>
-        <p>El payload, dispatch, canary y release governance están controlados. La autorización final de ejecución sigue bloqueada.</p>
-      </div>
+      <SummaryStrip items={[
+        { label: 'Operaciones', value: catalog.length, detail: 'Catálogo controlado' },
+        { label: 'Ejecución habilitada', value: catalog.filter((entry) => entry.executionEnabled).length, detail: 'Debe permanecer en 0' },
+        { label: 'Dominios', value: domains.length },
+        { label: 'Governance assurance', value: governanceAssurance.status, detail: `readiness ${governanceReadiness.status} · evidencia ${governanceEvidence.status}` },
+        { label: 'Hardening 8.7', value: phase87?.readinessStatus ?? '—' },
+        { label: 'Policy', value: governanceOperationPolicy.confirmAllowed ? 'CONTROL READY' : 'HOLD', detail: 'EXECUTE siempre bloqueado' },
+      ]} />
+
+      <OperationalNotice
+        title={controlPlaneHealthy ? 'Control operacional protegido' : 'Revisar integridad o política de ejecución'}
+        tone={controlPlaneHealthy ? 'success' : 'warning'}
+        meta="Execution final permanece bloqueada"
+      >
+        Assurance {governanceAssurance.status}. Readiness {governanceReadiness.status} + evidencia {governanceEvidence.status}; la autorización final de ejecución sigue fuera de alcance.
+      </OperationalNotice>
+
+      <IntelligencePanel insights={intelligenceInsights} description="Interpreta señales de integridad y readiness sin confirmar, liberar ni ejecutar operaciones." />
       {error ? <div className="error-state">{error}</div> : null}
       {loading ? <div className="card">Cargando contratos operacionales…</div> : null}
 
@@ -240,6 +347,9 @@ export function OperationsPage() {
         <article className={phase75?.readinessStatus === 'PASS' && canaryGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Cierre FASE 7</span><strong>{phase75?.readinessStatus ?? '—'}</strong><small>{phase75?.passedGates ?? 0}/{phase75?.requiredGates ?? 0} gates · ejecución bloqueada</small></article>
         <article className={phase8Entry?.readinessStatus === 'PASS' && releaseGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Release requests</span><strong>{phase84?.requests ?? 0}</strong><small>FASE 8 · autorizados {phase84?.approvedRequests ?? 0}</small></article>
         <article className={phase84?.readinessStatus === 'PASS' && releaseGuardSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Cierre FASE 8</span><strong>{phase84?.readinessStatus ?? '—'}</strong><small>final execution no implementado</small></article>
+        <article className={governanceReadiness.status === 'READY' ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Governance readiness</span><strong>{governanceReadiness.status}</strong><small>{governanceReadiness.passingSignals}/{governanceReadiness.checkedSignals} señales · execution BLOCKED</small></article>
+        <article className={governanceEvidence.status === 'READY' ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Evidencia y frescura</span><strong>{governanceEvidence.status}</strong><small>audit {governanceEvidence.governanceAuditCount} · timeline {governanceEvidence.operationTimelineCount} · ventana {governanceEvidence.freshnessWindowHours}h</small></article>
+        <article className={governanceAssurance.status === 'READY' ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Governance assurance</span><strong>{governanceAssurance.status}</strong><small>readiness {governanceAssurance.readinessStatus} · evidencia {governanceAssurance.evidenceStatus}</small></article>
         <article className={governanceHardeningSafe ? 'metric-card metric-card--pass' : 'metric-card metric-card--alert'}><span>Hardening 8.7</span><strong>{phase87?.readinessStatus ?? '—'}</strong><small>{phase87?.passedGates ?? 0}/{phase87?.requiredGates ?? 0} gates · stale previews {phase87?.stalePreviewed ?? 0}</small></article>
       </div>
 
@@ -367,7 +477,7 @@ export function OperationsPage() {
           <span className={phase84?.readinessStatus === 'PASS' && releaseGuardSafe ? 'status-pass' : 'status-alert'}>{phase84?.closureMode ?? 'REVISAR'}</span>
         </div>
         <p className="muted-text">Existe ledger privado y workflow de solicitud/decisión, pero este CUT no implementa la liberación final de ejecución.</p>
-        <div className="operation-policy-note"><strong>Solicitud disponible solo como governance DEV</strong><span>{releaseRequestEligible ? 'La operación seleccionada cumple los criterios para solicitar revisión manual.' : 'La operación seleccionada no está habilitada para solicitar release.'}</span></div>
+        <div className="operation-policy-note"><strong>Solicitud disponible solo como governance DEV</strong><span>{governanceOperationPolicy.releaseRequestAllowed ? 'Assurance READY y operación elegible para una futura solicitud de revisión manual.' : 'La política de governance no habilita solicitud de release en el estado actual.'}</span></div>
         <div className="table-wrap"><table><thead><tr><th>Operación</th><th>Riesgo</th><th>Approval</th><th>Request</th><th>Release autorizado</th><th>Guard</th></tr></thead><tbody>
           {releaseGuard.map((row) => <tr key={row.operationCode}><td><strong>{row.operationCode}</strong></td><td>{row.riskLevel}</td><td>{row.approvalState}</td><td>{row.requestStatus ?? '—'}</td><td><span className={row.releaseAuthorized ? 'status-alert' : 'status-pass'}>{row.releaseAuthorized ? 'YES' : 'NO'}</span></td><td>{row.guardStatus}</td></tr>)}
         </tbody></table></div>

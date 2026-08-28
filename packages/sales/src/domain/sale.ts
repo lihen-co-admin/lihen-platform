@@ -1,4 +1,5 @@
 export interface Sale{readonly id:string;readonly saleNumber:string;readonly orderId:string|null;readonly channel:string;readonly status:'COMPLETED'|'REVERSED';readonly customerName:string|null;readonly occurredAt:Date;readonly totalAmount:number;readonly financialAccountId:string;readonly notes:string|null;}
+export interface SaleItem{readonly id:string;readonly saleId:string;readonly productId:string;readonly quantity:number;readonly unitPrice:number;}
 export interface PosSaleItemInput{readonly id:string;readonly productId:string;readonly quantity:number;readonly unitPrice:number;}
 export interface CreatePosSaleInput{readonly operationKey:string;readonly saleId:string;readonly saleNumber:string;readonly financialAccountId:string;readonly channel:string;readonly customerName:string|null;readonly customerPhone:string|null;readonly occurredAt:Date;readonly notes:string|null;readonly items:readonly PosSaleItemInput[];}
 export interface CompleteOrderSaleInput{readonly operationKey:string;readonly saleId:string;readonly saleNumber:string;readonly orderId:string;readonly financialAccountId:string;readonly occurredAt:Date;readonly notes:string|null;}

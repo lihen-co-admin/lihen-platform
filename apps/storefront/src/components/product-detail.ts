@@ -3,6 +3,10 @@ import { buildProductWhatsAppUrl } from './whatsapp';
 import { legacyMedia, mediaAttributes, type StorefrontMedia } from './storefront-media';
 import { isSelected, toggleSelection, type SelectedProduct } from './selection-store';
 import { carouselArrowIcon } from './carousel-navigation';
+import {
+  resolveProductGalleryState,
+  shouldHandleProductGalleryKey,
+} from './product-gallery-state';
 
 function asSelectedProduct(product: StorefrontProduct): SelectedProduct {
   return {
@@ -18,6 +22,7 @@ function asSelectedProduct(product: StorefrontProduct): SelectedProduct {
 
 export function openProductDetail(product: StorefrontProduct): void {
   document.querySelector('[data-product-dialog]')?.remove();
+  const returnFocusTarget = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const previousTitle = document.title;
   document.title = `${product.product_name} | LIHEN.CO`;
   const descriptionMeta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -27,6 +32,8 @@ export function openProductDetail(product: StorefrontProduct): void {
   const dialog = document.createElement('dialog');
   dialog.className = 'product-dialog';
   dialog.dataset.productDialog = product.product_id;
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-labelledby', `product-dialog-title-${product.product_id}`);
   const cardFallback = product.card_media ?? legacyMedia(product.main_image_url);
   const detailMedia = product.detail_media;
   const galleryLimit = product.business_line === 'STYLE' ? 10 : 5;
@@ -102,7 +109,7 @@ export function openProductDetail(product: StorefrontProduct): void {
               <span class="product-dialog__sku">SKU ${escapeHtml(product.sku)}</span>
             </div>
 
-            <h2>${name}</h2>
+            <h2 id="product-dialog-title-${product.product_id}">${name}</h2>
 
             <div class="product-dialog__commercial-row">
               <p class="product-dialog__price">${money(product.sale_price)}</p>
@@ -172,7 +179,8 @@ export function openProductDetail(product: StorefrontProduct): void {
 
   const showImage = (index: number): void => {
     if (images.length === 0) return;
-    currentImageIndex = Math.min(Math.max(index, 0), images.length - 1);
+    const galleryState = resolveProductGalleryState(index, images.length);
+    currentImageIndex = galleryState.index;
     const media = images[currentImageIndex];
     if (hero && media) {
       hero.src = media.url;
@@ -183,9 +191,9 @@ export function openProductDetail(product: StorefrontProduct): void {
     imageButtons.forEach((button, buttonIndex) => {
       button.setAttribute('aria-current', String(buttonIndex === currentImageIndex));
     });
-    if (prevImage) prevImage.disabled = currentImageIndex <= 0;
-    if (nextImage) nextImage.disabled = currentImageIndex >= images.length - 1;
-    if (counter) counter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+    if (prevImage) prevImage.disabled = galleryState.previousDisabled;
+    if (nextImage) nextImage.disabled = galleryState.nextDisabled;
+    if (counter) counter.textContent = galleryState.counter;
   };
 
   imageButtons.forEach((button) => {
@@ -194,6 +202,8 @@ export function openProductDetail(product: StorefrontProduct): void {
   prevImage?.addEventListener('click', () => showImage(currentImageIndex - 1));
   nextImage?.addEventListener('click', () => showImage(currentImageIndex + 1));
   dialog.addEventListener('keydown', (event) => {
+    if (!shouldHandleProductGalleryKey(event.key)) return;
+    event.preventDefault();
     if (event.key === 'ArrowLeft') showImage(currentImageIndex - 1);
     if (event.key === 'ArrowRight') showImage(currentImageIndex + 1);
   });
@@ -214,6 +224,8 @@ export function openProductDetail(product: StorefrontProduct): void {
     document.title = previousTitle;
     if (descriptionMeta) descriptionMeta.content = previousDescription;
     dialog.remove();
+    returnFocusTarget?.focus();
   }, { once: true });
   dialog.showModal();
+  dialog.querySelector<HTMLButtonElement>('[data-dialog-close]')?.focus();
 }

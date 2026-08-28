@@ -630,7 +630,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterReleaseAuthorizationGuard(): Promise<readonly ControlCenterOperationReleaseAuthorizationGuard[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_release_authorization_guard_controlled');
+      const { data, error } = await client.rpc('get_cc_release_auth_guard_controlled');
       if (error) throw new Error(`No fue posible leer el guard de autorización: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -737,7 +737,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase87ReleaseGovernanceHardeningClosureReadiness(): Promise<Phase87ReleaseGovernanceHardeningClosureReadiness> {
-      const { data, error } = await client.rpc('get_phase8_7_release_governance_hardening_closure_readiness_controlled');
+      const { data, error } = await client.rpc('get_phase87_release_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el cierre 8.7: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 8.7 no devolvió resultado.');

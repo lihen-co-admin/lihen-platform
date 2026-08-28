@@ -1,5 +1,9 @@
 import lihenLogoUrl from '../assets/brand/lihen-logo-official.png';
 import { storefrontNavigation, type MegaNavigationItem } from './storefront-navigation';
+import {
+  resolvePublicNavigationState,
+  shouldCloseNavigationOnRouteChange,
+} from './public-navigation-state';
 
 const searchIcon = `
 <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -130,10 +134,16 @@ export function bindSiteHeaderInteractions(root: HTMLElement): void {
   const isDesktop = (): boolean => window.matchMedia('(min-width: 901px)').matches;
 
   const setMenuOpen = (open: boolean): void => {
-    menuToggle.setAttribute('aria-expanded', String(open));
-    menuToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
-    nav.classList.toggle('is-open', open);
-    document.body.classList.toggle('nav-open', open && !isDesktop());
+    const navigationState = resolvePublicNavigationState({
+      menuOpen: open,
+      activeMegaKey: activeKey,
+      desktop: isDesktop(),
+    });
+
+    menuToggle.setAttribute('aria-expanded', String(navigationState.menuOpen));
+    menuToggle.setAttribute('aria-label', navigationState.menuLabel);
+    nav.classList.toggle('is-open', navigationState.menuOpen);
+    document.body.classList.toggle('nav-open', navigationState.lockBodyScroll);
   };
 
   const closeMega = (): void => {
@@ -199,6 +209,7 @@ export function bindSiteHeaderInteractions(root: HTMLElement): void {
 
   root.querySelectorAll<HTMLAnchorElement>('.main-nav a, [data-mega-link]').forEach((link) => {
     link.addEventListener('click', () => {
+      if (!shouldCloseNavigationOnRouteChange(link.getAttribute('href') ?? '')) return;
       closeMega();
       if (!isDesktop()) setMenuOpen(false);
     });
@@ -219,6 +230,11 @@ export function bindSiteHeaderInteractions(root: HTMLElement): void {
 
   window.addEventListener('resize', () => {
     closeMega();
-    if (isDesktop()) setMenuOpen(false);
+    setMenuOpen(false);
+  });
+
+  window.addEventListener('hashchange', () => {
+    closeMega();
+    setMenuOpen(false);
   });
 }

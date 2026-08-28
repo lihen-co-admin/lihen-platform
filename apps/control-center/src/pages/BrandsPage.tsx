@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createGetBrandsQuery, type BrandDTO } from '@lihen/products';
-import { PageHeader } from '../components/PageHeader';
+import { AdminPageHero } from '../components/AdminPageHero';
+import { OperationalNotice } from '../components/OperationalNotice';
+import { SummaryStrip } from '../components/SummaryStrip';
 import { productsComposition } from '../composition/products';
 
 export function BrandsPage() {
@@ -17,13 +19,34 @@ export function BrandsPage() {
     return () => { active = false; };
   }, []);
 
+  const activeCount = useMemo(() => items.filter((item) => item.status === 'ACTIVE').length, [items]);
+
   return (
-    <section>
-      <PageHeader title="Marcas" description="FASE 2.2: lectura canónica de brands desde la fuente configurada; en DEV usa Supabase con RLS." />
-      {loading ? <div className="empty-state">Cargando marcas…</div> : null}
+    <section className="stack">
+      <AdminPageHero
+        title="Marcas"
+        description="Identidad comercial canónica para Product Master, catálogos y storefront. La lectura en DEV respeta Supabase y RLS."
+        accent="pink"
+        status={<span className="status-badge status-badge--success">Lectura canónica</span>}
+      />
+
+      <SummaryStrip items={[
+        { label: 'Marcas canónicas', value: items.length },
+        { label: 'Activas', value: activeCount },
+        { label: 'Inactivas', value: Math.max(items.length - activeCount, 0) },
+      ]} />
+
+      <OperationalNotice title="Fuente de verdad" meta="Gobernada por Product Master + RLS">
+        Marcas no debe duplicarse dentro de productos ni catálogos. Esta pantalla representa la taxonomía canónica compartida por los canales LIHEN.
+      </OperationalNotice>
+
+      {loading ? <div className="loading-card"><span className="loading-spinner" /><div><strong>Cargando marcas</strong><p>Consultando la taxonomía canónica en DEV…</p></div></div> : null}
       {error ? <div className="error-state" role="alert">{error}</div> : null}
       {!loading && !error ? (
-        <div className="table-card"><div className="table-summary"><strong>{items.length} marcas canónicas</strong></div><div className="table-scroll"><table className="data-table"><thead><tr><th>Marca</th><th>Nombre normalizado</th><th>Estado</th></tr></thead><tbody>{items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.normalizedName}</td><td>{item.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</td></tr>)}</tbody></table></div></div>
+        <div className="table-card">
+          <div className="table-summary"><strong>{items.length} marcas</strong><span>Fuente canónica · solo lectura en esta slice</span></div>
+          <div className="table-scroll"><table className="data-table"><thead><tr><th>Marca</th><th>Nombre normalizado</th><th>Estado</th></tr></thead><tbody>{items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td>{item.normalizedName}</td><td><span className={`product-status product-status--${item.status === 'ACTIVE' ? 'active' : 'inactive'}`}>{item.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</span></td></tr>)}</tbody></table></div>
+        </div>
       ) : null}
     </section>
   );

@@ -4,6 +4,10 @@ import { legacyMedia, mediaAttributes } from './storefront-media';
 import { isSelected, subscribeSelection, toggleSelection, type SelectedProduct } from './selection-store';
 import { buildProductWhatsAppUrl } from './whatsapp';
 import { carouselArrowIcon } from './carousel-navigation';
+import {
+  resolveProductGalleryState,
+  shouldHandleProductGalleryKey,
+} from './product-gallery-state';
 import { getStorefrontProductEnrichment, type StorefrontProductEnrichment } from './product-enrichment';
 import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
@@ -220,7 +224,8 @@ function bindPage(root: HTMLElement, product: StorefrontProduct): void {
 
   const show = (target: number): void => {
     if (images.length === 0) return;
-    index = Math.min(Math.max(target, 0), images.length - 1);
+    const galleryState = resolveProductGalleryState(target, images.length);
+    index = galleryState.index;
     const media = images[index] ?? images[0] ?? legacyMedia(product.main_image_url);
     if (hero) {
       hero.src = media.url;
@@ -228,9 +233,9 @@ function bindPage(root: HTMLElement, product: StorefrontProduct): void {
       hero.width = media.width;
       hero.height = media.height;
     }
-    if (counter) counter.textContent = `${index + 1} / ${images.length}`;
-    if (prev) prev.disabled = index <= 0;
-    if (next) next.disabled = index >= images.length - 1;
+    if (counter) counter.textContent = galleryState.counter;
+    if (prev) prev.disabled = galleryState.previousDisabled;
+    if (next) next.disabled = galleryState.nextDisabled;
     thumbs.forEach((thumb, thumbIndex) => thumb.setAttribute('aria-current', String(thumbIndex === index)));
   };
 
@@ -239,6 +244,8 @@ function bindPage(root: HTMLElement, product: StorefrontProduct): void {
   next?.addEventListener('click', () => show(index + 1));
 
   root.addEventListener('keydown', (event) => {
+    if (!shouldHandleProductGalleryKey(event.key)) return;
+    event.preventDefault();
     if (event.key === 'ArrowLeft') show(index - 1);
     if (event.key === 'ArrowRight') show(index + 1);
   });

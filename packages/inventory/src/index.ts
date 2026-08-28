@@ -2,6 +2,7 @@ export * from './domain/inventory-bucket';
 export * from './domain/inventory-movement';
 export * from './domain/inventory-balance';
 export * from './domain/inventory-adjustment-reason';
+export * from './domain/inventory-adjustment-policy';
 export * from './domain/errors/inventory-errors';
 export * from './ports/inventory-repository';
 export * from './application/queries/get-inventory.handler';

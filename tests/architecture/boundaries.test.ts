@@ -59,6 +59,18 @@ describe('architecture boundaries', () => {
     expectNoImport('packages/inventory/src/domain', reactOrSupabaseImport);
   });
 
+  it('orders domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/orders/src/domain', reactOrSupabaseImport);
+  });
+
+  it('sales domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/sales/src/domain', reactOrSupabaseImport);
+  });
+
+  it('finance domain does not depend on React or Supabase', () => {
+    expectNoImport('packages/finance/src/domain', reactOrSupabaseImport);
+  });
+
   it('catalog domain does not depend on React or Supabase', () => {
     expectNoImport('packages/catalog/src/domain', reactOrSupabaseImport);
   });
@@ -73,6 +85,20 @@ describe('architecture boundaries', () => {
 
   it('storefront does not import private administrative domains', () => {
     expectNoImport('apps/storefront/src', /from\s+['"]@lihen\/(?:finance|suppliers|inventory|procurement)/);
+  });
+
+  it('Control Center RPC names stay within PostgreSQL identifier limits', () => {
+    const rpcCall = /\.rpc\(\s*['"]([^'"]+)['"]/g;
+    for (const file of filesUnder('apps/control-center/src')) {
+      const source = readFileSync(file, 'utf8');
+      for (const match of source.matchAll(rpcCall)) {
+        const rpcName = match[1] ?? '';
+        expect(
+          Buffer.byteLength(rpcName, 'utf8'),
+          `${relative(root, file)} calls RPC ${rpcName} beyond PostgreSQL's 63-byte identifier limit`,
+        ).toBeLessThanOrEqual(63);
+      }
+    }
   });
 
   it('Control Center pages do not import persistence adapters directly', () => {

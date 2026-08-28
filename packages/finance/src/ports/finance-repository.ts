@@ -2,6 +2,8 @@ import type{CashClosure,CreateFinancialAccountInput,FinancialAccount,FinancialMo
 export interface FinanceRepository{
  listAccounts():Promise<readonly FinancialAccount[]>;
  listMovements():Promise<readonly FinancialMovement[]>;
+ listLedgerMovements():Promise<readonly FinancialMovement[]>;
+ listMovementsByReferences(referenceType:string,referenceIds:readonly string[]):Promise<readonly FinancialMovement[]>;
  listCashClosures():Promise<readonly CashClosure[]>;
  createAccount(input:CreateFinancialAccountInput):Promise<FinancialAccount>;
  recordExpense(input:RecordExpenseInput):Promise<void>;

@@ -3,6 +3,7 @@ import { renderProductCard } from './product-card';
 import { bindProductInteractions } from './product-interactions';
 import { openProductDetail } from './product-detail';
 import { escapeHtml, type StorefrontProductQuery } from './storefront-product';
+import { publicScrollBehavior, resolvePublicExperienceState } from './public-experience-state';
 
 const PAGE_SIZE = 24;
 
@@ -85,7 +86,7 @@ export function renderCatalogPage(): string {
         <button class="lihen-button lihen-button--dark" type="submit">Buscar</button>
         <button class="catalog-filters__clear" type="button" data-catalog-clear>Limpiar</button>
       </form>
-      <div class="catalog-status" data-catalog-status aria-live="polite">Cargando productos…</div>
+      <div class="catalog-status" data-catalog-status role="status" aria-live="polite">Cargando productos…</div>
       <div class="catalog-grid" data-catalog-grid aria-busy="true"></div>
       <nav class="catalog-pagination" aria-label="Paginación del catálogo" data-catalog-pagination></nav>
     </section>
@@ -115,18 +116,33 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
   };
 
   const load = async (): Promise<void> => {
-    grid.setAttribute('aria-busy', 'true');
-    status.textContent = 'Cargando productos…';
+    const loadingState = resolvePublicExperienceState({
+      isLoading: true,
+      itemCount: 0,
+      emptyMessage: 'No encontramos productos con esos filtros.',
+      readyMessage: '',
+    });
+    grid.setAttribute('aria-busy', String(loadingState.ariaBusy));
+    status.setAttribute('role', loadingState.role);
+    status.setAttribute('aria-live', loadingState.ariaLive);
+    status.textContent = loadingState.message;
     pagination.innerHTML = '';
     try {
       const page = await getStorefrontProducts(queryFromState(state));
       grid.innerHTML = page.items.map((product, index) => renderProductCard(product, index < 4)).join('');
-      grid.setAttribute('aria-busy', 'false');
-      status.textContent = page.items.length > 0
-        ? `Página ${state.page} · ${page.items.length} productos mostrados${page.hasMore ? ' · hay más resultados' : ''}.`
-        : state.businessLine === 'STYLE' && !state.query && !state.brand && !state.category
-          ? 'Aún no hay productos Style publicados. Estamos preparando esta colección con información e imágenes verificadas.'
-          : 'No encontramos productos con esos filtros.';
+      const readyState = resolvePublicExperienceState({
+        isLoading: false,
+        itemCount: page.items.length,
+        emptyMessage:
+          state.businessLine === 'STYLE' && !state.query && !state.brand && !state.category
+            ? 'Aún no hay productos Style publicados. Estamos preparando esta colección con información e imágenes verificadas.'
+            : 'No encontramos productos con esos filtros.',
+        readyMessage: `Página ${state.page} · ${page.items.length} productos mostrados${page.hasMore ? ' · hay más resultados' : ''}.`,
+      });
+      grid.setAttribute('aria-busy', String(readyState.ariaBusy));
+      status.setAttribute('role', readyState.role);
+      status.setAttribute('aria-live', readyState.ariaLive);
+      status.textContent = readyState.message;
       bindProductInteractions(grid, page.items, openProductDetail);
 
       const prevDisabled = state.page <= 1;
@@ -139,17 +155,26 @@ export async function bindCatalogPage(root: HTMLElement): Promise<void> {
         state = { ...state, page: Math.max(1, state.page - 1) };
         writeState(state);
         void load();
-        root.querySelector('#catalog-title')?.scrollIntoView({ behavior: 'smooth' });
+        root.querySelector('#catalog-title')?.scrollIntoView({ behavior: publicScrollBehavior() });
       });
       pagination.querySelector<HTMLButtonElement>('[data-page-next]')?.addEventListener('click', () => {
         state = { ...state, page: state.page + 1 };
         writeState(state);
         void load();
-        root.querySelector('#catalog-title')?.scrollIntoView({ behavior: 'smooth' });
+        root.querySelector('#catalog-title')?.scrollIntoView({ behavior: publicScrollBehavior() });
       });
     } catch (error) {
-      grid.setAttribute('aria-busy', 'false');
-      status.textContent = error instanceof Error ? error.message : 'No fue posible cargar el catálogo.';
+      const errorState = resolvePublicExperienceState({
+        isLoading: false,
+        itemCount: 0,
+        errorMessage: error instanceof Error ? error.message : 'No fue posible cargar el catálogo.',
+        emptyMessage: 'No encontramos productos con esos filtros.',
+        readyMessage: '',
+      });
+      grid.setAttribute('aria-busy', String(errorState.ariaBusy));
+      status.setAttribute('role', errorState.role);
+      status.setAttribute('aria-live', errorState.ariaLive);
+      status.textContent = errorState.message;
       grid.innerHTML = '<div class="catalog-empty">Intenta nuevamente en unos segundos.</div>';
     }
   };

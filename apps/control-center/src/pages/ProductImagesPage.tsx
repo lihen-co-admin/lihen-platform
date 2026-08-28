@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   createAddProductImageCommand,
@@ -8,7 +8,10 @@ import {
   type ProductImageDTO,
   createGetProductByIdQuery,
 } from '@lihen/products';
-import { PageHeader } from '../components/PageHeader';
+import { AdminPageHero } from '../components/AdminPageHero';
+import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
+import { OperationalNotice } from '../components/OperationalNotice';
+import { SummaryStrip } from '../components/SummaryStrip';
 import { productsComposition } from '../composition/products';
 import {
   visualIntelligenceComposition,
@@ -30,6 +33,13 @@ async function buildLensAssetReference(productId: string, file: File): Promise<s
   return `control-center://lens-pending/${productId}/${sha256}?${query.toString()}`;
 }
 
+function mediaStatusLabel(images: readonly ProductImageDTO[]): string {
+  if (images.length === 0) return 'Sin media';
+  if (!images.some((image) => image.isMain)) return 'Falta principal';
+  if (images.some((image) => !image.altText?.trim())) return 'Revisar accesibilidad';
+  return 'Media completa';
+}
+
 export function ProductImagesPage() {
   const { id } = useParams();
   const [product, setProduct] = useState<ProductDetailDTO | null>(null);
@@ -44,6 +54,80 @@ export function ProductImagesPage() {
   const [lensSession, setLensSession] = useState<VisualIntelligenceSessionSummary | null>(null);
   const [lensPreviewUrl, setLensPreviewUrl] = useState<string | null>(null);
   const [lensFileName, setLensFileName] = useState<string | null>(null);
+
+  const mainImage = useMemo(() => images.find((image) => image.isMain) ?? null, [images]);
+  const altCoverage = useMemo(
+    () => images.filter((image) => Boolean(image.altText?.trim())).length,
+    [images],
+  );
+
+  const insights = useMemo<readonly IntelligenceInsight[]>(() => {
+    if (!product) return [];
+    const result: IntelligenceInsight[] = [];
+
+    if (!productsComposition.canReadImages) {
+      result.push({
+        id: 'media-read-gate',
+        severity: 'WARNING',
+        title: 'Readiness visual no verificable',
+        explanation: 'La lectura persistente de imágenes está bloqueada por configuración. LIHEN no debe inferir readiness de publicación sin evidencia legible.',
+        source: 'Product media gate',
+      });
+      return result;
+    }
+
+    if (images.length === 0) {
+      result.push({
+        id: 'no-media',
+        severity: 'WARNING',
+        title: 'Producto sin media registrada',
+        explanation: 'Sin imagen canónica no debe considerarse listo para catálogo o storefront. Agrega evidencia aprobada antes de publicar.',
+        source: 'Product media',
+      });
+    } else if (!mainImage) {
+      result.push({
+        id: 'no-main-image',
+        severity: 'WARNING',
+        title: 'Falta imagen principal',
+        explanation: 'Existe galería, pero ninguna imagen está marcada como principal. Esa decisión debe ser explícita antes de usar el producto en superficies públicas.',
+        source: 'Product media',
+      });
+    }
+
+    if (images.length > 0 && altCoverage < images.length) {
+      result.push({
+        id: 'alt-coverage',
+        severity: 'INFO',
+        title: `${images.length - altCoverage} imágenes sin texto alternativo`,
+        explanation: 'Completar el texto alternativo mejora accesibilidad y evita que la galería se considere terminada solo por tener archivos visibles.',
+        source: 'Accesibilidad media',
+      });
+    }
+
+    if (images.length > 0 && mainImage && altCoverage === images.length) {
+      result.push({
+        id: 'media-operational-ready',
+        severity: 'SUCCESS',
+        title: 'Media operativamente completa',
+        explanation: 'La galería tiene imagen principal y cobertura de texto alternativo. Esto no equivale por sí solo a elegibilidad de publicación: catálogo y storefront deben validar sus reglas canónicas.',
+        actionLabel: 'Revisar catálogos',
+        targetRoute: '/catalogs',
+        source: 'Product media + publication boundary',
+      });
+    }
+
+    if (visualIntelligenceComposition.enabled) {
+      result.push({
+        id: 'lens-available',
+        severity: 'INFO',
+        title: 'Lens Mode disponible en DEV',
+        explanation: 'Puede registrar evidencia visual y producir señales explicables, pero no convierte una observación en imagen publicada ni modifica Product Master automáticamente.',
+        source: 'LIHEN Visual Intelligence',
+      });
+    }
+
+    return result;
+  }, [altCoverage, images, mainImage, product]);
 
   async function refresh(productId: string): Promise<void> {
     const [detail, productImages] = await Promise.all([
@@ -145,56 +229,64 @@ export function ProductImagesPage() {
 
   return (
     <section>
-      <PageHeader
-        title="Imágenes del producto"
-        description="FASE 5: galería controlada + LIHEN Visual Intelligence (Lens Mode). La selección visual no publica ni modifica Product Master automáticamente."
+      <AdminPageHero
+        eyebrow="PRODUCT MASTER · MEDIA"
+        title={product ? `Imágenes · ${product.name}` : 'Imágenes del producto'}
+        description="Administra la galería canónica, revisa completitud visual y usa Lens Mode como evidencia asistida sin convertir señales en publicación automática."
+        accent="lilac"
+        actions={<Link className="button-link button-link--secondary" to={id ? `/products/${id}` : '/products'}>← Volver al producto</Link>}
+        status={product ? <span className="status-badge">{mediaStatusLabel(images)}</span> : undefined}
       />
-
-      <div className="detail-actions">
-        <Link to={id ? `/products/${id}` : '/products'}>← Volver al producto</Link>
-      </div>
 
       {loading ? <div className="empty-state">Cargando imágenes…</div> : null}
       {error ? <div className="error-state" role="alert">{error}</div> : null}
 
-      {!loading && !product ? (
-        <div className="empty-state">Producto no encontrado.</div>
-      ) : null}
+      {!loading && !product ? <div className="empty-state">Producto no encontrado.</div> : null}
 
       {!loading && product ? (
         <>
+          <SummaryStrip
+            items={[
+              { label: 'Imágenes', value: images.length, detail: productsComposition.canReadImages ? 'registradas' : 'lectura bloqueada' },
+              { label: 'Principal', value: mainImage ? 'Sí' : 'No' },
+              { label: 'Alt text', value: `${altCoverage}/${images.length}`, detail: 'cobertura accesible' },
+              { label: 'Lens Mode', value: visualIntelligenceComposition.enabled ? 'DEV activo' : 'Bloqueado', detail: 'solo evidencia asistida' },
+            ]}
+          />
+
+          <OperationalNotice title="Media readiness no es publicación" tone="info" meta="Boundary de publicación">
+            <p>Tener galería completa no publica el producto. Catálogo y storefront conservan su propia elegibilidad canónica y deben validar estado, precio, imagen y demás reglas antes de exponerlo.</p>
+          </OperationalNotice>
+
+          <IntelligencePanel
+            title="Readiness visual"
+            description="Señales deterministas sobre completitud de media. No aprueba ni publica productos automáticamente."
+            insights={insights}
+          />
+
           <section className="detail-card lens-panel" aria-labelledby="lens-mode-title">
             <div className="lens-panel__heading">
               <div>
                 <p className="eyebrow">LIHEN Visual Intelligence</p>
                 <h2 id="lens-mode-title">Lens Mode</h2>
-                <p className="muted-text">
-                  Adjunta una foto o pantallazo. LIHEN crea el intake visual, conserva la identidad del archivo por SHA-256 y deja el caso listo para extracción de señales, búsqueda y decisión explicable.
-                </p>
+                <p className="muted-text">Adjunta una foto o pantallazo para registrar evidencia visual por SHA-256 y dejar el caso listo para señales, candidatos y decisión humana explicable.</p>
               </div>
-              <span className="status-badge">DEV · FASE 5</span>
+              <span className="status-badge">DEV · READ ONLY ASSIST</span>
             </div>
 
             {!visualIntelligenceComposition.enabled ? (
               <div className="warning-state">
                 <strong>Lens Mode está bloqueado por configuración.</strong>
-                <p>Habilita VITE_VISUAL_INTELLIGENCE_MODE=controlled únicamente en DEV con Supabase Auth activo.</p>
+                <p>El modo visual solo debe habilitarse en DEV con autenticación y controles activos. Su bloqueo no afecta la galería canónica.</p>
               </div>
             ) : (
               <div className="lens-layout">
                 <div className="form-stack">
                   <label>
                     Foto o pantallazo del producto
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      disabled={lensBusy}
-                      onChange={(event) => void handleLensAttachment(event.target.files?.[0])}
-                    />
+                    <input type="file" accept="image/png,image/jpeg,image/webp" disabled={lensBusy} onChange={(event) => void handleLensAttachment(event.target.files?.[0])} />
                   </label>
-                  <small className="muted-text">
-                    El intake es automático al seleccionar el archivo. Mientras el gate de Storage siga bloqueado, el archivo no se sube: se registra su huella y queda pendiente de ingestión segura.
-                  </small>
+                  <small className="muted-text">Seleccionar un archivo crea intake de evidencia. No lo convierte en media publicada ni reemplaza la aprobación humana.</small>
                   {lensError ? <div className="error-state" role="alert">{lensError}</div> : null}
                   {lensBusy ? <div className="info-state"><p>Registrando evidencia visual…</p></div> : null}
                 </div>
@@ -221,71 +313,37 @@ export function ProductImagesPage() {
                 {lensSession.decisionStatus ? (
                   <div className="info-state">
                     <strong>{lensSession.decisionStatus}</strong>
-                    <p>
-                      {[lensSession.decidedBrand, lensSession.decidedProductName, lensSession.decidedVariant]
-                        .filter(Boolean)
-                        .join(' · ') || 'Decisión registrada sin atribución de marca.'}
-                    </p>
+                    <p>{[lensSession.decidedBrand, lensSession.decidedProductName, lensSession.decidedVariant].filter(Boolean).join(' · ') || 'Decisión registrada sin atribución de marca.'}</p>
                     {lensSession.nextAction ? <p><strong>Siguiente acción:</strong> {lensSession.nextAction}</p> : null}
                   </div>
                 ) : (
-                  <div className="info-state">
-                    <strong>Intake recibido</strong>
-                    <p>La sesión quedó creada. El procesador visual/web todavía debe extraer señales y candidatos antes de producir una decisión.</p>
-                  </div>
+                  <div className="info-state"><strong>Intake recibido</strong><p>La sesión existe, pero todavía no debe interpretarse como aprobación de identidad, media o publicación.</p></div>
                 )}
-                <button type="button" disabled={lensBusy} onClick={() => void refreshLensSession()}>
-                  Actualizar estado Lens Mode
-                </button>
+                <button type="button" disabled={lensBusy} onClick={() => void refreshLensSession()}>Actualizar estado Lens Mode</button>
               </div>
             ) : null}
           </section>
 
-          <div className="detail-card">
-            <h2>{product.name}</h2>
+          <section className="detail-card" aria-labelledby="media-registration-title">
+            <h2 id="media-registration-title">Registrar media canónica</h2>
             {!productsComposition.canManageImages ? (
-              <p className="muted-text">
-                La escritura de product_images continúa controlada por su gate. Lens Mode es independiente y no convierte evidencia en publicación.
-              </p>
+              <p className="muted-text">La escritura de product_images continúa protegida por su gate. Lens Mode es independiente y no convierte evidencia en publicación.</p>
             ) : (
               <form className="form-stack" onSubmit={handleAdd}>
-                <label>
-                  URL pública de imagen *
-                  <input
-                    aria-label="URL pública de imagen *"
-                    type="url"
-                    required
-                    value={publicUrl}
-                    onChange={(event) => setPublicUrl(event.target.value)}
-                  />
-                </label>
-                <label>
-                  Texto alternativo
-                  <input
-                    aria-label="Texto alternativo"
-                    value={altText}
-                    onChange={(event) => setAltText(event.target.value)}
-                  />
-                </label>
-                <label className="checkbox-row">
-                  <input
-                    type="checkbox"
-                    checked={makeMain}
-                    onChange={(event) => setMakeMain(event.target.checked)}
-                  />
-                  Convertir en imagen principal
-                </label>
+                <label>URL pública de imagen *<input aria-label="URL pública de imagen *" type="url" required value={publicUrl} onChange={(event) => setPublicUrl(event.target.value)} /></label>
+                <label>Texto alternativo<input aria-label="Texto alternativo" value={altText} onChange={(event) => setAltText(event.target.value)} /></label>
+                <label className="checkbox-row"><input type="checkbox" checked={makeMain} onChange={(event) => setMakeMain(event.target.checked)} />Convertir en imagen principal</label>
                 <button type="submit">Agregar imagen</button>
               </form>
             )}
-          </div>
+          </section>
 
           <section className="detail-card" aria-labelledby="product-images-title">
-            <h2 id="product-images-title">Galería</h2>
+            <h2 id="product-images-title">Galería canónica</h2>
             {!productsComposition.canReadImages ? (
-              <p className="muted-text">La lectura persistente de product_images se habilitará después del precheck DEV.</p>
+              <p className="muted-text">La lectura persistente de product_images está protegida por configuración y autorización.</p>
             ) : images.length === 0 ? (
-              <p className="muted-text">Este producto todavía no tiene imágenes registradas.</p>
+              <div className="empty-state"><strong>Sin imágenes registradas.</strong><p>El producto todavía no tiene media canónica disponible para evaluar visualmente.</p></div>
             ) : (
               <div className="image-grid">
                 {images.map((image) => (
@@ -294,11 +352,8 @@ export function ProductImagesPage() {
                     <div>
                       <strong>{image.isMain ? 'Principal' : `Orden ${image.sortOrder}`}</strong>
                       <p className="muted-text">{image.altText ?? 'Sin texto alternativo'}</p>
-                      {!image.isMain && productsComposition.canManageImages ? (
-                        <button type="button" onClick={() => void handleSetMain(image.id)}>
-                          Hacer principal
-                        </button>
-                      ) : null}
+                      <small className="muted-text">Fuente: {image.sourceType}</small>
+                      {!image.isMain && productsComposition.canManageImages ? <button type="button" onClick={() => void handleSetMain(image.id)}>Hacer principal</button> : null}
                     </div>
                   </article>
                 ))}

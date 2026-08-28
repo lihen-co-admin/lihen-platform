@@ -17,3 +17,4 @@ export * from './application/commands/confirm-purchase.command';
 export * from './application/commands/confirm-purchase.handler';
 export * from './application/commands/receive-purchase.command';
 export * from './application/commands/receive-purchase.handler';
+export * from './domain/purchase-supply-readiness';

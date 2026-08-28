@@ -6,5 +6,6 @@ export interface InventoryRepository {
   listBalances(): Promise<readonly InventoryBalance[]>;
   getBalance(productId: string): Promise<InventoryBalance>;
   listMovements(productId: string): Promise<readonly InventoryMovement[]>;
+  listMovementsByExternalReferences(externalReferences: readonly string[]): Promise<readonly InventoryMovement[]>;
   recordOnHandAdjustment(command: RecordInventoryAdjustmentCommand): Promise<InventoryBalance>;
 }

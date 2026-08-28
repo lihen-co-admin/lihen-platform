@@ -9,7 +9,10 @@ import {
   type PublicHubBlockStatus,
   type PublicHubBlockType,
 } from '@lihen/public-hub';
-import { PageHeader } from '../components/PageHeader';
+import { AdminPageHero } from '../components/AdminPageHero';
+import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
+import { OperationalNotice } from '../components/OperationalNotice';
+import { SummaryStrip } from '../components/SummaryStrip';
 import { publicHubComposition } from '../composition/public-hub';
 import { productsComposition } from '../composition/products';
 
@@ -206,9 +209,9 @@ export function PublicHubPage() {
 
   if (!publicHubComposition.enabled) {
     return (
-      <section>
-        <PageHeader title="Hub público" description="Capability preparada y bloqueada por configuración." />
-        <div className="warning-state">Activa <code>VITE_PUBLIC_HUB_MODE=controlled</code> en DEV.</div>
+      <section className="stack">
+        <AdminPageHero eyebrow="PRESENCIA PÚBLICA" title="Hub público" description="Administra el enlace central de LIHEN cuando la capability controlada esté habilitada en DEV." accent="pink" status={<span className="status-alert">BLOQUEADO POR CONFIGURACIÓN</span>} />
+        <OperationalNotice title="Capability protegida" tone="warning">Activa <code>VITE_PUBLIC_HUB_MODE=controlled</code> únicamente en DEV cuando corresponda validar esta capacidad.</OperationalNotice>
       </section>
     );
   }
@@ -221,13 +224,25 @@ export function PublicHubPage() {
   });
   const draftIssues = getPublicHubBlockValidationIssues(draft);
   const draftReady = draftIssues.length === 0;
+  const hubInsights: readonly IntelligenceInsight[] = [
+    counts.scheduled > 0
+      ? { id: 'hub-scheduled', severity: 'INFO', title: `${counts.scheduled} bloques programados`, explanation: 'Hay contenido publicado con una fecha futura de inicio. Conviene revisar calendario y vigencia antes de campañas.', source: 'Public Hub schedule' }
+      : { id: 'hub-no-scheduled', severity: 'INFO', title: 'Sin publicaciones programadas', explanation: 'El Hub no tiene bloques futuros pendientes de activarse automáticamente.', source: 'Public Hub schedule' },
+    draftReady
+      ? { id: 'hub-draft-ready', severity: 'SUCCESS', title: 'Borrador listo para guardar', explanation: 'El bloque en edición cumple las validaciones mínimas del tipo seleccionado.', source: 'Public Hub validation' }
+      : { id: 'hub-draft-review', severity: 'WARNING', title: 'Borrador con campos pendientes', explanation: `${draftIssues.length} validaciones deben resolverse antes de guardar este bloque.`, source: 'Public Hub validation' },
+    counts.archived > 0
+      ? { id: 'hub-archived', severity: 'INFO', title: `${counts.archived} bloques archivados`, explanation: 'Permanecen fuera de la experiencia pública sin perder su historial administrativo.', source: 'Public Hub lifecycle' }
+      : { id: 'hub-archived-none', severity: 'SUCCESS', title: 'Sin deuda de archivo', explanation: 'No hay bloques archivados en el estado actual.', source: 'Public Hub lifecycle' },
+  ];
 
   return (
-    <section className="public-hub-admin">
-      <PageHeader
-        title="Hub público"
-        description="Administra el enlace central de LIHEN. Los productos se resuelven desde Product Master."
-      />
+    <section className="public-hub-admin stack">
+      <AdminPageHero eyebrow="PRESENCIA PÚBLICA" title="Hub público" description="Organiza contenido, redes, productos y campañas desde una fuente administrable conectada al Product Master." accent="pink" actions={<a className="button-link" href="/#descubre" target="_blank" rel="noreferrer">Abrir Hub público ↗</a>} status={<span className="status-pass">CONTROLLED</span>} />
+
+      <SummaryStrip items={[{label:'Activos',value:counts.active},{label:'Publicados ahora',value:counts.published},{label:'Programados',value:counts.scheduled},{label:'Archivados',value:counts.archived}]} />
+      <OperationalNotice title="Publicación controlada" tone="info">Los productos del Hub se resuelven desde Product Master. Archivar u ocultar contenido no debe borrar su historia administrativa.</OperationalNotice>
+      <IntelligencePanel insights={hubInsights} description="Resume readiness editorial, programación y lifecycle sin publicar ni modificar bloques automáticamente." />
 
       <div className="hub-admin-toolbar" aria-label="Resumen del Hub público">
         <div><strong>{counts.active}</strong><span>Activos</span></div>

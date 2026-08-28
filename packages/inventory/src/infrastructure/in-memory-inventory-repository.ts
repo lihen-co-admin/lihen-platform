@@ -11,6 +11,10 @@ export class InMemoryInventoryRepository implements InventoryRepository {
     return this.balances.get(productId) ?? { productId, stockOnHand: 0, stockReserved: 0, stockPending: 0, stockAvailable: 0 };
   }
   public async listMovements(productId: string) { return this.movements.filter((item) => item.productId === productId); }
+  public async listMovementsByExternalReferences(externalReferences: readonly string[]) {
+    const refs = new Set(externalReferences);
+    return this.movements.filter((item) => item.externalReference !== null && refs.has(item.externalReference));
+  }
   public async recordOnHandAdjustment(command: RecordInventoryAdjustmentCommand) {
     const current = await this.getBalance(command.productId);
     const stockOnHand = current.stockOnHand + command.quantityDelta;

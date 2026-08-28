@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { createGetProductsQuery } from '@lihen/products';
 
 import { useAuth } from '../auth/auth-context';
-import { PageHeader } from '../components/PageHeader';
+import { AdminPageHero } from '../components/AdminPageHero';
+import { OperationalNotice } from '../components/OperationalNotice';
+import { SummaryStrip } from '../components/SummaryStrip';
 import {
   phase3CutoverComposition,
   type Phase3Status,
@@ -164,134 +166,83 @@ export function DevAuthProbePage() {
   const phase311Passed = phase3Status?.verificationStatus === 'PASS';
 
   return (
-    <div>
-      <PageHeader
-        title="DEV Auth + Admin Profile + RLS Probe"
-        description="Comprueba sesión real, JWT, perfil ACTIVE, rol administrativo reconocido y lectura de products mediante Supabase DEV. El token nunca se muestra."
+    <section className="stack dev-probe-page">
+      <AdminPageHero
+        eyebrow="Desarrollo · diagnóstico seguro"
+        title="Auth + Admin Profile + RLS Probe"
+        description="Herramienta exclusiva de DEV para comprobar sesión Supabase, perfil administrativo, rol autorizado y lectura de Product Master mediante RLS. El token nunca se muestra."
+        accent="lilac"
+        status={<span className="status-badge status-badge--warning">DEV ONLY</span>}
       />
 
-      <div className="card stack">
-        <p>
-          <strong>Auth:</strong> {auth.enabled ? 'Supabase' : 'deshabilitado'}
-        </p>
-        <p>
-          <strong>Fuente Products:</strong> {productsComposition.source}
-        </p>
-        <p>
-          <strong>Usuario:</strong> {auth.user?.email ?? 'sin sesión'}
-        </p>
-        <p>
-          <strong>Perfil:</strong>{' '}
-          {auth.profile ? auth.profile.authorizationStatus : 'sin perfil'}
-        </p>
-        <p>
-          <strong>Rol:</strong> {auth.profile?.roleCode ?? '—'}
-        </p>
+      <OperationalNotice title="Herramienta técnica, no flujo de negocio" tone="info" meta="Visible solo en entorno DEV">
+        <p>Este módulo valida conectividad y autorización. No sustituye las pantallas operativas ni habilita ejecución sensible.</p>
+      </OperationalNotice>
 
-        <button
-          type="button"
-          onClick={() => void runProbe()}
-          disabled={result.status === 'RUNNING'}
-        >
-          {result.status === 'RUNNING' ? 'Ejecutando…' : 'Ejecutar probe real'}
-        </button>
+      <SummaryStrip items={[
+        { label: 'Auth', value: auth.enabled ? 'Supabase' : 'OFF', detail: auth.user?.email ?? 'sin sesión' },
+        { label: 'Products', value: productsComposition.source, detail: 'fuente configurada' },
+        { label: 'Perfil', value: auth.profile?.authorizationStatus ?? '—', detail: auth.profile?.roleCode ?? 'sin rol' },
+        { label: 'Probe', value: result.status, detail: result.status === 'PASS' ? `${result.productCount ?? 0} productos leídos` : 'validación manual' },
+      ]} />
+
+      <div className="card-grid dev-probe-grid">
+        <article className="card stack admin-form-card">
+          <div className="card-heading">
+            <div><span className="section-kicker">Autorización</span><h2>Probe real Auth + RLS</h2></div>
+            <span className={`workflow-status workflow-status--${result.status === 'PASS' ? 'completed' : result.status === 'FAIL' ? 'cancelled' : 'draft'}`}>{result.status}</span>
+          </div>
+          <p>Comprueba que la sesión autenticada pueda leer Product Master mediante los contratos configurados para DEV.</p>
+          <button type="button" onClick={() => void runProbe()} disabled={result.status === 'RUNNING'}>
+            {result.status === 'RUNNING' ? 'Ejecutando…' : 'Ejecutar probe real'}
+          </button>
+        </article>
+
+        <article className="card stack">
+          <div className="card-heading">
+            <div><span className="section-kicker">Histórico técnico</span><h2>Cutover DEV</h2></div>
+            <span className={`workflow-status workflow-status--${phase311Passed ? 'completed' : 'draft'}`}>{phase311Passed ? 'PASS' : 'LECTURA'}</span>
+          </div>
+          <p>Se conserva como evidencia de continuidad. ARM, RETRY y EXECUTE permanecen retirados de esta pantalla.</p>
+          <dl className="probe-definition-list">
+            <div><dt>Run</dt><dd>{phase3Status?.runStatus ?? 'Cargando…'}</dd></div>
+            <div><dt>Batch</dt><dd>{phase3Status?.batchStatus ?? 'Cargando…'}</dd></div>
+            <div><dt>Verificación</dt><dd>{phase3Status?.verificationStatus ?? 'Cargando…'}</dd></div>
+            <div><dt>Readiness</dt><dd>{phase3Status?.phase4Readiness ?? 'Cargando…'}</dd></div>
+          </dl>
+          {phaseStatusMessage ? <p role="alert" className="error-state">{phaseStatusMessage}</p> : null}
+          {!phase311Passed ? (
+            <button type="button" onClick={() => void verifyPhase311()} disabled={!phase310Applied || verifyStatus === 'RUNNING' || verifyStatus === 'DONE'}>
+              {verifyStatus === 'RUNNING' ? 'Verificando…' : verifyStatus === 'DONE' ? 'Verificación completada' : 'Verificar post-cutover'}
+            </button>
+          ) : null}
+        </article>
       </div>
 
-      <div className="card stack">
-        <h2>FASE 3 — Cutover DEV</h2>
-        <p>
-          <strong>Run:</strong> {phase3Status?.runStatus ?? 'Cargando…'}
-        </p>
-        <p>
-          <strong>Batch:</strong> {phase3Status?.batchStatus ?? 'Cargando…'}
-        </p>
-        <p>
-          <strong>FASE 3.10:</strong> {phase310Applied ? 'APPLIED' : 'NO CERRADA'}
-        </p>
-        <p>
-          <strong>FASE 3.11:</strong>{' '}
-          {phase3Status?.verificationStatus ?? 'Cargando…'}
-        </p>
-        <p>
-          <strong>Entrada FASE 4:</strong> {phase3Status?.phase4Readiness ?? 'Cargando…'}
-        </p>
-        <p>
-          <strong>Gate:</strong> {phase3Status?.phase4Reason ?? 'Cargando…'}
-        </p>
+      {verifyMessage ? <OperationalNotice title="Resultado post-cutover" tone={verifyStatus === 'FAIL' ? 'critical' : verifyStatus === 'DONE' ? 'success' : 'info'}><p>{verifyMessage}</p></OperationalNotice> : null}
 
-        {phaseStatusMessage && <p role="alert">{phaseStatusMessage}</p>}
-
-        {!phase311Passed && (
-          <button
-            type="button"
-            onClick={() => void verifyPhase311()}
-            disabled={!phase310Applied || verifyStatus === 'RUNNING' || verifyStatus === 'DONE'}
-          >
-            {verifyStatus === 'RUNNING'
-              ? 'VERIFICANDO FASE 3.11...'
-              : verifyStatus === 'DONE'
-                ? 'FASE 3.11 VERIFICADA'
-                : 'VERIFICAR FASE 3.11'}
-          </button>
-        )}
-
-        {phase311Passed && <p>FASE 3 cerrada formalmente: verificación post-cutover PASS.</p>}
-
-        {verifyMessage && (
-          <p>
-            <strong>Estado VERIFY:</strong> {verifyMessage}
-          </p>
-        )}
-
-        {verificationChecks.length > 0 && (
-          <div className="stack" aria-label="Checks FASE 3.11">
+      {verificationChecks.length > 0 ? (
+        <div className="card stack" aria-label="Checks post-cutover">
+          <div className="card-heading"><div><span className="section-kicker">Evidencia</span><h2>Checks</h2></div></div>
+          <div className="probe-check-grid">
             {verificationChecks.map((check) => (
-              <p key={check.check_code}>
-                <strong>{check.check_code}:</strong> {check.status} · incidencias{' '}
-                {check.issue_count}
-              </p>
+              <div key={check.check_code} className="operation-policy-note">
+                <strong>{check.check_code}</strong>
+                <span>{check.status} · incidencias {check.issue_count}</span>
+              </div>
             ))}
           </div>
-        )}
-
-        <small>
-          ARM, RETRY y EXECUTE de FASE 3.10 se retiraron de esta pantalla porque el cutover ya
-          está APPLIED. No deben reejecutarse desde la UI.
-        </small>
-      </div>
-
-      {result.status === 'PASS' && (
-        <div className="card stack" role="status" data-testid="auth-probe-pass">
-          <h2>PASS</h2>
-          <p>{result.message}</p>
-          <p>
-            <strong>User ID:</strong> {result.userId}
-          </p>
-          <p>
-            <strong>Email:</strong> {result.email}
-          </p>
-          <p>
-            <strong>Perfil:</strong> {result.authorizationStatus}
-          </p>
-          <p>
-            <strong>Rol:</strong> {result.roleCode}
-          </p>
-          <p>
-            <strong>Huella JWT:</strong> {result.tokenFingerprint}
-          </p>
-          <p>
-            <strong>Productos leídos:</strong> {result.productCount}
-          </p>
-          <small>La huella SHA-256 identifica la sesión sin revelar el access token.</small>
         </div>
-      )}
+      ) : null}
 
-      {result.status === 'FAIL' && (
-        <div className="card stack" role="alert" data-testid="auth-probe-fail">
-          <h2>FAIL</h2>
+      {result.status === 'PASS' ? (
+        <OperationalNotice title="Probe PASS" tone="success" meta={`Huella JWT: ${result.tokenFingerprint ?? '—'}`}>
           <p>{result.message}</p>
-        </div>
-      )}
-    </div>
+          <p>{result.email ?? result.userId} · {result.authorizationStatus} · {result.roleCode}</p>
+        </OperationalNotice>
+      ) : null}
+
+      {result.status === 'FAIL' ? <OperationalNotice title="Probe FAIL" tone="critical"><p>{result.message}</p></OperationalNotice> : null}
+    </section>
   );
 }

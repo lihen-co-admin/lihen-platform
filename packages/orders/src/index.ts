@@ -1,4 +1,5 @@
 export * from './domain/order';
+export * from './domain/order-commerce-policy';
 export * from './application/commands/create-order-draft.command';
 export * from './application/commands/create-order-draft.handler';
 export * from './application/queries/get-orders.handler';
