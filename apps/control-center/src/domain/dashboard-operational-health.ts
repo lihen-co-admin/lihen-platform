@@ -24,11 +24,24 @@ export interface DashboardOperationalHealthInput {
   readonly stockPendingTotal: number;
 }
 
+export interface DashboardOperationalQueues {
+  readonly humanDecisions: number;
+  readonly orders: number;
+  readonly purchases: number;
+  readonly pendingUnits: number;
+}
+
 export interface DashboardOperationalHealth {
   readonly status: DashboardOperationalHealthStatus;
   readonly nextFocus: DashboardOperationalFocus;
+  /**
+   * Compatibilidad para consumidores existentes. Cuenta elementos de trabajo
+   * discretos (decisiones + pedidos + compras) y excluye unidades físicas.
+   * La UI nueva debe preferir `queues`.
+   */
   readonly workQueueTotal: number;
   readonly humanDecisionQueue: number;
+  readonly queues: DashboardOperationalQueues;
   readonly blockers: readonly string[];
   readonly attentionItems: readonly string[];
   readonly explanation: string;
@@ -109,19 +122,21 @@ export function evaluateDashboardOperationalHealth(
     nextFocus = 'INVENTORY';
   }
 
-  const workQueueTotal =
-    approvableCount +
-    reviewCount +
-    blockedCount +
-    ordersOpen +
-    purchasesOpen +
-    stockPendingTotal;
+  const humanDecisionQueue = approvableCount + reviewCount + blockedCount;
+  const queues: DashboardOperationalQueues = {
+    humanDecisions: humanDecisionQueue,
+    orders: ordersOpen,
+    purchases: purchasesOpen,
+    pendingUnits: stockPendingTotal,
+  };
 
   return {
     status,
     nextFocus,
-    workQueueTotal,
-    humanDecisionQueue: approvableCount + reviewCount + blockedCount,
+    // Nunca se suman `pendingUnits` con casos/órdenes/compras.
+    workQueueTotal: humanDecisionQueue + ordersOpen + purchasesOpen,
+    humanDecisionQueue,
+    queues,
     blockers,
     attentionItems,
     explanation:

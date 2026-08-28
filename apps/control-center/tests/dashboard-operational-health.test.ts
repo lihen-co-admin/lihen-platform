@@ -20,6 +20,12 @@ describe('evaluateDashboardOperationalHealth', () => {
     expect(result.status).toBe('STABLE');
     expect(result.nextFocus).toBe('MONITOR');
     expect(result.workQueueTotal).toBe(0);
+    expect(result.queues).toEqual({
+      humanDecisions: 0,
+      orders: 0,
+      purchases: 0,
+      pendingUnits: 0,
+    });
   });
 
   it('blocks and prioritizes integrity findings', () => {
@@ -66,6 +72,24 @@ describe('evaluateDashboardOperationalHealth', () => {
     expect(result.nextFocus).toBe('HUMAN_DECISION');
     expect(result.humanDecisionQueue).toBe(2);
     expect(result.workQueueTotal).toBe(6);
+    expect(result.queues).toEqual({
+      humanDecisions: 2,
+      orders: 3,
+      purchases: 1,
+      pendingUnits: 0,
+    });
+  });
+
+  it('keeps physical pending units separate from discrete work items', () => {
+    const result = evaluateDashboardOperationalHealth({
+      ...base,
+      ordersOpen: 2,
+      stockPendingTotal: 40,
+    });
+
+    expect(result.workQueueTotal).toBe(2);
+    expect(result.queues.orders).toBe(2);
+    expect(result.queues.pendingUnits).toBe(40);
   });
 
   it('uses deterministic operational precedence without arbitrary thresholds', () => {

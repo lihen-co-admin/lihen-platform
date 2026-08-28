@@ -8,7 +8,6 @@ function recommendation(
   return {
     id: 'execution-held',
     priority: 'P4',
-    score: 5,
     severity: 'INFO',
     title: 'Ejecución protegida',
     explanation: 'La ejecución sigue bajo aprobación humana.',
@@ -26,8 +25,7 @@ describe('evaluateIntelligenceAssurance', () => {
       recommendation(),
       recommendation({
         id: 'orders-open',
-        priority: 'P2',
-        score: 65,
+        priority: 'P3',
         title: 'Pedidos abiertos',
         source: 'pedidos canónicos',
         rationale: ['10 pedidos abiertos'],
@@ -38,6 +36,15 @@ describe('evaluateIntelligenceAssurance', () => {
     expect(result.issueCount).toBe(0);
   });
 
+  it('does not duplicate the producer priority policy with score thresholds', () => {
+    const result = evaluateIntelligenceAssurance([
+      recommendation({ priority: 'P1' }),
+    ]);
+
+    expect(result.status).toBe('PASS');
+    expect(result.issues.map((issue) => issue.code)).not.toContain('PRIORITY_SCORE_MISMATCH');
+  });
+
   it('blocks duplicated recommendation ids', () => {
     const result = evaluateIntelligenceAssurance([
       recommendation(),
@@ -46,15 +53,6 @@ describe('evaluateIntelligenceAssurance', () => {
 
     expect(result.status).toBe('BLOCKED');
     expect(result.issues.some((issue) => issue.code === 'DUPLICATE_RECOMMENDATION_ID')).toBe(true);
-  });
-
-  it('blocks priority and score mismatches', () => {
-    const result = evaluateIntelligenceAssurance([
-      recommendation({ priority: 'P1', score: 5 }),
-    ]);
-
-    expect(result.status).toBe('BLOCKED');
-    expect(result.issues.some((issue) => issue.code === 'PRIORITY_SCORE_MISMATCH')).toBe(true);
   });
 
   it('blocks missing provenance or rationale', () => {

@@ -33,7 +33,7 @@ describe('evaluateDashboardIntelligence', () => {
     expect(integrity?.priority).toBe('P4');
   });
 
-  it('raises stock pending as a deterministic operational recommendation', () => {
+  it('categorizes pending stock without numeric score thresholds', () => {
     const result = evaluateDashboardIntelligence({
       ...baseInput,
       stockPendingTotal: 25,
@@ -41,9 +41,10 @@ describe('evaluateDashboardIntelligence', () => {
     });
     const stock = result.find((item) => item.id === 'pending-stock');
 
+    expect(stock?.priority).toBe('P2');
     expect(stock?.severity).toBe('WARNING');
-    expect(stock?.score).toBeGreaterThanOrEqual(60);
     expect(stock?.rationale).toContain('2 compras abiertas');
+    expect(stock).not.toHaveProperty('score');
   });
 
   it('flags missing active financial accounts without inventing a write', () => {
@@ -57,15 +58,20 @@ describe('evaluateDashboardIntelligence', () => {
     expect(finance?.targetRoute).toBe('/finance');
   });
 
-  it('sorts recommendations by score deterministically', () => {
+  it('sorts recommendations by categorical priority deterministically', () => {
     const result = evaluateDashboardIntelligence({
       ...baseInput,
+      integrityIssueCount: 1,
       stockPendingTotal: 3,
       ordersOpen: 15,
+      financialAccountsActive: 0,
     });
-    const scores = result.map((item) => item.score);
 
-    expect(scores).toEqual([...scores].sort((a, b) => b - a));
+    expect(result.map((item) => item.priority)).toEqual(['P1', 'P2', 'P2', 'P3', 'P4']);
+    expect(result.filter((item) => item.priority === 'P2').map((item) => item.id)).toEqual([
+      'finance-account-missing',
+      'pending-stock',
+    ]);
   });
 
   it('always preserves the read-only execution-held recommendation', () => {

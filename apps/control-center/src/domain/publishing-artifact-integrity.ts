@@ -34,12 +34,22 @@ function hasSafeArtifactUrl(value: string | null): boolean {
 
 /**
  * Verifica que una versión PUBLISHED conserve un artefacto PDF congelado y explicable.
+ * Los estados previos a PUBLISHED todavía no son artefactos publicados y por eso esta
+ * política los mantiene en REVIEW sin convertir condiciones de preparación en blockers.
  * No descarga, reescribe ni repara el artefacto; únicamente interpreta sus metadatos.
  */
 export function evaluatePublishingArtifactIntegrity(
   artifact: PublishingArtifactState,
   expectedRendererVersion?: string,
 ): PublishingArtifactIntegrityResult {
+  if (artifact.publicationStatus !== 'PUBLISHED') {
+    return {
+      status: 'REVIEW',
+      blockers: [],
+      warnings: ['ARTIFACT_NOT_PUBLISHED_YET'],
+    };
+  }
+
   const blockers: string[] = [];
   const warnings: string[] = [];
 
@@ -55,15 +65,6 @@ export function evaluatePublishingArtifactIntegrity(
     blockers.push('VISIBLE_ENTRIES_EXCEED_TOTAL_ENTRIES');
   }
 
-  if (artifact.publicationStatus !== 'PUBLISHED') {
-    warnings.push('ARTIFACT_NOT_PUBLISHED_YET');
-    return {
-      status: blockers.length > 0 ? 'BLOCKED' : 'REVIEW',
-      blockers,
-      warnings,
-    };
-  }
-
   if (!hasSafeArtifactUrl(artifact.artifactUrl)) {
     blockers.push('ARTIFACT_URL_INVALID');
   }
@@ -73,18 +74,18 @@ export function evaluatePublishingArtifactIntegrity(
   }
 
   if (
-    artifact.artifactPageCount == null ||
-    !Number.isInteger(artifact.artifactPageCount) ||
-    artifact.artifactPageCount <= 0
+    artifact.artifactPageCount == null
+    || !Number.isInteger(artifact.artifactPageCount)
+    || artifact.artifactPageCount <= 0
   ) {
     blockers.push('ARTIFACT_PAGE_COUNT_INVALID');
   }
 
   if (
-    artifact.artifactSizeBytes == null ||
-    !Number.isInteger(artifact.artifactSizeBytes) ||
-    artifact.artifactSizeBytes <= 0 ||
-    artifact.artifactSizeBytes > MAX_PDF_BYTES
+    artifact.artifactSizeBytes == null
+    || !Number.isInteger(artifact.artifactSizeBytes)
+    || artifact.artifactSizeBytes <= 0
+    || artifact.artifactSizeBytes > MAX_PDF_BYTES
   ) {
     blockers.push('ARTIFACT_SIZE_INVALID');
   }
@@ -96,8 +97,8 @@ export function evaluatePublishingArtifactIntegrity(
   if (!artifact.rendererVersion?.trim()) {
     warnings.push('RENDERER_VERSION_MISSING');
   } else if (
-    expectedRendererVersion &&
-    artifact.rendererVersion.trim() !== expectedRendererVersion.trim()
+    expectedRendererVersion
+    && artifact.rendererVersion.trim() !== expectedRendererVersion.trim()
   ) {
     warnings.push('RENDERER_VERSION_DIFFERS_FROM_EXPECTED');
   }

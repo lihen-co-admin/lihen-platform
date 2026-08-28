@@ -1,13 +1,9 @@
-import type {
-  IntelligencePriority,
-  LihenIntelligenceRecommendation,
-} from './dashboard-intelligence';
+import type { LihenIntelligenceRecommendation } from './dashboard-intelligence';
 
 export type IntelligenceAssuranceStatus = 'PASS' | 'REVIEW' | 'BLOCKED';
 
 export type IntelligenceAssuranceIssueCode =
   | 'DUPLICATE_RECOMMENDATION_ID'
-  | 'PRIORITY_SCORE_MISMATCH'
   | 'MISSING_SOURCE'
   | 'MISSING_RATIONALE'
   | 'ACTION_ROUTE_MISMATCH'
@@ -31,13 +27,11 @@ export interface IntelligenceAssuranceResult {
   readonly explanation: string;
 }
 
-function expectedPriority(score: number): IntelligencePriority {
-  if (score >= 90) return 'P1';
-  if (score >= 60) return 'P2';
-  if (score >= 30) return 'P3';
-  return 'P4';
-}
-
+/**
+ * Assurance verifica trazabilidad y guardas, no recalcula una segunda política
+ * de prioridad. La prioridad es semántica y pertenece al productor de señales.
+ * Así se evita que dos módulos mantengan umbrales o scores duplicados.
+ */
 export function evaluateIntelligenceAssurance(
   recommendations: readonly LihenIntelligenceRecommendation[],
 ): IntelligenceAssuranceResult {
@@ -64,15 +58,6 @@ export function evaluateIntelligenceAssurance(
     }
     seenIds.add(recommendation.id);
 
-    if (recommendation.priority !== expectedPriority(recommendation.score)) {
-      issues.push({
-        code: 'PRIORITY_SCORE_MISMATCH',
-        severity: 'CRITICAL',
-        message: `La prioridad ${recommendation.priority} no corresponde al score ${recommendation.score}.`,
-        recommendationId: recommendation.id,
-      });
-    }
-
     if (!recommendation.source.trim()) {
       issues.push({
         code: 'MISSING_SOURCE',
@@ -82,7 +67,10 @@ export function evaluateIntelligenceAssurance(
       });
     }
 
-    if (recommendation.rationale.length === 0 || recommendation.rationale.some((item) => !item.trim())) {
+    if (
+      recommendation.rationale.length === 0
+      || recommendation.rationale.some((item) => !item.trim())
+    ) {
       issues.push({
         code: 'MISSING_RATIONALE',
         severity: 'CRITICAL',

@@ -17,7 +17,11 @@ import {
 } from '../domain/admin-experience-state';
 
 function formatCop(value: number) {
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function DashboardPage() {
@@ -159,7 +163,7 @@ export function DashboardPage() {
               label: 'Salud operativa',
               value: operationalHealth?.status ?? '—',
               detail: operationalHealth
-                ? `${operationalHealth.workQueueTotal} elementos · foco ${formatOperationalFocusLabel(operationalHealth.nextFocus)}`
+                ? `decisiones ${operationalHealth.queues.humanDecisions} · pedidos ${operationalHealth.queues.orders} · compras ${operationalHealth.queues.purchases} · unidades pendientes ${operationalHealth.queues.pendingUnits} · foco ${formatOperationalFocusLabel(operationalHealth.nextFocus)}`
                 : 'sin evaluación',
             },
           ]} />
@@ -167,9 +171,9 @@ export function DashboardPage() {
           <OperationalNotice
             title="Centro de control conectado"
             tone={
-              summary.integrityIssueCount === 0 &&
-              dashboardMetricIntegrity?.status === 'PASS' &&
-              intelligence?.assurance.status === 'PASS'
+              summary.integrityIssueCount === 0
+              && dashboardMetricIntegrity?.status === 'PASS'
+              && intelligence?.assurance.status === 'PASS'
                 ? 'success'
                 : 'warning'
             }
@@ -210,13 +214,32 @@ export function DashboardPage() {
           />
 
           <div className="section-heading">
-            <div><span className="section-kicker">Capacidades</span><h2>Un ecosistema, varios dominios</h2></div>
+            <div>
+              <span className="section-kicker">Capacidades</span>
+              <h2>Un ecosistema, varios dominios</h2>
+            </div>
           </div>
           <div className="card-grid capability-grid">
-            <article className="card"><span className="card-label">Product Master</span><strong>Catálogo canónico</strong><p>Productos, marcas, categorías, precios e imágenes bajo contratos controlados.</p></article>
-            <article className="card"><span className="card-label">Operación</span><strong>Abastecimiento + inventario</strong><p>Compras, pedidos, reservas, ventas y stock conectados al dominio operativo.</p></article>
-            <article className="card"><span className="card-label">Finanzas</span><strong>Ledger trazable</strong><p>Ingresos, egresos, cuentas, transferencias y reversión sin borrar historia.</p></article>
-            <article className="card"><span className="card-label">Governance</span><strong>Protección activa</strong><p>Auditoría, readiness y gates mantienen separada la ejecución sensible.</p></article>
+            <article className="card">
+              <span className="card-label">Product Master</span>
+              <strong>Catálogo canónico</strong>
+              <p>Productos, marcas, categorías, precios e imágenes bajo contratos controlados.</p>
+            </article>
+            <article className="card">
+              <span className="card-label">Operación</span>
+              <strong>Abastecimiento + inventario</strong>
+              <p>Compras, pedidos, reservas, ventas y stock conectados al dominio operativo.</p>
+            </article>
+            <article className="card">
+              <span className="card-label">Finanzas</span>
+              <strong>Ledger trazable</strong>
+              <p>Ingresos, egresos, cuentas, transferencias y reversión sin borrar historia.</p>
+            </article>
+            <article className="card">
+              <span className="card-label">Governance</span>
+              <strong>Protección activa</strong>
+              <p>Auditoría, readiness y gates mantienen separada la ejecución sensible.</p>
+            </article>
           </div>
         </>
       ) : experienceState.state === 'LOADING' ? (

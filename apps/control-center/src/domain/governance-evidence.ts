@@ -33,7 +33,16 @@ export interface GovernanceEvidenceInput {
   readonly governanceAudit: readonly GovernanceEvidenceEvent[];
   readonly operationTimeline: readonly OperationEvidenceEvent[];
   readonly now: Date;
+  /**
+   * Política de frescura explícita del consumidor. Si se omite, esta capa no
+   * inventa una ventana temporal y no clasifica evidencia como stale.
+   */
   readonly freshnessWindowHours?: number;
+  /**
+   * Tolerancia explícita para desfase de reloj. Por defecto es 0 porque no hay
+   * una tolerancia canónica de dominio declarada en este contrato.
+   */
+  readonly futureToleranceMs?: number;
 }
 
 export interface GovernanceEvidenceResult {
@@ -44,7 +53,7 @@ export interface GovernanceEvidenceResult {
   readonly operationTimelineCount: number;
   readonly latestGovernanceEventAt: Date | null;
   readonly latestOperationEventAt: Date | null;
-  readonly freshnessWindowHours: number;
+  readonly freshnessWindowHours: number | null;
 }
 
 export interface GovernanceAssuranceResult {
@@ -54,9 +63,6 @@ export interface GovernanceAssuranceResult {
   readonly executionMustRemainBlocked: true;
 }
 
-const DEFAULT_FRESHNESS_WINDOW_HOURS = 72;
-const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
-
 function latestDate(events: readonly { readonly occurredAt: Date }[]): Date | null {
   const validTimes = events
     .map((event) => event.occurredAt.getTime())
@@ -65,15 +71,26 @@ function latestDate(events: readonly { readonly occurredAt: Date }[]): Date | nu
   return new Date(Math.max(...validTimes));
 }
 
-function isStale(value: Date | null, now: Date, freshnessWindowHours: number): boolean {
-  if (!value) return false;
+function normalizePositiveFinite(value: number | undefined): number | null {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
+
+function normalizeNonNegativeFinite(value: number | undefined): number {
+  if (value == null || !Number.isFinite(value) || value < 0) return 0;
+  return value;
+}
+
+function isStale(value: Date | null, now: Date, freshnessWindowHours: number | null): boolean {
+  if (!value || freshnessWindowHours == null) return false;
   return now.getTime() - value.getTime() > freshnessWindowHours * 60 * 60 * 1000;
 }
 
 export function evaluateGovernanceEvidence(input: GovernanceEvidenceInput): GovernanceEvidenceResult {
   const blockers: GovernanceEvidenceIssueCode[] = [];
   const warnings: GovernanceEvidenceIssueCode[] = [];
-  const freshnessWindowHours = input.freshnessWindowHours ?? DEFAULT_FRESHNESS_WINDOW_HOURS;
+  const freshnessWindowHours = normalizePositiveFinite(input.freshnessWindowHours);
+  const futureToleranceMs = normalizeNonNegativeFinite(input.futureToleranceMs);
 
   if (input.governanceAudit.length === 0) warnings.push('GOVERNANCE_AUDIT_EMPTY');
   if (input.operationTimeline.length === 0) warnings.push('OPERATION_TIMELINE_EMPTY');
@@ -98,10 +115,10 @@ export function evaluateGovernanceEvidence(input: GovernanceEvidenceInput): Gove
   if (malformedOperation) blockers.push('OPERATION_EVENT_MALFORMED');
 
   const nowMs = input.now.getTime();
-  if (input.governanceAudit.some((event) => event.occurredAt.getTime() > nowMs + FUTURE_TOLERANCE_MS)) {
+  if (input.governanceAudit.some((event) => event.occurredAt.getTime() > nowMs + futureToleranceMs)) {
     blockers.push('GOVERNANCE_EVENT_FUTURE_DATED');
   }
-  if (input.operationTimeline.some((event) => event.occurredAt.getTime() > nowMs + FUTURE_TOLERANCE_MS)) {
+  if (input.operationTimeline.some((event) => event.occurredAt.getTime() > nowMs + futureToleranceMs)) {
     blockers.push('OPERATION_EVENT_FUTURE_DATED');
   }
 
