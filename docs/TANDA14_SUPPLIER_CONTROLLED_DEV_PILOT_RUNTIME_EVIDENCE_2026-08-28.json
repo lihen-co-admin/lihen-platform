@@ -1,0 +1,41 @@
+{
+  "tanda": 14,
+  "cut": 4,
+  "pilot": "SUPPLIER_CONTROLLED_DEV",
+  "environment": "DEV",
+  "project_ref": "vnmkupzptujtywnnabkp",
+  "result": "PASS",
+  "execution_plane": "HELD",
+  "production_touched": false,
+  "fixture": {
+    "kind": "ISOLATED_SUPPLIER",
+    "business_name": "DEV PILOT SUPPLIER 2026-08-28 1511",
+    "final_status": "INACTIVE",
+    "commercial_use": false
+  },
+  "runtime_evidence": {
+    "controlled_create": "PASS",
+    "create_idempotency_replay": "PASS",
+    "post_write_read": "PASS",
+    "controlled_compensation_update": "PASS",
+    "compensation_idempotency_replay": "PASS",
+    "audit_create_event": "PASS",
+    "audit_update_event": "PASS",
+    "operation_rows_expected": 2,
+    "operation_rows_observed": 2
+  },
+  "source_evidence": {
+    "security_definer": true,
+    "auth_uid_required": true,
+    "owner_admin_active_required": true,
+    "operation_key_required": true,
+    "actor_bound_idempotency": true,
+    "result_snapshot_recorded": true
+  },
+  "limitations": [
+    "Pilot executed at database runtime with an authenticated OWNER claim context.",
+    "This CUT does not enable the browser environment write flag.",
+    "This CUT does not prove a browser-session UI write transport.",
+    "Dispatch, canary, final release, and production remain outside scope."
+  ]
+}
