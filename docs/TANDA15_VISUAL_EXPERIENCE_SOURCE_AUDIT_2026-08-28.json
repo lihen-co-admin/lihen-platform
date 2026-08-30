@@ -1,0 +1,1098 @@
+{
+  "tanda": 15,
+  "cut": 1,
+  "kind": "VISUAL_EXPERIENCE_STATIC_SOURCE_AUDIT",
+  "mutated_source": false,
+  "mutated_runtime": false,
+  "changed_env": false,
+  "changed_database": false,
+  "production_touched": false,
+  "surfaces": {
+    "CONTROL_CENTER": {
+      "surface": "CONTROL_CENTER",
+      "source_root_exists": true,
+      "files_scanned": 78,
+      "pages": [
+        "apps/control-center/src/pages/BootstrapAdminPage.tsx",
+        "apps/control-center/src/pages/BrandsPage.tsx",
+        "apps/control-center/src/pages/CatalogInstitutionalContentPage.tsx",
+        "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+        "apps/control-center/src/pages/CatalogsPage.tsx",
+        "apps/control-center/src/pages/CategoriesPage.tsx",
+        "apps/control-center/src/pages/ChangeProductSalePricePage.tsx",
+        "apps/control-center/src/pages/CreateProductPage.tsx",
+        "apps/control-center/src/pages/DashboardPage.tsx",
+        "apps/control-center/src/pages/DevAuthProbePage.tsx",
+        "apps/control-center/src/pages/FinancePage.tsx",
+        "apps/control-center/src/pages/InventoryPage.tsx",
+        "apps/control-center/src/pages/LoginPage.tsx",
+        "apps/control-center/src/pages/operation-console-policy.ts",
+        "apps/control-center/src/pages/OperationsPage.tsx",
+        "apps/control-center/src/pages/OrdersPage.tsx",
+        "apps/control-center/src/pages/ProductDetailPage.tsx",
+        "apps/control-center/src/pages/ProductImagesPage.tsx",
+        "apps/control-center/src/pages/ProductsPage.tsx",
+        "apps/control-center/src/pages/PublicHubPage.tsx",
+        "apps/control-center/src/pages/PurchaseDetailPage.tsx",
+        "apps/control-center/src/pages/PurchasesPage.tsx",
+        "apps/control-center/src/pages/SalesPage.tsx",
+        "apps/control-center/src/pages/SuppliersPage.tsx",
+        "apps/control-center/src/pages/UpdateProductPage.tsx"
+      ],
+      "components": [
+        "apps/control-center/src/components/AdminPageHero.tsx",
+        "apps/control-center/src/components/AppShell.tsx",
+        "apps/control-center/src/components/IntelligencePanel.tsx",
+        "apps/control-center/src/components/OperationalNotice.tsx",
+        "apps/control-center/src/components/PageHeader.tsx",
+        "apps/control-center/src/components/SummaryStrip.tsx"
+      ],
+      "styles": [
+        "apps/control-center/src/styles/app.css",
+        "apps/control-center/src/styles/catalog-pdf-print.css",
+        "apps/control-center/src/styles/reset.css",
+        "apps/control-center/src/styles/tokens.css"
+      ],
+      "pattern_counts": {
+        "responsive_media_queries": 31,
+        "focus_visible": 21,
+        "aria_usage": 43,
+        "loading_states": 97,
+        "empty_states": 62,
+        "error_states": 420,
+        "status_badges": 43,
+        "shared_shell": 4,
+        "shared_page_hero": 92,
+        "data_table": 0,
+        "dynamic_imports": 0,
+        "lazy_loading": 0
+      },
+      "files_with_pattern": {
+        "responsive_media_queries": [
+          "apps/control-center/src/styles/app.css",
+          "apps/control-center/src/styles/catalog-pdf-print.css"
+        ],
+        "focus_visible": [
+          "apps/control-center/src/styles/app.css"
+        ],
+        "aria_usage": [
+          "apps/control-center/src/auth/ProtectedRoute.tsx",
+          "apps/control-center/src/components/AdminPageHero.tsx",
+          "apps/control-center/src/components/AppShell.tsx",
+          "apps/control-center/src/components/IntelligencePanel.tsx",
+          "apps/control-center/src/components/OperationalNotice.tsx",
+          "apps/control-center/src/components/SummaryStrip.tsx",
+          "apps/control-center/src/pages/BootstrapAdminPage.tsx",
+          "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+          "apps/control-center/src/pages/DashboardPage.tsx",
+          "apps/control-center/src/pages/DevAuthProbePage.tsx",
+          "apps/control-center/src/pages/LoginPage.tsx",
+          "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "apps/control-center/src/pages/ProductsPage.tsx",
+          "apps/control-center/src/pages/PublicHubPage.tsx"
+        ],
+        "loading_states": [
+          "apps/control-center/src/auth/auth-context.ts",
+          "apps/control-center/src/auth/AuthProvider.tsx",
+          "apps/control-center/src/auth/ProtectedRoute.tsx",
+          "apps/control-center/src/domain/admin-experience-state.ts",
+          "apps/control-center/src/pages/BootstrapAdminPage.tsx",
+          "apps/control-center/src/pages/BrandsPage.tsx",
+          "apps/control-center/src/pages/CatalogInstitutionalContentPage.tsx",
+          "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+          "apps/control-center/src/pages/CategoriesPage.tsx",
+          "apps/control-center/src/pages/ChangeProductSalePricePage.tsx",
+          "apps/control-center/src/pages/DashboardPage.tsx",
+          "apps/control-center/src/pages/DevAuthProbePage.tsx",
+          "apps/control-center/src/pages/InventoryPage.tsx",
+          "apps/control-center/src/pages/LoginPage.tsx",
+          "apps/control-center/src/pages/OperationsPage.tsx",
+          "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "apps/control-center/src/pages/ProductsPage.tsx",
+          "apps/control-center/src/pages/PurchaseDetailPage.tsx",
+          "apps/control-center/src/pages/UpdateProductPage.tsx",
+          "apps/control-center/src/styles/app.css",
+          "apps/control-center/src/styles/catalog-pdf-print.css"
+        ],
+        "empty_states": [
+          "apps/control-center/src/domain/admin-experience-state.ts",
+          "apps/control-center/src/domain/admin-surface-semantics.ts",
+          "apps/control-center/src/domain/dashboard-intelligence.ts",
+          "apps/control-center/src/domain/dashboard-operational-health.ts",
+          "apps/control-center/src/domain/governance-evidence.ts",
+          "apps/control-center/src/domain/intelligence-assurance.ts",
+          "apps/control-center/src/domain/supplier-pilot-evidence.ts",
+          "apps/control-center/src/pages/CatalogInstitutionalContentPage.tsx",
+          "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+          "apps/control-center/src/pages/ChangeProductSalePricePage.tsx",
+          "apps/control-center/src/pages/DashboardPage.tsx",
+          "apps/control-center/src/pages/FinancePage.tsx",
+          "apps/control-center/src/pages/InventoryPage.tsx",
+          "apps/control-center/src/pages/OperationsPage.tsx",
+          "apps/control-center/src/pages/OrdersPage.tsx",
+          "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "apps/control-center/src/pages/ProductsPage.tsx",
+          "apps/control-center/src/pages/PublicHubPage.tsx",
+          "apps/control-center/src/pages/PurchasesPage.tsx",
+          "apps/control-center/src/pages/SalesPage.tsx",
+          "apps/control-center/src/pages/UpdateProductPage.tsx",
+          "apps/control-center/src/styles/app.css",
+          "apps/control-center/src/styles/catalog-pdf-print.css"
+        ],
+        "error_states": [
+          "apps/control-center/src/main.tsx",
+          "apps/control-center/src/auth/auth-context.ts",
+          "apps/control-center/src/auth/AuthProvider.tsx",
+          "apps/control-center/src/composition/catalog-institutional.ts",
+          "apps/control-center/src/composition/catalogs.ts",
+          "apps/control-center/src/composition/finance.ts",
+          "apps/control-center/src/composition/operations.ts",
+          "apps/control-center/src/composition/phase3-cutover.ts",
+          "apps/control-center/src/composition/sales.ts",
+          "apps/control-center/src/composition/visual-intelligence.ts",
+          "apps/control-center/src/domain/admin-experience-state.ts",
+          "apps/control-center/src/pages/BootstrapAdminPage.tsx",
+          "apps/control-center/src/pages/BrandsPage.tsx",
+          "apps/control-center/src/pages/CatalogInstitutionalContentPage.tsx",
+          "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+          "apps/control-center/src/pages/CatalogsPage.tsx",
+          "apps/control-center/src/pages/CategoriesPage.tsx",
+          "apps/control-center/src/pages/ChangeProductSalePricePage.tsx",
+          "apps/control-center/src/pages/CreateProductPage.tsx",
+          "apps/control-center/src/pages/DashboardPage.tsx",
+          "apps/control-center/src/pages/DevAuthProbePage.tsx",
+          "apps/control-center/src/pages/FinancePage.tsx",
+          "apps/control-center/src/pages/InventoryPage.tsx",
+          "apps/control-center/src/pages/LoginPage.tsx",
+          "apps/control-center/src/pages/operation-console-policy.ts",
+          "apps/control-center/src/pages/OperationsPage.tsx",
+          "apps/control-center/src/pages/OrdersPage.tsx",
+          "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "apps/control-center/src/pages/ProductsPage.tsx",
+          "apps/control-center/src/pages/PublicHubPage.tsx",
+          "apps/control-center/src/pages/PurchaseDetailPage.tsx",
+          "apps/control-center/src/pages/PurchasesPage.tsx",
+          "apps/control-center/src/pages/SalesPage.tsx",
+          "apps/control-center/src/pages/SuppliersPage.tsx",
+          "apps/control-center/src/pages/UpdateProductPage.tsx",
+          "apps/control-center/src/styles/app.css"
+        ],
+        "status_badges": [
+          "apps/control-center/src/pages/operation-console-policy.ts",
+          "apps/control-center/src/pages/OperationsPage.tsx",
+          "apps/control-center/src/pages/PublicHubPage.tsx",
+          "apps/control-center/src/styles/app.css"
+        ],
+        "shared_shell": [
+          "apps/control-center/src/app/App.tsx",
+          "apps/control-center/src/components/AppShell.tsx"
+        ],
+        "shared_page_hero": [
+          "apps/control-center/src/components/AdminPageHero.tsx",
+          "apps/control-center/src/pages/BrandsPage.tsx",
+          "apps/control-center/src/pages/CategoriesPage.tsx",
+          "apps/control-center/src/pages/ChangeProductSalePricePage.tsx",
+          "apps/control-center/src/pages/CreateProductPage.tsx",
+          "apps/control-center/src/pages/DashboardPage.tsx",
+          "apps/control-center/src/pages/DevAuthProbePage.tsx",
+          "apps/control-center/src/pages/FinancePage.tsx",
+          "apps/control-center/src/pages/InventoryPage.tsx",
+          "apps/control-center/src/pages/OperationsPage.tsx",
+          "apps/control-center/src/pages/OrdersPage.tsx",
+          "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "apps/control-center/src/pages/ProductsPage.tsx",
+          "apps/control-center/src/pages/PublicHubPage.tsx",
+          "apps/control-center/src/pages/PurchaseDetailPage.tsx",
+          "apps/control-center/src/pages/PurchasesPage.tsx",
+          "apps/control-center/src/pages/SalesPage.tsx",
+          "apps/control-center/src/pages/SuppliersPage.tsx",
+          "apps/control-center/src/pages/UpdateProductPage.tsx",
+          "apps/control-center/src/styles/app.css"
+        ],
+        "data_table": [],
+        "dynamic_imports": [],
+        "lazy_loading": []
+      },
+      "largest_files": [
+        {
+          "path": "apps/control-center/src/styles/app.css",
+          "lines": 956,
+          "patterns": {
+            "responsive_media_queries": 28,
+            "focus_visible": 21,
+            "aria_usage": 0,
+            "loading_states": 1,
+            "empty_states": 5,
+            "error_states": 2,
+            "status_badges": 4,
+            "shared_shell": 0,
+            "shared_page_hero": 24,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/composition/operations.ts",
+          "lines": 841,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 109,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/styles/catalog-pdf-print.css",
+          "lines": 785,
+          "patterns": {
+            "responsive_media_queries": 3,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 2,
+            "empty_states": 1,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/composition/catalogs.ts",
+          "lines": 550,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 51,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/OperationsPage.tsx",
+          "lines": 531,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 3,
+            "empty_states": 4,
+            "error_states": 9,
+            "status_badges": 35,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/CatalogPdfRenderPage.tsx",
+          "lines": 475,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 2,
+            "loading_states": 5,
+            "empty_states": 1,
+            "error_states": 5,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/PublicHubPage.tsx",
+          "lines": 452,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 8,
+            "loading_states": 0,
+            "empty_states": 3,
+            "error_states": 8,
+            "status_badges": 2,
+            "shared_shell": 0,
+            "shared_page_hero": 4,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/SalesPage.tsx",
+          "lines": 446,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 8,
+            "error_states": 8,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/FinancePage.tsx",
+          "lines": 412,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 4,
+            "error_states": 9,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/OrdersPage.tsx",
+          "lines": 384,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 3,
+            "error_states": 8,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/ProductImagesPage.tsx",
+          "lines": 367,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 6,
+            "loading_states": 5,
+            "empty_states": 3,
+            "error_states": 8,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/CatalogInstitutionalContentPage.tsx",
+          "lines": 350,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 3,
+            "empty_states": 1,
+            "error_states": 11,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/PurchasesPage.tsx",
+          "lines": 304,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 4,
+            "error_states": 6,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/ProductDetailPage.tsx",
+          "lines": 288,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 1,
+            "loading_states": 5,
+            "empty_states": 3,
+            "error_states": 6,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/ProductsPage.tsx",
+          "lines": 277,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 6,
+            "loading_states": 10,
+            "empty_states": 2,
+            "error_states": 8,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/DashboardPage.tsx",
+          "lines": 272,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 5,
+            "loading_states": 5,
+            "empty_states": 1,
+            "error_states": 5,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/composition/catalog-institutional.ts",
+          "lines": 262,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 22,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/PurchaseDetailPage.tsx",
+          "lines": 258,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 5,
+            "empty_states": 0,
+            "error_states": 11,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 4,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/DevAuthProbePage.tsx",
+          "lines": 248,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 1,
+            "loading_states": 4,
+            "empty_states": 0,
+            "error_states": 26,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/control-center/src/pages/UpdateProductPage.tsx",
+          "lines": 225,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 6,
+            "empty_states": 2,
+            "error_states": 4,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 3,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        }
+      ]
+    },
+    "STOREFRONT": {
+      "surface": "STOREFRONT",
+      "source_root_exists": true,
+      "files_scanned": 45,
+      "pages": [],
+      "components": [
+        "apps/storefront/src/components/brand-logo-assets.ts",
+        "apps/storefront/src/components/brand-logo-audit.ts",
+        "apps/storefront/src/components/carousel-navigation.ts",
+        "apps/storefront/src/components/catalog-navigation.ts",
+        "apps/storefront/src/components/catalog-page.ts",
+        "apps/storefront/src/components/delivery-policy.ts",
+        "apps/storefront/src/components/gifts-page.ts",
+        "apps/storefront/src/components/home-brands.ts",
+        "apps/storefront/src/components/home-page.ts",
+        "apps/storefront/src/components/home-product-rails.ts",
+        "apps/storefront/src/components/product-card.ts",
+        "apps/storefront/src/components/product-detail-policy.ts",
+        "apps/storefront/src/components/product-detail.ts",
+        "apps/storefront/src/components/product-enrichment.ts",
+        "apps/storefront/src/components/product-gallery-state.ts",
+        "apps/storefront/src/components/product-interactions.ts",
+        "apps/storefront/src/components/product-page.ts",
+        "apps/storefront/src/components/public-experience-state.ts",
+        "apps/storefront/src/components/public-hub-api.ts",
+        "apps/storefront/src/components/public-hub-page.ts",
+        "apps/storefront/src/components/public-navigation-state.ts",
+        "apps/storefront/src/components/selection-drawer.ts",
+        "apps/storefront/src/components/selection-store.ts",
+        "apps/storefront/src/components/site-footer.ts",
+        "apps/storefront/src/components/site-header.ts",
+        "apps/storefront/src/components/site-shell.ts",
+        "apps/storefront/src/components/static-content-page.ts",
+        "apps/storefront/src/components/storefront-api.ts",
+        "apps/storefront/src/components/storefront-brand.ts",
+        "apps/storefront/src/components/storefront-media.ts",
+        "apps/storefront/src/components/storefront-navigation.ts",
+        "apps/storefront/src/components/storefront-product.ts",
+        "apps/storefront/src/components/storefront-router.ts",
+        "apps/storefront/src/components/storefront-runtime-config.ts",
+        "apps/storefront/src/components/storefront-seo.ts",
+        "apps/storefront/src/components/whatsapp.ts"
+      ],
+      "styles": [
+        "apps/storefront/src/styles/global.css",
+        "apps/storefront/src/styles/home.css",
+        "apps/storefront/src/styles/navigation.css",
+        "apps/storefront/src/styles/products.css",
+        "apps/storefront/src/styles/public-hub.css",
+        "apps/storefront/src/styles/shell.css",
+        "apps/storefront/src/styles/static-content.css",
+        "apps/storefront/src/styles/tokens.css"
+      ],
+      "pattern_counts": {
+        "responsive_media_queries": 39,
+        "focus_visible": 36,
+        "aria_usage": 111,
+        "loading_states": 27,
+        "empty_states": 27,
+        "error_states": 30,
+        "status_badges": 0,
+        "shared_shell": 0,
+        "shared_page_hero": 0,
+        "data_table": 0,
+        "dynamic_imports": 7,
+        "lazy_loading": 0
+      },
+      "files_with_pattern": {
+        "responsive_media_queries": [
+          "apps/storefront/src/styles/global.css",
+          "apps/storefront/src/styles/home.css",
+          "apps/storefront/src/styles/navigation.css",
+          "apps/storefront/src/styles/products.css",
+          "apps/storefront/src/styles/public-hub.css",
+          "apps/storefront/src/styles/shell.css",
+          "apps/storefront/src/styles/static-content.css"
+        ],
+        "focus_visible": [
+          "apps/storefront/src/styles/global.css",
+          "apps/storefront/src/styles/home.css",
+          "apps/storefront/src/styles/navigation.css",
+          "apps/storefront/src/styles/products.css",
+          "apps/storefront/src/styles/public-hub.css"
+        ],
+        "aria_usage": [
+          "apps/storefront/src/components/carousel-navigation.ts",
+          "apps/storefront/src/components/catalog-page.ts",
+          "apps/storefront/src/components/gifts-page.ts",
+          "apps/storefront/src/components/home-brands.ts",
+          "apps/storefront/src/components/home-page.ts",
+          "apps/storefront/src/components/home-product-rails.ts",
+          "apps/storefront/src/components/product-card.ts",
+          "apps/storefront/src/components/product-detail.ts",
+          "apps/storefront/src/components/product-page.ts",
+          "apps/storefront/src/components/public-hub-page.ts",
+          "apps/storefront/src/components/selection-drawer.ts",
+          "apps/storefront/src/components/site-header.ts",
+          "apps/storefront/src/components/static-content-page.ts",
+          "apps/storefront/src/styles/home.css",
+          "apps/storefront/src/styles/navigation.css",
+          "apps/storefront/src/styles/products.css"
+        ],
+        "loading_states": [
+          "apps/storefront/src/components/catalog-page.ts",
+          "apps/storefront/src/components/gifts-page.ts",
+          "apps/storefront/src/components/home-brands.ts",
+          "apps/storefront/src/components/home-page.ts",
+          "apps/storefront/src/components/product-page.ts",
+          "apps/storefront/src/components/public-experience-state.ts",
+          "apps/storefront/src/components/public-hub-page.ts",
+          "apps/storefront/src/components/selection-drawer.ts",
+          "apps/storefront/src/components/storefront-media.ts",
+          "apps/storefront/src/styles/public-hub.css"
+        ],
+        "empty_states": [
+          "apps/storefront/src/components/catalog-page.ts",
+          "apps/storefront/src/components/delivery-policy.ts",
+          "apps/storefront/src/components/gifts-page.ts",
+          "apps/storefront/src/components/home-brands.ts",
+          "apps/storefront/src/components/product-page.ts",
+          "apps/storefront/src/components/public-experience-state.ts",
+          "apps/storefront/src/components/public-hub-page.ts",
+          "apps/storefront/src/components/selection-drawer.ts",
+          "apps/storefront/src/styles/products.css",
+          "apps/storefront/src/styles/public-hub.css"
+        ],
+        "error_states": [
+          "apps/storefront/src/main.ts",
+          "apps/storefront/src/components/catalog-page.ts",
+          "apps/storefront/src/components/delivery-policy.ts",
+          "apps/storefront/src/components/gifts-page.ts",
+          "apps/storefront/src/components/home-brands.ts",
+          "apps/storefront/src/components/home-product-rails.ts",
+          "apps/storefront/src/components/product-enrichment.ts",
+          "apps/storefront/src/components/public-experience-state.ts",
+          "apps/storefront/src/components/public-hub-api.ts",
+          "apps/storefront/src/components/public-hub-page.ts",
+          "apps/storefront/src/components/storefront-api.ts",
+          "apps/storefront/src/components/storefront-runtime-config.ts",
+          "apps/storefront/src/styles/public-hub.css"
+        ],
+        "status_badges": [],
+        "shared_shell": [],
+        "shared_page_hero": [],
+        "data_table": [],
+        "dynamic_imports": [
+          "apps/storefront/src/components/storefront-router.ts"
+        ],
+        "lazy_loading": []
+      },
+      "largest_files": [
+        {
+          "path": "apps/storefront/src/styles/products.css",
+          "lines": 1492,
+          "patterns": {
+            "responsive_media_queries": 19,
+            "focus_visible": 16,
+            "aria_usage": 7,
+            "loading_states": 0,
+            "empty_states": 4,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/styles/navigation.css",
+          "lines": 414,
+          "patterns": {
+            "responsive_media_queries": 7,
+            "focus_visible": 13,
+            "aria_usage": 4,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/product-page.ts",
+          "lines": 312,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 7,
+            "loading_states": 1,
+            "empty_states": 3,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/site-header.ts",
+          "lines": 240,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 16,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/product-detail.ts",
+          "lines": 231,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 13,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/catalog-page.ts",
+          "lines": 209,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 5,
+            "loading_states": 1,
+            "empty_states": 2,
+            "error_states": 4,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/home-page.ts",
+          "lines": 196,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 22,
+            "loading_states": 3,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/static-content-page.ts",
+          "lines": 176,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 5,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/styles/global.css",
+          "lines": 170,
+          "patterns": {
+            "responsive_media_queries": 2,
+            "focus_visible": 1,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/storefront-api.ts",
+          "lines": 169,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 2,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/styles/home.css",
+          "lines": 163,
+          "patterns": {
+            "responsive_media_queries": 4,
+            "focus_visible": 1,
+            "aria_usage": 1,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/gifts-page.ts",
+          "lines": 152,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 5,
+            "loading_states": 1,
+            "empty_states": 6,
+            "error_states": 4,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/storefront-navigation.ts",
+          "lines": 146,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/selection-drawer.ts",
+          "lines": 128,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 8,
+            "loading_states": 1,
+            "empty_states": 1,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/selection-store.ts",
+          "lines": 128,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/storefront-router.ts",
+          "lines": 126,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 0,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 7,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/home-brands.ts",
+          "lines": 125,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 2,
+            "loading_states": 3,
+            "empty_states": 2,
+            "error_states": 4,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/public-hub-page.ts",
+          "lines": 109,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 5,
+            "loading_states": 10,
+            "empty_states": 1,
+            "error_states": 1,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/public-hub-api.ts",
+          "lines": 87,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 0,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 1,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        },
+        {
+          "path": "apps/storefront/src/components/home-product-rails.ts",
+          "lines": 82,
+          "patterns": {
+            "responsive_media_queries": 0,
+            "focus_visible": 0,
+            "aria_usage": 3,
+            "loading_states": 0,
+            "empty_states": 0,
+            "error_states": 4,
+            "status_badges": 0,
+            "shared_shell": 0,
+            "shared_page_hero": 0,
+            "data_table": 0,
+            "dynamic_imports": 0,
+            "lazy_loading": 0
+          }
+        }
+      ]
+    }
+  }
+}

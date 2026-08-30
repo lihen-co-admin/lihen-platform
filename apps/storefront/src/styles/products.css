@@ -1490,3 +1490,107 @@ body.selection-open { overflow: hidden; }
     outline: 2px solid CanvasText;
   }
 }
+
+/* TANDA 15 · CUT 2 — catalog and product presentation refinement */
+.product-card {
+  border-color: rgba(130, 48, 71, .10);
+  box-shadow: 0 12px 34px rgba(47, 34, 29, .065);
+  transition:
+    transform var(--lihen-transition-fast),
+    box-shadow var(--lihen-transition-fast),
+    border-color var(--lihen-transition-fast);
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(130, 48, 71, .18);
+  box-shadow: 0 22px 48px rgba(47, 34, 29, .11);
+}
+
+.product-card__media {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 255, 255, .96), transparent 44%),
+    var(--lihen-color-ivory);
+}
+
+.product-card__body {
+  padding: 1rem 1rem 1.1rem;
+}
+
+.product-card__name {
+  line-height: 1.28;
+  text-wrap: balance;
+}
+
+.catalog-filters {
+  border-color: rgba(130, 48, 71, .10);
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 16px 42px rgba(47, 34, 29, .055);
+  backdrop-filter: blur(10px);
+}
+
+.catalog-filters input,
+.catalog-filters select {
+  border-color: rgba(130, 48, 71, .14);
+  background: #fffdfb;
+}
+
+.catalog-filters input:hover,
+.catalog-filters select:hover {
+  border-color: rgba(130, 48, 71, .28);
+}
+
+.product-dialog__panel {
+  background: linear-gradient(90deg, var(--lihen-color-ivory) 0 57.5%, #fff 57.5%);
+}
+
+.product-dialog__gallery {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, .95), transparent 34rem),
+    var(--lihen-color-ivory);
+}
+
+.product-dialog__content {
+  background: rgba(255, 255, 255, .98);
+  box-shadow: -28px 0 65px rgba(47, 34, 29, .045);
+}
+
+.product-dialog__close {
+  border: 1px solid rgba(130, 48, 71, .11);
+  box-shadow: 0 10px 26px rgba(47, 34, 29, .09);
+}
+
+.product-dialog__thumbs button {
+  transition: transform var(--lihen-transition-fast), border-color var(--lihen-transition-fast);
+}
+
+.product-dialog__thumbs button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(130, 48, 71, .3);
+}
+
+.selection-drawer {
+  border-left: 1px solid rgba(130, 48, 71, .08);
+  box-shadow: -26px 0 80px rgba(29, 23, 23, .18);
+}
+
+@media (max-width: 720px) {
+  .product-card:hover {
+    transform: none;
+  }
+
+  .product-dialog__panel {
+    background: white;
+  }
+
+  .product-dialog__content {
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-dialog__thumbs button {
+    transform: none !important;
+  }
+}

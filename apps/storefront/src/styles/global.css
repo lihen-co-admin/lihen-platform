@@ -168,3 +168,70 @@ img, svg { display: block; max-width: 100%; }
     flex-basis: 40px;
   }
 }
+
+/* TANDA 15 · CUT 2 — Storefront visual experience refinement
+   Presentation only: no catalog, pricing, selection or navigation behavior changes. */
+:root {
+  --t15-sf-glass: rgba(255, 255, 255, .9);
+  --t15-sf-soft-line: rgba(130, 48, 71, .11);
+  --t15-sf-elevated: 0 18px 52px rgba(47, 34, 29, .09);
+  --t15-sf-focus: rgba(130, 48, 71, .24);
+}
+
+body {
+  background:
+    radial-gradient(circle at 84% 0%, rgba(214, 181, 232, .10), transparent 24rem),
+    radial-gradient(circle at 8% 16%, rgba(230, 199, 151, .10), transparent 22rem),
+    var(--lihen-color-white);
+}
+
+.lihen-container {
+  width: min(100% - (var(--lihen-page-gutter) * 2), 1480px);
+}
+
+.lihen-section {
+  padding-block: clamp(3.5rem, 7vw, var(--lihen-section-space));
+}
+
+.lihen-eyebrow {
+  font-size: .7rem;
+  letter-spacing: .19em;
+}
+
+.lihen-display {
+  text-wrap: balance;
+}
+
+.lihen-button {
+  min-height: 50px;
+  padding-inline: 1.55rem;
+  box-shadow: 0 10px 24px rgba(45, 30, 24, .06);
+}
+
+.lihen-button--dark:hover {
+  box-shadow: 0 14px 30px rgba(45, 30, 24, .18);
+}
+
+.lihen-button--light:hover,
+.lihen-button--outline:hover {
+  box-shadow: 0 14px 32px rgba(130, 48, 71, .10);
+}
+
+.lihen-card {
+  border-color: var(--t15-sf-soft-line);
+  box-shadow: var(--t15-sf-elevated);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--t15-sf-focus);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(214, 181, 232, .42);
+  color: var(--lihen-color-ink);
+}
