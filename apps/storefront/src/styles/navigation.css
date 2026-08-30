@@ -484,3 +484,41 @@
     backdrop-filter: blur(14px) saturate(120%);
   }
 }
+
+/* TANDA 15 · CUT 3 — navigation responsiveness and keyboard clarity */
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+  outline-offset: 4px;
+}
+
+.main-nav {
+  scrollbar-width: none;
+}
+
+.main-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.mega-panel a {
+  border-radius: 10px;
+}
+
+.mega-panel a:focus-visible {
+  outline: 3px solid rgba(130, 48, 71, .18);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .header-main {
+    gap: .65rem;
+  }
+
+  .header-actions {
+    gap: .25rem;
+  }
+
+  .icon-button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+}

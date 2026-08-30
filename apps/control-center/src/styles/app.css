@@ -1299,3 +1299,261 @@ button:focus-visible,
     padding-top: 1rem;
   }
 }
+
+/* TANDA 15 · CUT 3 — operational surfaces, forms and state refinement */
+:root {
+  --t15-state-info-bg: #f8f5ff;
+  --t15-state-info-line: #ddd3ec;
+  --t15-state-warning-bg: #fff9eb;
+  --t15-state-warning-line: #ead6a9;
+  --t15-state-danger-bg: #fff5f5;
+  --t15-state-danger-line: #e6bcbc;
+  --t15-state-success-bg: #f1f8f3;
+  --t15-state-success-line: #bfd8c6;
+}
+
+/* Tables keep context while horizontal scrolling on operational screens. */
+.table-scroll {
+  position: relative;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.data-table {
+  min-width: 760px;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: inset 0 -1px 0 rgba(145, 119, 105, .13);
+}
+
+.data-table td,
+.data-table th {
+  vertical-align: middle;
+}
+
+.data-table td strong {
+  overflow-wrap: anywhere;
+}
+
+/* Toolbar/search hierarchy */
+.table-toolbar {
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.table-toolbar input,
+.table-toolbar select,
+.table-search input {
+  min-height: 46px;
+}
+
+.table-search {
+  min-width: min(100%, 320px);
+  border-color: rgba(154, 128, 114, .28);
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 8px 22px rgba(67, 49, 41, .035);
+}
+
+.table-search:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(185, 130, 79, .13);
+}
+
+/* Forms */
+.admin-form-card {
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(67, 49, 41, .055);
+}
+
+.form-grid label > span {
+  font-size: .76rem;
+  letter-spacing: .015em;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  min-height: 48px;
+  border-radius: 12px;
+  transition:
+    border-color .15s ease,
+    box-shadow .15s ease,
+    background-color .15s ease;
+}
+
+.form-grid textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(185, 130, 79, .14);
+}
+
+.form-grid input:disabled,
+.form-grid select:disabled,
+.form-grid textarea:disabled {
+  cursor: not-allowed;
+  background: #f4f1ef;
+  color: var(--text-soft);
+}
+
+.form-actions {
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+/* Loading / empty / error states */
+.loading-card,
+.empty-state,
+.error-state,
+.success-state {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-card {
+  min-height: 124px;
+  align-items: center;
+  border-color: var(--t15-state-info-line);
+  background:
+    radial-gradient(circle at 92% 18%, rgba(214, 181, 232, .16), transparent 12rem),
+    var(--t15-state-info-bg);
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+
+.empty-state {
+  border-style: dashed;
+  border-color: rgba(166, 139, 124, .36);
+  background:
+    radial-gradient(circle at 88% 16%, rgba(230, 199, 151, .13), transparent 11rem),
+    #fffdfa;
+}
+
+.empty-state strong {
+  font-family: Georgia, serif;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+
+.error-state {
+  border-color: var(--t15-state-danger-line);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(191, 115, 115, .08), transparent 10rem),
+    var(--t15-state-danger-bg);
+  box-shadow: 0 12px 30px rgba(123, 65, 65, .045);
+}
+
+.success-state {
+  border-color: var(--t15-state-success-line);
+  background: var(--t15-state-success-bg);
+}
+
+/* Make operational messages easier to scan in dense pages. */
+.operational-notice {
+  box-shadow: 0 12px 32px rgba(67, 49, 41, .04);
+}
+
+.operational-notice__body {
+  min-width: 0;
+}
+
+.operational-notice p {
+  max-width: 92ch;
+}
+
+/* Dense intelligence surfaces become calmer and easier to scan. */
+.intelligence-card {
+  min-height: 132px;
+}
+
+.intelligence-card__content strong {
+  line-height: 1.25;
+}
+
+.intelligence-card__content p {
+  max-width: 58ch;
+}
+
+/* Responsive operational treatment */
+@media (max-width: 900px) {
+  .data-table {
+    min-width: 680px;
+  }
+
+  .table-summary,
+  .table-toolbar,
+  .card-heading {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .table-toolbar,
+  .table-summary,
+  .card-heading {
+    flex-direction: column;
+  }
+
+  .table-toolbar > *,
+  .table-search,
+  .form-actions > button,
+  .form-actions > .button-link {
+    width: 100%;
+  }
+
+  .table-scroll {
+    margin-inline: -1px;
+  }
+
+  .data-table {
+    min-width: 640px;
+  }
+
+  .loading-card,
+  .empty-state,
+  .error-state {
+    padding: 1rem;
+  }
+
+  .intelligence-panel__heading {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .data-table {
+    min-width: 600px;
+  }
+
+  .table-card,
+  .admin-form-card,
+  .card,
+  .operational-notice,
+  .intelligence-panel {
+    border-radius: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-grid input,
+  .form-grid select,
+  .form-grid textarea {
+    transition: none;
+  }
+}
