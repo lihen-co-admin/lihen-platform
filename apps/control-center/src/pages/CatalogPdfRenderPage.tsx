@@ -16,6 +16,7 @@ import { STYLE_VISUAL_FOUNDATION } from '../composition/catalog-style-visual';
 import { buildStyleBodyPages } from '../composition/catalog-style-templates';
 import { StyleCategorySheet, StyleProductSheet } from '../components/CatalogStyleSheets';
 import '../styles/catalog-style-foundation.css';
+import { buildStyleCommercialBodyPreview } from '../composition/catalog-style-commercial-preview';
 
 const PRODUCTS_PER_PAGE = 6;
 const LEGACY_WHATSAPP_URL = 'https://wa.me/message/2JDWBH57SQG4F1';
@@ -243,6 +244,10 @@ export function CatalogPdfRenderPage() {
   const { id = '' } = useParams();
   const [searchParams] = useSearchParams();
   const pdfLine = resolveCatalogPdfLine(searchParams.get('line'));
+  const stylePreviewRequested =
+    import.meta.env.DEV
+    && pdfLine === 'STYLE'
+    && searchParams.get('stylePreview') === '1';
   const pdfLinePresentation = CATALOG_PDF_LINE_PRESENTATION[pdfLine];
   const [entries, setEntries] = useState<readonly CatalogRenderEntry[]>([]);
   const [institutional, setInstitutional] = useState<CatalogInstitutionalContent | null>(null);
@@ -281,17 +286,26 @@ export function CatalogPdfRenderPage() {
     };
   }, [id]);
 
-  const renderEntries = useMemo(
-    () => filterCatalogEntriesByLine(entries, pdfLine),
-    [entries, pdfLine],
-  );
+  const renderEntries = useMemo(() => {
+    const filtered = filterCatalogEntriesByLine(entries, pdfLine);
+
+    if (
+      filtered.length === 0
+      && stylePreviewRequested
+      && entries[0]
+    ) {
+      return buildStyleCommercialBodyPreview(entries[0]);
+    }
+
+    return filtered;
+  }, [entries, pdfLine, stylePreviewRequested]);
   const pdfLineLabel = getCatalogPdfLineLabel(pdfLine);
   const bodyPages = useMemo(() => buildBodyPages(renderEntries), [renderEntries]);
   const styleBodyPages = useMemo(
     () => (pdfLine === 'STYLE' ? buildStyleBodyPages(renderEntries) : []),
     [pdfLine, renderEntries],
   );
-  const first = renderEntries[0] ?? null;
+  const first = renderEntries[0] ?? entries[0] ?? null;
   const paymentMethods = useMemo(
     () =>
       institutional
@@ -323,7 +337,11 @@ export function CatalogPdfRenderPage() {
   const imagesReady = renderEntries.length > 0 && processedImages === renderEntries.length;
   const extrasReady = extrasProcessed === extrasExpected;
   const canPrint =
-    imagesReady && extrasReady && failedImages === 0 && failedExtras === 0;
+    !stylePreviewRequested
+    && imagesReady
+    && extrasReady
+    && failedImages === 0
+    && failedExtras === 0;
   const activeBodyPageCount = pdfLine === 'STYLE' ? styleBodyPages.length : bodyPages.length;
   const totalPages = activeBodyPageCount + (institutional ? 5 : 2);
   const whatsappUrl =
@@ -359,7 +377,7 @@ export function CatalogPdfRenderPage() {
     >
       <aside className="catalog-render-toolbar no-print">
         <div>
-          <strong>{first.catalogTitle} · {first.versionLabel}</strong>
+          <strong>{first.catalogTitle} · {first.versionLabel}{stylePreviewRequested ? ' · PREVIEW STYLE DEV' : ''}</strong>
           <span>
             {renderEntries.length} productos · imágenes {processedImages}/{renderEntries.length}
             {institutional ? ` · institucional ${extrasProcessed}/${extrasExpected}` : ''}
@@ -384,7 +402,7 @@ export function CatalogPdfRenderPage() {
         </div>
       ) : null}
 
-      {institutional && pdfLine === 'ALL' ? (
+      {institutional ? (
         <section className="catalog-sheet catalog-reference-cover">
           <img src={catalogCoverPageOne} alt="Portada oficial del catálogo LIHEN" />
         </section>
@@ -427,7 +445,7 @@ export function CatalogPdfRenderPage() {
                 <div className="catalog-about-placeholder">LIHEN.CO</div>
               )}
             </div>
-            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
+            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
             <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA 2 DE {totalPages}</span></div>
           </section>
 
@@ -447,7 +465,7 @@ export function CatalogPdfRenderPage() {
                 </div>
               ))}
             </div>
-            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
+            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
             <div className="catalog-legal-footer">
               <span>{institutional.legalName}</span>
               {institutional.taxId ? <span>{institutional.taxId}</span> : null}
@@ -477,7 +495,7 @@ export function CatalogPdfRenderPage() {
                 <div className="catalog-payment-empty">Medios de pago por configurar.</div>
               ) : null}
             </div>
-            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
+            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
             <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA 4 DE {totalPages}</span></div>
           </section>
         </>
@@ -578,7 +596,7 @@ export function CatalogPdfRenderPage() {
               </div>
             ))}
           </div>
-          <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
+          <div className="catalog-info-tagline">{institutional.footerLabel}</div>
           <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA {totalPages} DE {totalPages}</span></div>
         </section>
       ) : null}

@@ -393,3 +393,119 @@
   letter-spacing: .08em;
   opacity: .55;
 }
+
+/* TANDA15 CUT8 — APPROVED STYLE PRODUCT VISUAL CONTRACT */
+.catalog-style-product--approved {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 16%, rgba(237,205,223,.72), transparent 31%),
+    radial-gradient(circle at 13% 88%, rgba(244,215,227,.78), transparent 29%),
+    linear-gradient(145deg, #fffaf4 0%, #fbf0ec 39%, #f0d8e6 74%, #f9e6ee 100%);
+  color: var(--style-ink);
+}
+.catalog-style-product--approved::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, rgba(255,255,255,.58), transparent 35%);
+  pointer-events: none;
+}
+.catalog-style-product__masthead {
+  position: absolute; left: 13mm; right: 13mm; top: 10mm; z-index: 6;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: start;
+}
+.catalog-style-product__collection {
+  display: grid; gap: 1mm; padding-left: 4mm;
+  border-left: .35mm solid rgba(123,83,146,.72);
+  color: #76548c; font-family: var(--style-functional-font);
+  font-size: 6.6pt; font-weight: 800; letter-spacing: .15em;
+}
+.catalog-style-product__collection strong { font-size: 10.5pt; }
+.catalog-style-product__brand {
+  display: grid; place-items: center; gap: 1.5mm; color: #8e6d92;
+  font-family: var(--style-functional-font); font-size: 5.5pt;
+  font-weight: 800; letter-spacing: .17em;
+}
+.catalog-style-product__brand img { width: 30mm; height: 16mm; object-fit: contain; }
+.catalog-style-product__line-label {
+  justify-self: end; color: #76548c; font-family: var(--style-functional-font);
+  font-size: 6.6pt; font-weight: 800; letter-spacing: .15em;
+}
+.catalog-style-product--approved .catalog-style-product__photo {
+  position: absolute; left: 91mm; top: 31mm; z-index: 2;
+  width: 108mm; height: 230mm; overflow: visible; background: transparent;
+}
+.catalog-style-product--approved .catalog-style-product__photo::before {
+  content: ""; position: absolute; inset: 12mm -3mm 5mm 8mm; z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(238,194,219,.50), rgba(238,194,219,0) 68%);
+  filter: blur(5mm);
+}
+.catalog-style-product--approved .catalog-style-product__photo img {
+  width: 100%; height: 100%; object-fit: contain; object-position: center bottom;
+  filter: drop-shadow(0 5mm 7mm rgba(83,55,68,.14));
+}
+.catalog-style-product--approved .catalog-style-product__content {
+  position: absolute; left: 16mm; top: 70mm; z-index: 5; width: 88mm;
+  min-height: 93mm; padding: 11mm 10mm;
+  border: .35mm solid rgba(255,255,255,.86); border-radius: 5mm;
+  background: linear-gradient(145deg, rgba(234,218,247,.92), rgba(246,220,231,.90));
+  box-shadow: 0 5mm 16mm rgba(84,56,72,.08);
+}
+.catalog-style-product--approved .catalog-style-product__ref {
+  margin: 0 0 4mm; color: #735d78; font-family: var(--style-functional-font);
+  font-size: 7pt; font-weight: 900; letter-spacing: .14em;
+}
+.catalog-style-product--approved .catalog-style-product__content h2 {
+  max-width: 68mm; color: #b58a48; font-family: var(--style-editorial-font);
+  font-size: 25pt; font-weight: 500; line-height: .98; text-transform: uppercase;
+}
+.catalog-style-product--approved .catalog-style-editorial__rule {
+  width: 42mm; margin-top: 7mm; background: rgba(181,138,72,.72);
+}
+.catalog-style-product__price-card {
+  position: absolute; left: 16mm; top: 176mm; z-index: 5;
+  display: grid; grid-template-columns: 15mm 1fr; align-items: center;
+  width: 88mm; min-height: 31mm; padding: 5mm 7mm;
+  border: .35mm solid rgba(255,255,255,.86); border-radius: 4mm;
+  background: rgba(238,218,245,.78); box-shadow: 0 4mm 12mm rgba(84,56,72,.07);
+}
+.catalog-style-product__price-icon {
+  display: grid; place-items: center; width: 11mm; height: 11mm; border-radius: 50%;
+  background: rgba(190,151,211,.65); color: #fff; font-size: 13pt;
+}
+.catalog-style-product__price-card span {
+  display: block; color: #76548c; font-family: var(--style-functional-font);
+  font-size: 6.5pt; font-weight: 800; letter-spacing: .06em;
+}
+.catalog-style-product__price-card strong {
+  display: block; margin-top: 2mm; color: #715286;
+  font-family: var(--style-functional-font); font-size: 13pt; font-weight: 900;
+}
+.catalog-style-product__cta {
+  position: absolute; left: 25mm; top: 222mm; z-index: 6;
+  display: grid; justify-items: center; gap: 1mm; color: #a75a9d;
+  font-family: var(--style-functional-font); font-size: 8pt; font-weight: 900;
+  letter-spacing: .08em; text-decoration: underline; text-underline-offset: 2mm;
+}
+.catalog-style-product__cta-arrow { font-size: 23pt; font-weight: 400; line-height: 1; }
+.catalog-style-product__wave {
+  position: absolute; z-index: 1; width: 76mm; height: 42mm; opacity: .36;
+  border: .35mm solid rgba(187,105,157,.62); border-radius: 50%; pointer-events: none;
+}
+.catalog-style-product__wave::before,
+.catalog-style-product__wave::after {
+  content: ""; position: absolute; inset: 5mm;
+  border: .3mm solid rgba(187,105,157,.50); border-radius: 50%;
+}
+.catalog-style-product__wave::after { inset: 10mm; }
+.catalog-style-product__wave--left { left: -39mm; bottom: 5mm; transform: rotate(12deg) scaleX(1.45); }
+.catalog-style-product__wave--right { right: -42mm; bottom: 19mm; transform: rotate(-18deg) scaleX(1.55); }
+.catalog-style-product--approved .catalog-style-footer { z-index: 7; color: rgba(92,72,85,.62); }
+.catalog-style-product--approved[data-template="A"],
+.catalog-style-product--approved[data-template="B"],
+.catalog-style-product--approved[data-template="C"],
+.catalog-style-product--approved[data-template="D"] {
+  --style-template-accent: var(--style-dusty-rose);
+}

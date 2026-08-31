@@ -1,13 +1,17 @@
+import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
 import type { CatalogRenderEntry } from '../composition/catalogs';
 import {
   STYLE_FACE_POLICY_MODE,
-  STYLE_TEMPLATE_LABELS,
   getStyleCtaLabel,
-  getStyleMicrocopy,
 } from '../composition/catalog-style-templates';
 import type { StyleEditorialTemplate } from '../composition/catalog-style-visual';
 import type { StyleCategoryCoverKey } from '../composition/catalog-style-category-covers';
 import { CatalogStyleCategoryCover } from './CatalogStyleCategoryCover';
+import {
+  STYLE_PRODUCT_VISUAL_CONTRACT,
+  getStyleProductImagePreparation,
+  getStyleProductReference,
+} from '../composition/catalog-style-product-visual';
 
 type StyleProductSheetProps = {
   entry: CatalogRenderEntry;
@@ -27,15 +31,6 @@ function formatPrice(value: number): string {
   });
 }
 
-function WhatsappMiniMark() {
-  return (
-    <span className="catalog-style-wa-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 3.4a8.4 8.4 0 0 0-7.2 12.7L3.7 20.5l4.5-1.1A8.4 8.4 0 1 0 12 3.4Zm0 1.7a6.7 6.7 0 1 1-3.5 12.4l-.3-.2-2.1.5.5-2-.2-.3A6.7 6.7 0 0 1 12 5.1Z" />
-      </svg>
-    </span>
-  );
-}
 
 export function StyleCategorySheet({
   label,
@@ -67,47 +62,64 @@ export function StyleProductSheet({
   onImageReady,
   onImageError,
 }: StyleProductSheetProps) {
-  const sku = entry.sku || entry.productCatalogCode || entry.businessLine;
-  const microcopy = getStyleMicrocopy(entry);
+  const reference = getStyleProductReference(entry);
   const cta = getStyleCtaLabel(entry);
+  const preparedImage = getStyleProductImagePreparation(entry);
 
   return (
     <section
-      className={`catalog-sheet catalog-style-product catalog-style-template catalog-style-template--${template.toLowerCase()}`}
+      className="catalog-sheet catalog-style-product catalog-style-product--approved"
       data-template={template}
+      data-product-visual-contract="CUT8_APPROVED"
+      data-price-policy={STYLE_PRODUCT_VISUAL_CONTRACT.pricePolicy.visiblePrice}
     >
+      <header className="catalog-style-product__masthead">
+        <div className="catalog-style-product__collection">
+          <span>COLECCIÓN</span>
+          <strong>2026</strong>
+        </div>
+        <div className="catalog-style-product__brand">
+          <img src={lihenLogoOfficial} alt="Logo oficial LIHEN" />
+          <span>LIHEN.CO STYLE</span>
+        </div>
+        <div className="catalog-style-product__line-label">LIHEN.CO STYLE</div>
+      </header>
+
       <div
         className="catalog-style-product__photo catalog-style-editorial__photo"
         data-face-policy={STYLE_FACE_POLICY_MODE}
+        data-image-preparation={preparedImage.mode}
       >
         <img
-          src={entry.imageUrl}
-          alt={entry.imageAlt || entry.productName}
+          src={preparedImage.sourceUrl}
+          alt={preparedImage.alt}
           loading="eager"
           onLoad={onImageReady}
           onError={onImageError}
         />
-        {template === 'C' ? <div className="catalog-style-product__arch" aria-hidden="true" /> : null}
       </div>
 
       <div className="catalog-style-product__content catalog-style-editorial__panel">
-        <p className="catalog-style-editorial__eyebrow">
-          COLECCIÓN 2026 · {STYLE_TEMPLATE_LABELS[template]}
-        </p>
-        <div className="catalog-style-editorial__rule" />
-        <p className="catalog-style-product__ref">REF. {sku}</p>
+        <p className="catalog-style-product__ref">REF. {reference}</p>
         <h2 className="catalog-style-editorial__title">{entry.productName}</h2>
-        <p className="catalog-style-product__microcopy">{microcopy}</p>
-        <div className="catalog-style-product__purchase">
+        <div className="catalog-style-editorial__rule" />
+      </div>
+
+      <div className="catalog-style-product__price-card">
+        <div className="catalog-style-product__price-icon" aria-hidden="true">+</div>
+        <div>
+          <span>{STYLE_PRODUCT_VISUAL_CONTRACT.pricePolicy.label}</span>
           <strong>{formatPrice(entry.salePrice)}</strong>
-          <a href={whatsappUrl}>
-            <WhatsappMiniMark />
-            <span>{cta}</span>
-          </a>
         </div>
       </div>
 
-      <div className="catalog-style-product__signature">LIHEN.CO STYLE</div>
+      <a className="catalog-style-product__cta" href={whatsappUrl}>
+        <span className="catalog-style-product__cta-arrow" aria-hidden="true">↘</span>
+        <span>{cta}</span>
+      </a>
+
+      <div className="catalog-style-product__wave catalog-style-product__wave--left" aria-hidden="true" />
+      <div className="catalog-style-product__wave catalog-style-product__wave--right" aria-hidden="true" />
 
       <footer className="catalog-style-footer">
         <span>LIHEN.CO · STYLE</span>
