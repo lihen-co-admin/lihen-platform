@@ -886,3 +886,89 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+
+/* TANDA15 CUT5 - PDF editorial refinement and readiness */
+.catalog-cover-kicker {
+  position: relative;
+  z-index: 3;
+  margin: 0 0 3mm;
+  font-size: 7.2pt;
+  font-weight: 900;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.catalog-cover-line-title {
+  position: relative;
+  z-index: 3;
+  max-width: 142mm;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 31pt;
+  font-weight: 500;
+  line-height: 1.02;
+  text-align: center;
+}
+.catalog-cover-edition {
+  position: relative;
+  z-index: 3;
+  margin: 3mm 0 0;
+  font-size: 6.4pt;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+.catalog-render--beauty-care .catalog-cover {
+  background: radial-gradient(circle at 17% 15%, rgba(255,255,255,.94) 0 7%, transparent 25%), radial-gradient(circle at 82% 18%, rgba(244,217,224,.72) 0 8%, transparent 31%), linear-gradient(150deg, #fffaf6 0%, #f8ebe5 43%, #f2dce3 72%, #fff8ef 100%);
+}
+.catalog-render--beauty-care .catalog-cover::after {
+  content: "BEAUTY";
+  position: absolute;
+  right: -5mm;
+  bottom: 28mm;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 46pt;
+  letter-spacing: .12em;
+  color: rgba(139,93,83,.055);
+  transform: rotate(-90deg);
+  transform-origin: right bottom;
+}
+.catalog-render--beauty-care .catalog-cover-kicker,
+.catalog-render--beauty-care .catalog-cover-edition { color: #8b5d53; }
+.catalog-render--beauty-care .catalog-cover-line-title { color: #4d342f; }
+.catalog-render--beauty-care .catalog-cover-copy {
+  max-width: 98mm;
+  color: #6d4a43;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 9.4pt;
+  font-weight: 500;
+  line-height: 1.55;
+}
+.catalog-render--style .catalog-cover {
+  background: linear-gradient(126deg, rgba(255,255,255,.20) 0 18%, transparent 18% 100%), linear-gradient(151deg, #f7f2ec 0%, #e7dbd0 48%, #cdb7a7 100%);
+}
+.catalog-render--style .catalog-cover::after {
+  content: "STYLE";
+  position: absolute;
+  right: 7mm;
+  top: 68mm;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 41pt;
+  letter-spacing: .18em;
+  color: rgba(43,33,29,.07);
+  writing-mode: vertical-rl;
+}
+.catalog-render--style .catalog-cover-kicker,
+.catalog-render--style .catalog-cover-edition { color: #5b4439; }
+.catalog-render--style .catalog-cover-line-title {
+  max-width: 132mm;
+  color: #2f241f;
+  font-size: 34pt;
+}
+.catalog-render--style .catalog-cover-copy {
+  max-width: 100mm;
+  color: #4b3931;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 9.6pt;
+  font-weight: 500;
+  line-height: 1.55;
+}

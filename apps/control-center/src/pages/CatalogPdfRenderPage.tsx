@@ -18,6 +18,43 @@ const LEGACY_WHATSAPP_URL = 'https://wa.me/message/2JDWBH57SQG4F1';
 
 type CatalogPdfLine = 'ALL' | 'BEAUTY_CARE' | 'STYLE';
 
+type CatalogPdfLinePresentation = {
+  label: string;
+  kicker: string;
+  coverTitle: string;
+  coverCopy: string;
+  editionLabel: string;
+  emptyState: string;
+};
+
+const CATALOG_PDF_LINE_PRESENTATION: Record<CatalogPdfLine, CatalogPdfLinePresentation> = {
+  ALL: {
+    label: 'BEAUTY CARE | STYLE',
+    kicker: 'CATÁLOGO OFICIAL',
+    coverTitle: 'LIHEN.CO',
+    coverCopy: 'Descubre productos elegidos para tu cuidado y estilo.',
+    editionLabel: 'EDICIÓN INSTITUCIONAL',
+    emptyState: 'La versión no contiene entradas visibles.',
+  },
+  BEAUTY_CARE: {
+    label: 'BEAUTY CARE',
+    kicker: 'CATÁLOGO BEAUTY CARE',
+    coverTitle: 'Belleza que acompaña tu esencia',
+    coverCopy: 'Una selección editorial de belleza, cuidado y bienestar elegida por LIHEN.CO.',
+    editionLabel: 'EDICIÓN BEAUTY CARE',
+    emptyState: 'La versión no contiene entradas visibles para BEAUTY CARE.',
+  },
+  STYLE: {
+    label: 'STYLE',
+    kicker: 'CATÁLOGO STYLE',
+    coverTitle: 'Estilo para expresarte',
+    coverCopy: 'Una selección editorial de moda y estilo construida desde referencias canónicas de LIHEN.CO.',
+    editionLabel: 'EDICIÓN STYLE',
+    emptyState: 'Esta versión no contiene entradas STYLE. Se requiere una versión o snapshot validado que incluya STYLE; el renderer no incorpora productos por fuera de la versión.',
+  },
+};
+
+
 function resolveCatalogPdfLine(value: string | null): CatalogPdfLine {
   if (value === 'BEAUTY_CARE' || value === 'STYLE') return value;
   return 'ALL';
@@ -202,6 +239,7 @@ export function CatalogPdfRenderPage() {
   const { id = '' } = useParams();
   const [searchParams] = useSearchParams();
   const pdfLine = resolveCatalogPdfLine(searchParams.get('line'));
+  const pdfLinePresentation = CATALOG_PDF_LINE_PRESENTATION[pdfLine];
   const [entries, setEntries] = useState<readonly CatalogRenderEntry[]>([]);
   const [institutional, setInstitutional] = useState<CatalogInstitutionalContent | null>(null);
   const [loadedImages, setLoadedImages] = useState(0);
@@ -292,10 +330,7 @@ export function CatalogPdfRenderPage() {
   }
 
   if (error || !first) {
-    const emptyMessage =
-      !error && pdfLine !== 'ALL'
-        ? `La versión no contiene entradas visibles para ${pdfLineLabel}.`
-        : 'La versión no contiene entradas visibles.';
+    const emptyMessage = pdfLinePresentation.emptyState;
 
     return (
       <main className="catalog-render-status">
@@ -351,14 +386,11 @@ export function CatalogPdfRenderPage() {
             </div>
             <div className="catalog-cloud catalog-cloud-mini">♥</div>
           </div>
-          <p className="catalog-cover-copy">
-            {pdfLine === 'BEAUTY_CARE'
-              ? 'Descubre una selección enfocada en belleza, cuidado y bienestar.'
-              : pdfLine === 'STYLE'
-                ? 'Descubre una selección editorial de moda y estilo LIHEN.'
-                : 'Descubre productos elegidos para tu cuidado y estilo.'}
-          </p>
-          <div className="catalog-cover-tagline">{pdfLineLabel}</div>
+          <p className="catalog-cover-kicker">{pdfLinePresentation.kicker}</p>
+          <h1 className="catalog-cover-line-title">{pdfLinePresentation.coverTitle}</h1>
+          <p className="catalog-cover-copy">{pdfLinePresentation.coverCopy}</p>
+          <div className="catalog-cover-tagline">{pdfLinePresentation.label}</div>
+          <p className="catalog-cover-edition">{pdfLinePresentation.editionLabel}</p>
           <div className="catalog-cover-footer"><span>{first.catalogCode}</span><span>{first.versionLabel}</span></div>
         </section>
       )}
