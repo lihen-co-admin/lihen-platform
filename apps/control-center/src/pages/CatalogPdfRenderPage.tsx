@@ -12,6 +12,10 @@ import {
 import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
 import catalogCoverPageOne from '../assets/catalog/catalog-cover-page-1.png';
 import '../styles/catalog-pdf-print.css';
+import { STYLE_VISUAL_FOUNDATION } from '../composition/catalog-style-visual';
+import { buildStyleBodyPages } from '../composition/catalog-style-templates';
+import { StyleCategorySheet, StyleProductSheet } from '../components/CatalogStyleSheets';
+import '../styles/catalog-style-foundation.css';
 
 const PRODUCTS_PER_PAGE = 6;
 const LEGACY_WHATSAPP_URL = 'https://wa.me/message/2JDWBH57SQG4F1';
@@ -283,6 +287,10 @@ export function CatalogPdfRenderPage() {
   );
   const pdfLineLabel = getCatalogPdfLineLabel(pdfLine);
   const bodyPages = useMemo(() => buildBodyPages(renderEntries), [renderEntries]);
+  const styleBodyPages = useMemo(
+    () => (pdfLine === 'STYLE' ? buildStyleBodyPages(renderEntries) : []),
+    [pdfLine, renderEntries],
+  );
   const first = renderEntries[0] ?? null;
   const paymentMethods = useMemo(
     () =>
@@ -316,7 +324,8 @@ export function CatalogPdfRenderPage() {
   const extrasReady = extrasProcessed === extrasExpected;
   const canPrint =
     imagesReady && extrasReady && failedImages === 0 && failedExtras === 0;
-  const totalPages = bodyPages.length + (institutional ? 5 : 2);
+  const activeBodyPageCount = pdfLine === 'STYLE' ? styleBodyPages.length : bodyPages.length;
+  const totalPages = activeBodyPageCount + (institutional ? 5 : 2);
   const whatsappUrl =
     institutional?.channels.whatsappUrl || LEGACY_WHATSAPP_URL;
 
@@ -342,7 +351,12 @@ export function CatalogPdfRenderPage() {
   }
 
   return (
-    <main className="catalog-print-root">
+    <main
+      className="catalog-print-root"
+      data-business-line={pdfLine}
+      data-style-identity={pdfLine === 'STYLE' ? STYLE_VISUAL_FOUNDATION.identity : undefined}
+      data-face-policy={pdfLine === 'STYLE' ? STYLE_VISUAL_FOUNDATION.facePolicy.mode : undefined}
+    >
       <aside className="catalog-render-toolbar no-print">
         <div>
           <strong>{first.catalogTitle} · {first.versionLabel}</strong>
@@ -485,7 +499,34 @@ export function CatalogPdfRenderPage() {
         </section>
       )}
 
-      {bodyPages.map((page, bodyIndex) => {
+      {pdfLine === 'STYLE' ? styleBodyPages.map((page, styleIndex) => {
+        const pageNumber = styleIndex + (institutional ? 5 : 3);
+
+        if (page.type === 'style-category') {
+          return (
+            <StyleCategorySheet
+              key={`style-category-${styleIndex}-${page.label}`}
+              label={page.label}
+              coverKey={page.coverKey}
+              pageNumber={pageNumber}
+              totalPages={totalPages}
+            />
+          );
+        }
+
+        return (
+          <StyleProductSheet
+            key={`style-product-${page.entry.catalogEntryId}`}
+            entry={page.entry}
+            template={page.template}
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            whatsappUrl={whatsappUrl}
+            onImageReady={() => setLoadedImages((value) => value + 1)}
+            onImageError={() => setFailedImages((value) => value + 1)}
+          />
+        );
+      }) : bodyPages.map((page, bodyIndex) => {
         const pageNumber = bodyIndex + (institutional ? 5 : 3);
 
         if (page.type === 'brand') {

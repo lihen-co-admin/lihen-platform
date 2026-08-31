@@ -1,0 +1,395 @@
+/* TANDA15 CUT6 V1 — STYLE FOUNDATION
+   Visual-only contract. No publication, data, domain, or infrastructure behavior. */
+
+.catalog-print-root[data-business-line="STYLE"] {
+  --style-cream: #fbf6ef;
+  --style-beige: #e9ddd1;
+  --style-nude: #d9c4b6;
+  --style-warm-white: #fffdf9;
+  --style-brown: #49362f;
+  --style-gold: #b88935;
+  --style-dusty-rose: #e5c8ca;
+  --style-soft-lilac: #e6ddef;
+  --style-ink: #2f241f;
+  --style-muted: #75645a;
+  --style-editorial-font: Georgia, "Times New Roman", serif;
+  --style-functional-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.catalog-style-editorial {
+  position: relative;
+  overflow: hidden;
+  color: var(--style-ink);
+  background: var(--style-warm-white);
+}
+
+.catalog-style-editorial__eyebrow {
+  margin: 0;
+  color: var(--style-muted);
+  font-family: var(--style-functional-font);
+  font-size: 6.4pt;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.catalog-style-editorial__title {
+  margin: 0;
+  color: var(--style-ink);
+  font-family: var(--style-editorial-font);
+  font-weight: 500;
+  line-height: 1.02;
+}
+
+.catalog-style-editorial__rule {
+  width: 24mm;
+  height: .35mm;
+  background: var(--style-gold);
+}
+
+.catalog-style-editorial__panel {
+  border: .3mm solid rgba(184, 137, 53, .24);
+  background: rgba(255, 253, 249, .94);
+}
+
+.catalog-style-editorial__photo {
+  position: relative;
+  overflow: hidden;
+  background: var(--style-beige);
+}
+
+.catalog-style-editorial__photo[data-face-policy="NOSE_DOWN_MAX"] {
+  isolation: isolate;
+}
+
+.catalog-style-template[data-template="A"] { --style-template-accent: var(--style-gold); }
+.catalog-style-template[data-template="B"] { --style-template-accent: var(--style-dusty-rose); }
+.catalog-style-template[data-template="C"] { --style-template-accent: var(--style-soft-lilac); }
+.catalog-style-template[data-template="D"] { --style-template-accent: var(--style-brown); }
+
+.catalog-style-template {
+  --style-template-accent: var(--style-gold);
+}
+
+.catalog-style-template__accent {
+  background: var(--style-template-accent);
+}
+
+/* TANDA15 CUT6 V2 — STYLE TEMPLATES */
+
+.catalog-style-footer {
+  position: absolute;
+  left: 12mm;
+  right: 12mm;
+  bottom: 7mm;
+  display: flex;
+  justify-content: space-between;
+  color: var(--style-muted);
+  font-family: var(--style-functional-font);
+  font-size: 5.4pt;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.catalog-style-category {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22mm;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.9), rgba(255,255,255,.35)),
+    linear-gradient(135deg, var(--style-cream), var(--style-beige));
+}
+
+.catalog-style-category::after {
+  content: "STYLE";
+  position: absolute;
+  right: -2mm;
+  bottom: 18mm;
+  color: rgba(73,54,47,.06);
+  font-family: var(--style-editorial-font);
+  font-size: 58pt;
+  letter-spacing: .12em;
+  writing-mode: vertical-rl;
+}
+
+.catalog-style-category__index {
+  color: var(--style-muted);
+  font-family: var(--style-functional-font);
+  font-size: 7pt;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+
+.catalog-style-category__rule {
+  width: 28mm;
+  height: .4mm;
+  margin: 7mm 0 9mm;
+  background: var(--style-gold);
+}
+
+.catalog-style-category h2 {
+  max-width: 150mm;
+  margin: 0;
+  color: var(--style-ink);
+  font-family: var(--style-editorial-font);
+  font-size: 34pt;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.catalog-style-category p {
+  max-width: 92mm;
+  margin: 7mm 0 0;
+  color: var(--style-muted);
+  font-family: var(--style-editorial-font);
+  font-size: 10pt;
+  line-height: 1.45;
+}
+
+.catalog-style-product {
+  --style-photo-x: 90mm;
+  --style-photo-y: 18mm;
+  --style-photo-w: 105mm;
+  --style-photo-h: 244mm;
+  --style-content-x: 15mm;
+  --style-content-y: 55mm;
+  --style-content-w: 92mm;
+  --style-content-h: auto;
+  position: relative;
+  background: var(--style-warm-white);
+}
+
+.catalog-style-product__photo {
+  position: absolute;
+  left: var(--style-photo-x);
+  top: var(--style-photo-y);
+  width: var(--style-photo-w);
+  height: var(--style-photo-h);
+}
+
+.catalog-style-product__photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.catalog-style-product__content {
+  position: absolute;
+  left: var(--style-content-x);
+  top: var(--style-content-y);
+  z-index: 3;
+  width: var(--style-content-w);
+  min-height: var(--style-content-h);
+  padding: 10mm 9mm;
+}
+
+.catalog-style-product__ref {
+  margin: 5mm 0 2mm;
+  color: var(--style-muted);
+  font-family: var(--style-functional-font);
+  font-size: 6.2pt;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.catalog-style-product__content h2 {
+  font-size: 24pt;
+}
+
+.catalog-style-product__microcopy {
+  max-width: 74mm;
+  margin: 5mm 0 0;
+  color: var(--style-muted);
+  font-family: var(--style-editorial-font);
+  font-size: 9pt;
+  line-height: 1.45;
+}
+
+.catalog-style-product__purchase {
+  display: grid;
+  gap: 4mm;
+  margin-top: 10mm;
+}
+
+.catalog-style-product__purchase strong {
+  color: var(--style-ink);
+  font-family: var(--style-functional-font);
+  font-size: 13pt;
+  font-weight: 900;
+}
+
+.catalog-style-product__purchase a {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 3mm;
+  min-height: 9mm;
+  padding: 2.4mm 5mm;
+  border: .3mm solid var(--style-gold);
+  border-radius: 99mm;
+  color: var(--style-ink);
+  font-family: var(--style-functional-font);
+  font-size: 6.6pt;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-decoration: none;
+}
+
+.catalog-style-wa-mark {
+  display: grid;
+  place-items: center;
+  width: 6mm;
+  height: 6mm;
+  border-radius: 50%;
+  background: #15b95a;
+}
+
+.catalog-style-wa-mark svg {
+  width: 68%;
+  height: 68%;
+  fill: #fff;
+}
+
+.catalog-style-product__signature {
+  position: absolute;
+  z-index: 2;
+  color: rgba(73,54,47,.055);
+  font-family: var(--style-editorial-font);
+  font-size: 30pt;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+/* A — Editorial Split */
+.catalog-style-template--a {
+  background: linear-gradient(90deg, var(--style-cream) 0 46%, var(--style-warm-white) 46% 100%);
+}
+
+.catalog-style-template--a .catalog-style-product__signature {
+  left: 13mm;
+  bottom: 20mm;
+}
+
+/* B — Fashion Magazine */
+.catalog-style-template--b {
+  --style-photo-x: 17mm;
+  --style-photo-y: 19mm;
+  --style-photo-w: 176mm;
+  --style-photo-h: 202mm;
+  --style-content-x: 19mm;
+  --style-content-y: 190mm;
+  --style-content-w: 113mm;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(229,200,202,.55), transparent 30%),
+    var(--style-warm-white);
+}
+
+.catalog-style-template--b .catalog-style-product__photo {
+  border-radius: 28mm 5mm 34mm 6mm;
+}
+
+.catalog-style-template--b .catalog-style-product__content {
+  background: rgba(255,253,249,.92);
+  backdrop-filter: blur(2mm);
+}
+
+.catalog-style-template--b .catalog-style-product__signature {
+  right: 12mm;
+  top: 26mm;
+  transform: rotate(90deg);
+  transform-origin: right top;
+}
+
+/* C — Frame / Arch */
+.catalog-style-template--c {
+  --style-photo-x: 91mm;
+  --style-photo-y: 24mm;
+  --style-photo-w: 98mm;
+  --style-photo-h: 224mm;
+  --style-content-x: 14mm;
+  --style-content-y: 68mm;
+  --style-content-w: 88mm;
+  background: linear-gradient(155deg, var(--style-cream), var(--style-soft-lilac));
+}
+
+.catalog-style-template--c .catalog-style-product__photo {
+  border-radius: 50mm 50mm 8mm 8mm;
+  border: .45mm solid rgba(184,137,53,.35);
+}
+
+.catalog-style-template--c .catalog-style-product__arch {
+  position: absolute;
+  inset: 6mm;
+  border: .35mm solid rgba(255,255,255,.8);
+  border-radius: 45mm 45mm 5mm 5mm;
+  pointer-events: none;
+}
+
+.catalog-style-template--c .catalog-style-product__signature {
+  left: 12mm;
+  top: 25mm;
+}
+
+/* D — ADN LIHEN Evolucionado */
+.catalog-style-template--d {
+  --style-photo-x: 16mm;
+  --style-photo-y: 25mm;
+  --style-photo-w: 94mm;
+  --style-photo-h: 226mm;
+  --style-content-x: 112mm;
+  --style-content-y: 69mm;
+  --style-content-w: 82mm;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.65), transparent 44%),
+    linear-gradient(145deg, var(--style-beige), var(--style-cream));
+}
+
+.catalog-style-template--d .catalog-style-product__photo {
+  border-radius: 7mm;
+}
+
+.catalog-style-template--d .catalog-style-product__content {
+  border-left: 1mm solid var(--style-brown);
+}
+
+.catalog-style-template--d .catalog-style-product__signature {
+  right: 14mm;
+  bottom: 24mm;
+}
+
+/* V2 preserves the face-policy hook without making a blind global crop.
+   The source-specific crop/reframe is validated in V3 Pilot. */
+.catalog-style-product__photo[data-face-policy="NOSE_DOWN_MAX"] img {
+  transform-origin: center bottom;
+}
+
+/* TANDA15 CUT7 — APPROVED STYLE CATEGORY COVERS */
+.catalog-style-category-cover {
+  position: relative;
+  overflow: hidden;
+  background: #f5d7e8;
+}
+
+.catalog-style-category-cover__art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.catalog-style-category-cover__page-marker {
+  position: absolute;
+  right: 4mm;
+  bottom: 3mm;
+  z-index: 2;
+  color: rgba(255,255,255,.62);
+  font-family: var(--style-functional-font);
+  font-size: 4.5pt;
+  letter-spacing: .08em;
+  opacity: .55;
+}
