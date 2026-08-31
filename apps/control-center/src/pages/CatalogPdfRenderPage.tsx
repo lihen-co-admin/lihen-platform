@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   catalogsComposition,
   type CatalogRenderEntry,
@@ -15,6 +15,27 @@ import '../styles/catalog-pdf-print.css';
 
 const PRODUCTS_PER_PAGE = 6;
 const LEGACY_WHATSAPP_URL = 'https://wa.me/message/2JDWBH57SQG4F1';
+
+type CatalogPdfLine = 'ALL' | 'BEAUTY_CARE' | 'STYLE';
+
+function resolveCatalogPdfLine(value: string | null): CatalogPdfLine {
+  if (value === 'BEAUTY_CARE' || value === 'STYLE') return value;
+  return 'ALL';
+}
+
+function getCatalogPdfLineLabel(line: CatalogPdfLine): string {
+  if (line === 'BEAUTY_CARE') return 'BEAUTY CARE';
+  if (line === 'STYLE') return 'STYLE';
+  return 'BEAUTY CARE | STYLE';
+}
+
+function filterCatalogEntriesByLine(
+  entries: readonly CatalogRenderEntry[],
+  line: CatalogPdfLine,
+): readonly CatalogRenderEntry[] {
+  if (line === 'ALL') return entries;
+  return entries.filter((entry) => entry.businessLine === line);
+}
 
 type CatalogProductPage = {
   type: 'products';
@@ -179,6 +200,8 @@ function buildChannelQrs(content: CatalogInstitutionalContent): readonly QrDescr
 
 export function CatalogPdfRenderPage() {
   const { id = '' } = useParams();
+  const [searchParams] = useSearchParams();
+  const pdfLine = resolveCatalogPdfLine(searchParams.get('line'));
   const [entries, setEntries] = useState<readonly CatalogRenderEntry[]>([]);
   const [institutional, setInstitutional] = useState<CatalogInstitutionalContent | null>(null);
   const [loadedImages, setLoadedImages] = useState(0);
@@ -216,8 +239,13 @@ export function CatalogPdfRenderPage() {
     };
   }, [id]);
 
-  const bodyPages = useMemo(() => buildBodyPages(entries), [entries]);
-  const first = entries[0] ?? null;
+  const renderEntries = useMemo(
+    () => filterCatalogEntriesByLine(entries, pdfLine),
+    [entries, pdfLine],
+  );
+  const pdfLineLabel = getCatalogPdfLineLabel(pdfLine);
+  const bodyPages = useMemo(() => buildBodyPages(renderEntries), [renderEntries]);
+  const first = renderEntries[0] ?? null;
   const paymentMethods = useMemo(
     () =>
       institutional
@@ -246,7 +274,7 @@ export function CatalogPdfRenderPage() {
     : 0;
   const extrasExpected = imageExtraExpected + qrExpected;
   const extrasProcessed = loadedExtras + failedExtras;
-  const imagesReady = entries.length > 0 && processedImages === entries.length;
+  const imagesReady = renderEntries.length > 0 && processedImages === renderEntries.length;
   const extrasReady = extrasProcessed === extrasExpected;
   const canPrint =
     imagesReady && extrasReady && failedImages === 0 && failedExtras === 0;
@@ -256,7 +284,7 @@ export function CatalogPdfRenderPage() {
 
   if (loading) {
     return (
-      <main className="catalog-render-status">
+      <main className={`catalog-render-status catalog-render--${pdfLine.toLowerCase().replace('_', '-')}`}>
         <h1>Preparando catálogo...</h1>
         <p>Se están cargando los snapshots inmutables.</p>
       </main>
@@ -264,10 +292,15 @@ export function CatalogPdfRenderPage() {
   }
 
   if (error || !first) {
+    const emptyMessage =
+      !error && pdfLine !== 'ALL'
+        ? `La versión no contiene entradas visibles para ${pdfLineLabel}.`
+        : 'La versión no contiene entradas visibles.';
+
     return (
       <main className="catalog-render-status">
         <h1>No fue posible preparar el catálogo</h1>
-        <p>{error || 'La versión no contiene entradas visibles.'}</p>
+        <p>{error || emptyMessage}</p>
         <Link to="/catalogs">Volver a Catálogos</Link>
       </main>
     );
@@ -279,7 +312,7 @@ export function CatalogPdfRenderPage() {
         <div>
           <strong>{first.catalogTitle} · {first.versionLabel}</strong>
           <span>
-            {entries.length} productos · imágenes {processedImages}/{entries.length}
+            {renderEntries.length} productos · imágenes {processedImages}/{renderEntries.length}
             {institutional ? ` · institucional ${extrasProcessed}/${extrasExpected}` : ''}
             {failedImages + failedExtras > 0
               ? ` · ${failedImages + failedExtras} con error`
@@ -302,7 +335,7 @@ export function CatalogPdfRenderPage() {
         </div>
       ) : null}
 
-      {institutional ? (
+      {institutional && pdfLine === 'ALL' ? (
         <section className="catalog-sheet catalog-reference-cover">
           <img src={catalogCoverPageOne} alt="Portada oficial del catálogo LIHEN" />
         </section>
@@ -318,8 +351,14 @@ export function CatalogPdfRenderPage() {
             </div>
             <div className="catalog-cloud catalog-cloud-mini">♥</div>
           </div>
-          <p className="catalog-cover-copy">Descubre productos elegidos para tu cuidado y estilo.</p>
-          <div className="catalog-cover-tagline">BEAUTY CARE | STYLE</div>
+          <p className="catalog-cover-copy">
+            {pdfLine === 'BEAUTY_CARE'
+              ? 'Descubre una selección enfocada en belleza, cuidado y bienestar.'
+              : pdfLine === 'STYLE'
+                ? 'Descubre una selección editorial de moda y estilo LIHEN.'
+                : 'Descubre productos elegidos para tu cuidado y estilo.'}
+          </p>
+          <div className="catalog-cover-tagline">{pdfLineLabel}</div>
           <div className="catalog-cover-footer"><span>{first.catalogCode}</span><span>{first.versionLabel}</span></div>
         </section>
       )}
@@ -342,7 +381,7 @@ export function CatalogPdfRenderPage() {
                 <div className="catalog-about-placeholder">LIHEN.CO</div>
               )}
             </div>
-            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
+            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
             <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA 2 DE {totalPages}</span></div>
           </section>
 
@@ -362,7 +401,7 @@ export function CatalogPdfRenderPage() {
                 </div>
               ))}
             </div>
-            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
+            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
             <div className="catalog-legal-footer">
               <span>{institutional.legalName}</span>
               {institutional.taxId ? <span>{institutional.taxId}</span> : null}
@@ -392,7 +431,7 @@ export function CatalogPdfRenderPage() {
                 <div className="catalog-payment-empty">Medios de pago por configurar.</div>
               ) : null}
             </div>
-            <div className="catalog-info-tagline">{institutional.footerLabel}</div>
+            <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
             <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA 4 DE {totalPages}</span></div>
           </section>
         </>
@@ -409,7 +448,7 @@ export function CatalogPdfRenderPage() {
             </ul>
           </div>
           <a className="catalog-info-whatsapp" href={whatsappUrl}><WhatsAppMark /><span>CONSULTAR POR WHATSAPP</span></a>
-          <div className="catalog-info-tagline">BEAUTY CARE | STYLE</div>
+          <div className="catalog-info-tagline">{pdfLineLabel}</div>
           <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA 2 DE {totalPages}</span></div>
         </section>
       )}
@@ -422,7 +461,7 @@ export function CatalogPdfRenderPage() {
             <section className="catalog-sheet catalog-brand-page catalog-pastel-page" key={`brand-${bodyIndex}-${page.brand}`}>
               <div className="catalog-brand-heading">MARCA DESTACADA</div>
               <div className="catalog-brand-logo-card"><span>{page.brand}</span></div>
-              <div className="catalog-brand-tagline">{institutional?.footerLabel || 'BEAUTY CARE | STYLE'}</div>
+              <div className="catalog-brand-tagline">{pdfLine === 'ALL' ? (institutional?.footerLabel || pdfLineLabel) : pdfLineLabel}</div>
               <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA {pageNumber} DE {totalPages}</span></div>
             </section>
           );
@@ -466,7 +505,7 @@ export function CatalogPdfRenderPage() {
               </div>
             ))}
           </div>
-          <div className="catalog-info-tagline">{institutional.footerLabel}</div>
+          <div className="catalog-info-tagline">{pdfLine === 'ALL' ? institutional.footerLabel : pdfLineLabel}</div>
           <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA {totalPages} DE {totalPages}</span></div>
         </section>
       ) : null}

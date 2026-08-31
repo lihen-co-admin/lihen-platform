@@ -783,3 +783,106 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* TANDA15 CUT4 FIX2 - PDF business-line themes */
+.catalog-render--beauty-care {
+  --catalog-line-ink: #3b2a23;
+  --catalog-line-panel: rgba(255, 250, 246, 0.96);
+  --catalog-line-border: rgba(184, 137, 53, 0.24);
+}
+
+.catalog-render--style {
+  --catalog-line-ink: #2b211d;
+  --catalog-line-panel: rgba(247, 242, 236, 0.97);
+  --catalog-line-border: rgba(80, 57, 46, 0.28);
+}
+
+.catalog-render--beauty-care .catalog-pastel-page {
+  background: linear-gradient(145deg, #fffaf5 0%, #f7e9e2 43%, #f2dce3 76%, #fff8ef 100%);
+  color: var(--catalog-line-ink);
+}
+
+.catalog-render--style .catalog-pastel-page {
+  background: linear-gradient(145deg, #f8f4ef 0%, #e8ded4 48%, #d3c0b2 100%);
+  color: var(--catalog-line-ink);
+}
+
+.catalog-render--beauty-care .catalog-cover,
+.catalog-render--style .catalog-cover {
+  position: relative;
+  overflow: hidden;
+}
+
+.catalog-render--beauty-care .catalog-cover::before,
+.catalog-render--style .catalog-cover::before {
+  content: "";
+  position: absolute;
+  inset: 10mm;
+  border: .35mm solid var(--catalog-line-border);
+  border-radius: 8mm;
+  pointer-events: none;
+}
+
+.catalog-render--beauty-care .catalog-cover-title-box,
+.catalog-render--style .catalog-cover-title-box,
+.catalog-render--beauty-care .catalog-institutional-title,
+.catalog-render--style .catalog-institutional-title {
+  color: var(--catalog-line-ink);
+  background: var(--catalog-line-panel);
+  border: .35mm solid var(--catalog-line-border);
+}
+
+.catalog-render--beauty-care .catalog-cover-official,
+.catalog-render--beauty-care .catalog-cover-tagline,
+.catalog-render--beauty-care .catalog-info-tagline,
+.catalog-render--beauty-care .catalog-brand-tagline {
+  background: #f3dedf;
+  color: #4b2f2d;
+  border: .3mm solid rgba(184,137,53,.28);
+}
+
+.catalog-render--style .catalog-cover-official,
+.catalog-render--style .catalog-cover-tagline,
+.catalog-render--style .catalog-info-tagline,
+.catalog-render--style .catalog-brand-tagline {
+  background: #3a2d27;
+  color: #fffaf4;
+  border: .3mm solid #b88935;
+}
+
+.catalog-render--beauty-care .catalog-cover-logo-card {
+  background: rgba(255,252,248,.95);
+  border-color: rgba(184,137,53,.28);
+}
+
+.catalog-render--style .catalog-cover-logo-card {
+  background: rgba(49,38,33,.96);
+  border-color: rgba(184,137,53,.70);
+}
+
+.catalog-render--beauty-care .catalog-cover-copy { color: #6d4a43; }
+
+.catalog-render--style .catalog-cover-copy {
+  color: #3b2d28;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 10pt;
+  letter-spacing: .03em;
+}
+
+.catalog-render--beauty-care .catalog-product-card {
+  border-color: rgba(184,137,53,.22);
+  background: rgba(255,252,249,.96);
+}
+
+.catalog-render--style .catalog-product-card {
+  border-color: rgba(73,54,45,.24);
+  background: rgba(250,247,243,.97);
+}
+
+@media print {
+  .catalog-render--beauty-care,
+  .catalog-render--style {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
