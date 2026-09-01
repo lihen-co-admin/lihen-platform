@@ -4,3 +4,4 @@ export * from './assurance';
 export * from './orchestrator';
 export * from './provider-ports';
 export * from './control-plane';
+export * from './review-queue';
