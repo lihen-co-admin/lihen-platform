@@ -46,6 +46,7 @@ export function classifyTestFile(fileName) {
 
   if (hasPathSegment(p, 'tests/architecture')) return 'ARCHITECTURE';
   if (hasPathSegment(p, 'apps/storefront')) return 'STOREFRONT';
+  if (hasPathSegment(p, 'packages/intelligence-core')) return 'INTELLIGENCE';
   if (hasPathSegment(p, 'packages/products')) return 'PRODUCT MASTER';
   if (hasPathSegment(p, 'packages/inventory')) return 'INVENTORY';
   if (hasPathSegment(p, 'packages/suppliers')) return 'SUPPLIERS';
