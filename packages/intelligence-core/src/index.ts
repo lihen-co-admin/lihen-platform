@@ -3,3 +3,4 @@ export * from './permission-model';
 export * from './assurance';
 export * from './orchestrator';
 export * from './provider-ports';
+export * from './control-plane';
