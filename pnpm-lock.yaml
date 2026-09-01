@@ -41,6 +41,9 @@ importers:
       '@lihen/finance':
         specifier: workspace:*
         version: link:../../packages/finance
+      '@lihen/intelligence-core':
+        specifier: workspace:*
+        version: link:../../packages/intelligence-core
       '@lihen/inventory':
         specifier: workspace:*
         version: link:../../packages/inventory
@@ -50,12 +53,12 @@ importers:
       '@lihen/procurement':
         specifier: workspace:*
         version: link:../../packages/procurement
-      '@lihen/public-hub':
-        specifier: workspace:*
-        version: link:../../packages/public-hub
       '@lihen/products':
         specifier: workspace:*
         version: link:../../packages/products
+      '@lihen/public-hub':
+        specifier: workspace:*
+        version: link:../../packages/public-hub
       '@lihen/sales':
         specifier: workspace:*
         version: link:../../packages/sales
@@ -168,6 +171,8 @@ importers:
       vitest:
         specifier: ^4.1.0
         version: 4.1.11(@types/node@26.2.0)(vite@8.2.2(@types/node@26.2.0))
+
+  packages/intelligence-core: {}
 
   packages/inventory:
     dependencies:
