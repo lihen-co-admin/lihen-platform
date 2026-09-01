@@ -1,0 +1,7 @@
+{
+  "capturedFor": "WAVE1_GAP001_GAP002",
+  "purpose": "Freeze pre-existing Control Center Domain → Composition debt. New violations must not be added.",
+  "domainToComposition": [
+    "apps/control-center/src/domain/dashboard-metric-integrity.ts"
+  ]
+}
