@@ -1,5 +1,6 @@
 export * from './domain/business-line';
 export * from './domain/product';
+export * from './domain/product-variant';
 export * from './domain/product-status';
 export * from './domain/errors/product-errors';
 export * from './ports/product-repository';
