@@ -29,6 +29,7 @@ export * from './application/queries/get-product-sale-price-history.handler';
 export * from './domain/product-image';
 export * from './domain/product-asset';
 export * from './domain/product-asset-provenance';
+export * from './domain/product-channel-asset-selection';
 export * from './ports/product-image-repository';
 export * from './infrastructure/in-memory-product-image-repository';
 export * from './infrastructure/supabase-product-image-repository';
