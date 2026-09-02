@@ -43,6 +43,7 @@ export * from './application/queries/get-product-images.query';
 export * from './application/queries/get-product-images.handler';
 
 export * from './domain/brand';
+export * from './domain/brand-asset';
 export * from './domain/category';
 export * from './ports/brand-repository';
 export * from './ports/category-repository';
