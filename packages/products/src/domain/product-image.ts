@@ -5,6 +5,7 @@ export type ProductImageSourceType =
   | 'ORIGINAL'
   | 'OFFICIAL_WEB'
   | 'SUPPLIER_PDF'
+  | 'SUPPLIER_DRIVE'
   | 'CATALOG_EVIDENCE_CROP'
   | 'VERIFIED_EXTERNAL'
   | 'HUMAN_PROVIDED';

@@ -29,10 +29,11 @@ const SOURCE_PRIORITY: Readonly<Record<ProductImageSourceType, number>> = {
   OFFICIAL_WEB: 2,
   VERIFIED_EXTERNAL: 3,
   SUPPLIER_PDF: 4,
-  CATALOG_EVIDENCE_CROP: 5,
-  STORAGE: 6,
-  MANUAL: 7,
-  LEGACY_MAIN_IMAGE_URL: 8,
+  SUPPLIER_DRIVE: 5,
+  CATALOG_EVIDENCE_CROP: 6,
+  STORAGE: 7,
+  MANUAL: 8,
+  LEGACY_MAIN_IMAGE_URL: 9,
 };
 
 function readinessPriority(readiness: ProductMediaReadiness): number {

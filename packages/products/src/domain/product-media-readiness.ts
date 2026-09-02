@@ -26,6 +26,7 @@ export interface ProductMediaSourceCandidate {
 
 const FALLBACK_SOURCE_TYPES: ReadonlySet<ProductImageSourceType> = new Set([
   'SUPPLIER_PDF',
+  'SUPPLIER_DRIVE',
   'CATALOG_EVIDENCE_CROP',
 ]);
 
