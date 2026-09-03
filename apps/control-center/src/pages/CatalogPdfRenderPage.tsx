@@ -20,6 +20,7 @@ import { buildStyleBodyPages } from '../composition/catalog-style-templates';
 import { StyleCategorySheet, StyleProductSheet } from '../components/CatalogStyleSheets';
 import '../styles/catalog-style-foundation.css';
 import { buildStyleCommercialBodyPreview } from '../composition/catalog-style-commercial-preview';
+import { evaluateCatalogRenderIntegrity } from '../read-models/catalog-render-integrity';
 
 const PRODUCTS_PER_PAGE = 6;
 const LEGACY_WHATSAPP_URL = 'https://wa.me/message/2JDWBH57SQG4F1';
@@ -332,21 +333,20 @@ export function CatalogPdfRenderPage() {
     [channelQrs],
   );
 
-  const processedImages = loadedImages + failedImages;
   const imageExtraExpected = institutional?.aboutImageUrl ? 1 : 0;
   const qrExpected = institutional
     ? purchaseQrs.length + paymentMethods.length + channelQrs.length
     : 0;
   const extrasExpected = imageExtraExpected + qrExpected;
-  const extrasProcessed = loadedExtras + failedExtras;
-  const imagesReady = activeEntryCount > 0 && processedImages === activeEntryCount;
-  const extrasReady = extrasProcessed === extrasExpected;
-  const canPrint =
-    !stylePreviewRequested
-    && imagesReady
-    && extrasReady
-    && failedImages === 0
-    && failedExtras === 0;
+  const renderIntegrity = evaluateCatalogRenderIntegrity({
+    stylePreviewRequested,
+    expectedImages: activeEntryCount,
+    loadedImages,
+    failedImages,
+    expectedExtras: extrasExpected,
+    loadedExtras,
+    failedExtras,
+  });
   const activeBodyPageCount = pdfLine === 'STYLE' ? styleBodyPages.length : bodyPages.length;
   const totalPages = activeBodyPageCount + (institutional ? 5 : 2);
   const whatsappUrl =
@@ -384,23 +384,23 @@ export function CatalogPdfRenderPage() {
         <div>
           <strong>{renderModel.version.catalogTitle} · {renderModel.version.versionLabel}{stylePreviewRequested ? ' · PREVIEW STYLE DEV' : ''}</strong>
           <span>
-            {activeEntryCount} productos · imágenes {processedImages}/{activeEntryCount}
-            {institutional ? ` · institucional ${extrasProcessed}/${extrasExpected}` : ''}
-            {failedImages + failedExtras > 0
-              ? ` · ${failedImages + failedExtras} con error`
+            {activeEntryCount} productos · imágenes {renderIntegrity.processedImages}/{activeEntryCount}
+            {institutional ? ` · institucional ${renderIntegrity.processedExtras}/${extrasExpected}` : ''}
+            {renderIntegrity.hasFailures
+              ? ` · ${renderIntegrity.failedAssets} con error`
               : ''}{' '}
             · {totalPages} páginas estimadas
           </span>
         </div>
         <div className="catalog-render-actions">
           <Link className="catalog-render-back" to="/catalogs">Volver</Link>
-          <button type="button" disabled={!canPrint} onClick={() => window.print()}>
+          <button type="button" disabled={!renderIntegrity.canPrint} onClick={() => window.print()}>
             Imprimir / Guardar PDF
           </button>
         </div>
       </aside>
 
-      {failedImages + failedExtras > 0 ? (
+      {renderIntegrity.hasFailures ? (
         <div className="catalog-render-warning no-print" role="alert">
           Hay activos que no cargaron. El PDF permanece bloqueado para evitar publicar
           un catálogo incompleto.

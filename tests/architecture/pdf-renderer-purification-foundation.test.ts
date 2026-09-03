@@ -43,11 +43,11 @@ describe('GAP-024 PDF Renderer Purification architecture', () => {
     expect(composition).toContain('stylePreviewSeed');
   });
 
-  it('does not absorb Render Integrity Guard formalization from GAP-025', () => {
+  it('keeps GAP-024 renderer purification compatible with later GAP-025 integrity formalization', () => {
     const renderer = fs.readFileSync(rendererPath, 'utf8');
-    expect(renderer).toContain('const canPrint =');
-    expect(renderer).toContain('failedImages === 0');
-    expect(renderer).toContain('failedExtras === 0');
+    expect(renderer).toContain('CatalogPdfRenderPage');
+    expect(renderer).toContain('window.print()');
+    expect(renderer).toContain('buildBodyPages');
   });
 
   it('preserves the existing local BEAUTY CARE brand-logo enhancement', () => {
