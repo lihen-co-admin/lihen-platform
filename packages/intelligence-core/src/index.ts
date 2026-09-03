@@ -6,3 +6,4 @@ export * from './provider-ports';
 export * from './control-plane';
 export * from './review-queue';
 export * from './capabilities/brand-intelligence';
+export * from './capabilities/document-intelligence';
