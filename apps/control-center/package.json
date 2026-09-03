@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@lihen/core": "workspace:*",
+    "@lihen/catalog": "workspace:*",
     "@lihen/intelligence-core": "workspace:*",
     "@lihen/products": "workspace:*",
     "@lihen/shared": "workspace:*",

@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
-  catalogsComposition,
-  type CatalogRenderEntry,
-} from '../composition/catalogs';
+  type CatalogRenderInstitutionalSnapshot,
+  type CatalogRenderModelVNext,
+  type CatalogRenderPaymentMethod,
+  type CatalogRenderProductSnapshot,
+} from '@lihen/catalog';
+import { catalogInstitutionalComposition } from '../composition/catalog-institutional';
 import {
-  catalogInstitutionalComposition,
-  type CatalogInstitutionalContent,
-  type InstitutionalPaymentMethod,
-} from '../composition/catalog-institutional';
+  catalogPdfRenderModelComposition,
+  toLegacyStyleRenderEntry,
+  type CatalogPdfRenderModelLoadResult,
+} from '../composition/catalog-pdf-render-model';
 import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
 import catalogCoverPageOne from '../assets/catalog/catalog-cover-page-1.png';
 import '../styles/catalog-pdf-print.css';
@@ -71,18 +74,10 @@ function getCatalogPdfLineLabel(line: CatalogPdfLine): string {
   return 'BEAUTY CARE | STYLE';
 }
 
-function filterCatalogEntriesByLine(
-  entries: readonly CatalogRenderEntry[],
-  line: CatalogPdfLine,
-): readonly CatalogRenderEntry[] {
-  if (line === 'ALL') return entries;
-  return entries.filter((entry) => entry.businessLine === line);
-}
-
 type CatalogProductPage = {
   type: 'products';
   brand: string;
-  entries: readonly CatalogRenderEntry[];
+  entries: readonly CatalogRenderProductSnapshot[];
 };
 
 type CatalogBrandPage = {
@@ -96,14 +91,14 @@ type QrDescriptor = {
   key: string;
   label: string;
   value: string;
-  sourceType?: InstitutionalPaymentMethod['qrSourceType'];
+  sourceType?: CatalogRenderPaymentMethod['qrSourceType'];
 };
 
-function normalizeBrand(entry: CatalogRenderEntry): string {
-  return entry.brand?.trim() || 'LIHEN';
+function normalizeBrand(entry: CatalogRenderProductSnapshot): string {
+  return entry.brand.name.trim() || 'LIHEN';
 }
 
-function buildBodyPages(entries: readonly CatalogRenderEntry[]): readonly CatalogBodyPage[] {
+function buildBodyPages(entries: readonly CatalogRenderProductSnapshot[]): readonly CatalogBodyPage[] {
   const result: CatalogBodyPage[] = [];
   let index = 0;
 
@@ -112,7 +107,7 @@ function buildBodyPages(entries: readonly CatalogRenderEntry[]): readonly Catalo
     if (!current) break;
 
     const brand = normalizeBrand(current);
-    const segment: CatalogRenderEntry[] = [];
+    const segment: CatalogRenderProductSnapshot[] = [];
 
     while (index < entries.length) {
       const candidate = entries[index];
@@ -225,7 +220,7 @@ function QrImage({
   );
 }
 
-function buildChannelQrs(content: CatalogInstitutionalContent): readonly QrDescriptor[] {
+function buildChannelQrs(content: CatalogRenderInstitutionalSnapshot): readonly QrDescriptor[] {
   return [
     { key: 'storefront', label: 'TIENDA VIRTUAL', value: content.channels.storefrontUrl },
     { key: 'whatsapp', label: 'COMPRAR / CONSULTAR', value: content.channels.whatsappUrl },
@@ -249,8 +244,8 @@ export function CatalogPdfRenderPage() {
     && pdfLine === 'STYLE'
     && searchParams.get('stylePreview') === '1';
   const pdfLinePresentation = CATALOG_PDF_LINE_PRESENTATION[pdfLine];
-  const [entries, setEntries] = useState<readonly CatalogRenderEntry[]>([]);
-  const [institutional, setInstitutional] = useState<CatalogInstitutionalContent | null>(null);
+  const [renderSnapshot, setRenderSnapshot] =
+    useState<CatalogPdfRenderModelLoadResult | null>(null);
   const [loadedImages, setLoadedImages] = useState(0);
   const [failedImages, setFailedImages] = useState(0);
   const [loadedExtras, setLoadedExtras] = useState(0);
@@ -261,14 +256,11 @@ export function CatalogPdfRenderPage() {
   useEffect(() => {
     let active = true;
 
-    Promise.all([
-      catalogsComposition.getRenderEntries(id),
-      catalogInstitutionalComposition.getSnapshot(id),
-    ])
-      .then(([renderEntries, institutionalSnapshot]) => {
+    catalogPdfRenderModelComposition
+      .load(id, pdfLine)
+      .then((snapshot) => {
         if (!active) return;
-        setEntries(renderEntries);
-        setInstitutional(institutionalSnapshot);
+        setRenderSnapshot(snapshot);
         setLoading(false);
       })
       .catch((cause: unknown) => {
@@ -284,28 +276,41 @@ export function CatalogPdfRenderPage() {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, pdfLine]);
 
-  const renderEntries = useMemo(() => {
-    const filtered = filterCatalogEntriesByLine(entries, pdfLine);
+  const renderModel: CatalogRenderModelVNext | null =
+    renderSnapshot?.model ?? null;
+  const institutional = renderModel?.institutional ?? null;
+  const renderEntries = renderModel?.entries ?? [];
+  const styleRenderEntries = useMemo(() => {
+    if (pdfLine !== 'STYLE') return [];
 
-    if (
-      filtered.length === 0
-      && stylePreviewRequested
-      && entries[0]
-    ) {
-      return buildStyleCommercialBodyPreview(entries[0]);
+    if (renderModel && renderEntries.length > 0) {
+      return renderEntries.map((entry) =>
+        toLegacyStyleRenderEntry(entry, renderModel.version),
+      );
     }
 
-    return filtered;
-  }, [entries, pdfLine, stylePreviewRequested]);
+    if (stylePreviewRequested && renderSnapshot?.stylePreviewSeed) {
+      return buildStyleCommercialBodyPreview(renderSnapshot.stylePreviewSeed);
+    }
+
+    return [];
+  }, [
+    pdfLine,
+    renderEntries,
+    renderModel,
+    renderSnapshot?.stylePreviewSeed,
+    stylePreviewRequested,
+  ]);
   const pdfLineLabel = getCatalogPdfLineLabel(pdfLine);
   const bodyPages = useMemo(() => buildBodyPages(renderEntries), [renderEntries]);
   const styleBodyPages = useMemo(
-    () => (pdfLine === 'STYLE' ? buildStyleBodyPages(renderEntries) : []),
-    [pdfLine, renderEntries],
+    () => (pdfLine === 'STYLE' ? buildStyleBodyPages(styleRenderEntries) : []),
+    [pdfLine, styleRenderEntries],
   );
-  const first = renderEntries[0] ?? entries[0] ?? null;
+  const activeEntryCount =
+    pdfLine === 'STYLE' ? styleRenderEntries.length : renderEntries.length;
   const paymentMethods = useMemo(
     () =>
       institutional
@@ -334,7 +339,7 @@ export function CatalogPdfRenderPage() {
     : 0;
   const extrasExpected = imageExtraExpected + qrExpected;
   const extrasProcessed = loadedExtras + failedExtras;
-  const imagesReady = renderEntries.length > 0 && processedImages === renderEntries.length;
+  const imagesReady = activeEntryCount > 0 && processedImages === activeEntryCount;
   const extrasReady = extrasProcessed === extrasExpected;
   const canPrint =
     !stylePreviewRequested
@@ -356,7 +361,7 @@ export function CatalogPdfRenderPage() {
     );
   }
 
-  if (error || !first) {
+  if (error || !renderModel || activeEntryCount === 0) {
     const emptyMessage = pdfLinePresentation.emptyState;
 
     return (
@@ -377,9 +382,9 @@ export function CatalogPdfRenderPage() {
     >
       <aside className="catalog-render-toolbar no-print">
         <div>
-          <strong>{first.catalogTitle} · {first.versionLabel}{stylePreviewRequested ? ' · PREVIEW STYLE DEV' : ''}</strong>
+          <strong>{renderModel.version.catalogTitle} · {renderModel.version.versionLabel}{stylePreviewRequested ? ' · PREVIEW STYLE DEV' : ''}</strong>
           <span>
-            {renderEntries.length} productos · imágenes {processedImages}/{renderEntries.length}
+            {activeEntryCount} productos · imágenes {processedImages}/{activeEntryCount}
             {institutional ? ` · institucional ${extrasProcessed}/${extrasExpected}` : ''}
             {failedImages + failedExtras > 0
               ? ` · ${failedImages + failedExtras} con error`
@@ -423,7 +428,7 @@ export function CatalogPdfRenderPage() {
           <p className="catalog-cover-copy">{pdfLinePresentation.coverCopy}</p>
           <div className="catalog-cover-tagline">{pdfLinePresentation.label}</div>
           <p className="catalog-cover-edition">{pdfLinePresentation.editionLabel}</p>
-          <div className="catalog-cover-footer"><span>{first.catalogCode}</span><span>{first.versionLabel}</span></div>
+          <div className="catalog-cover-footer"><span>{renderModel.version.catalogCode}</span><span>{renderModel.version.versionLabel}</span></div>
         </section>
       )}
 
@@ -565,14 +570,14 @@ export function CatalogPdfRenderPage() {
               {page.entries.map((entry) => (
                 <article className="catalog-product-card" key={entry.catalogEntryId}>
                   <div className="catalog-product-image-frame">
-                    <img src={entry.imageUrl} alt={entry.imageAlt || entry.productName} loading="eager" onLoad={() => setLoadedImages((value) => value + 1)} onError={() => setFailedImages((value) => value + 1)} />
+                    <img src={entry.selectedPdfAsset.publicUrl} alt={entry.selectedPdfAsset.altText || entry.productName} loading="eager" onLoad={() => setLoadedImages((value) => value + 1)} onError={() => setFailedImages((value) => value + 1)} />
                   </div>
                   <div className="catalog-product-content">
                     <p className="catalog-product-brand">{normalizeBrand(entry)}</p>
                     <h2>{entry.productName}</h2>
                     <p className="catalog-product-sku">{entry.sku || entry.productCatalogCode || entry.businessLine}</p>
                     <div className="catalog-product-actions">
-                      <span className="catalog-product-price">{formatPrice(entry.salePrice)}</span>
+                      <span className="catalog-product-price">{formatPrice(entry.salePriceSnapshot)}</span>
                       <a className="catalog-product-whatsapp" href={whatsappUrl} aria-label={`Consultar ${entry.productName} por WhatsApp`}><WhatsAppMark /></a>
                     </div>
                   </div>

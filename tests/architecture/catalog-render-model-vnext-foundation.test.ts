@@ -51,10 +51,10 @@ describe('GAP-022 Catalog Render Model VNext architecture', () => {
     expect(source).toContain('resolutionSource');
   });
 
-  it('does not modify the existing renderer as part of the GAP-022 contract', () => {
+  it('keeps renderer implementation outside the GAP-022 domain contract as later gaps evolve it', () => {
     expect(fs.existsSync(rendererPath)).toBe(true);
     const renderer = fs.readFileSync(rendererPath, 'utf8');
-    expect(renderer).toContain('type CatalogRenderEntry');
+    expect(renderer).toContain('CatalogPdfRenderPage');
     expect(renderer).toContain('buildBodyPages');
   });
 });
