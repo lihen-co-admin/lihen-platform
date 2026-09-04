@@ -5,6 +5,7 @@ export * from './orchestrator';
 export * from './provider-ports';
 export * from './control-plane';
 export * from './review-queue';
+export * from './context-resolver';
 export * from './capabilities/brand-intelligence';
 export * from './capabilities/document-intelligence';
 export * from './capabilities/product-reconciliation';
