@@ -9,3 +9,4 @@ export * from './capabilities/brand-intelligence';
 export * from './capabilities/document-intelligence';
 export * from './capabilities/product-reconciliation';
 export * from './capabilities/supplier-price-evidence';
+export * from './capabilities/inventory-intelligence';
