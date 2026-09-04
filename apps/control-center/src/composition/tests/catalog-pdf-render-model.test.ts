@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  composeCatalogPdfRenderSnapshot,
-  toLegacyStyleRenderEntry,
-} from '../catalog-pdf-render-model';
+import { composeCatalogPdfRenderSnapshot } from '../catalog-pdf-render-model';
 import type { CatalogRenderEntry } from '../catalogs';
 
 function entry(
@@ -62,15 +59,17 @@ describe('GAP-024 PDF renderer model composition', () => {
     expect(result.model?.entries[0]?.businessLine).toBe('STYLE');
   });
 
-  it('keeps a compatibility seed only for deferred STYLE editorial work', () => {
+  it('keeps only the narrow DEV preview seed after GAP-026 formalization', () => {
     const source = entry();
     const result = composeCatalogPdfRenderSnapshot([source], null, 'STYLE');
 
     expect(result.model?.entries).toHaveLength(0);
-    expect(result.stylePreviewSeed).toBe(source);
+    expect(result.stylePreviewSeed).toEqual({
+      catalogVersionId: 'version-1',
+    });
   });
 
-  it('adapts VNext entries back to legacy STYLE shape without changing commercial data', () => {
+  it('keeps STYLE commercial data in the VNext render contract without legacy adaptation', () => {
     const result = composeCatalogPdfRenderSnapshot(
       [entry({ businessLine: 'STYLE' })],
       null,
@@ -79,14 +78,13 @@ describe('GAP-024 PDF renderer model composition', () => {
     const model = result.model;
     expect(model).not.toBeNull();
 
-    const legacy = toLegacyStyleRenderEntry(
-      model!.entries[0]!,
-      model!.version,
-    );
+    const styleEntry = model!.entries[0]!;
 
-    expect(legacy.salePrice).toBe(25000);
-    expect(legacy.imageUrl).toBe('https://example.test/product.jpg');
-    expect(legacy.businessLine).toBe('STYLE');
+    expect(styleEntry.salePriceSnapshot).toBe(25000);
+    expect(styleEntry.selectedPdfAsset.publicUrl).toBe(
+      'https://example.test/product.jpg',
+    );
+    expect(styleEntry.businessLine).toBe('STYLE');
   });
 
   it('rejects unsupported business lines before rendering', () => {

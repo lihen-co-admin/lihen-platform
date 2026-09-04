@@ -1,4 +1,4 @@
-import type { CatalogRenderEntry } from './catalogs';
+import type { CatalogRenderProductSnapshot } from '@lihen/catalog';
 
 import previewEnterizo from '../assets/catalog/style/dev-preview/preview-enterizo.png';
 import previewFaldaTop from '../assets/catalog/style/dev-preview/preview-falda-top.png';
@@ -14,104 +14,123 @@ export const STYLE_COMMERCIAL_BODY_PREVIEW = {
   snapshotMutationAllowed: false,
 } as const;
 
+export type StyleCommercialPreviewSeed = {
+  readonly catalogVersionId: string;
+};
+
+type StylePreviewFixtureInput = {
+  readonly catalogEntryId: string;
+  readonly productId: string;
+  readonly sku: string;
+  readonly productCatalogCode: string;
+  readonly slug: string;
+  readonly productName: string;
+  readonly category: string;
+  readonly subcategory: string;
+  readonly salePriceSnapshot: number;
+  readonly publicUrl: string;
+  readonly altText: string;
+  readonly sortOrder: number;
+};
+
 function fixture(
-  base: CatalogRenderEntry,
-  partial: Pick<
-    CatalogRenderEntry,
-    | 'catalogEntryId'
-    | 'productId'
-    | 'sku'
-    | 'productCatalogCode'
-    | 'slug'
-    | 'productName'
-    | 'businessLine'
-    | 'brand'
-    | 'category'
-    | 'subcategory'
-    | 'description'
-    | 'salePrice'
-    | 'imageUrl'
-    | 'imageAlt'
-    | 'sortOrder'
-  >,
-): CatalogRenderEntry {
-  return {
-    ...base,
-    ...partial,
-  };
+  seed: StyleCommercialPreviewSeed,
+  input: StylePreviewFixtureInput,
+): CatalogRenderProductSnapshot {
+  return Object.freeze({
+    catalogEntryId: input.catalogEntryId,
+    catalogVersionId: seed.catalogVersionId,
+    productId: input.productId,
+    sku: input.sku,
+    productCatalogCode: input.productCatalogCode,
+    slug: input.slug,
+    productName: input.productName,
+    businessLine: 'STYLE',
+    brand: Object.freeze({
+      brandId: null,
+      name: 'LIHEN STYLE',
+      visual: Object.freeze({
+        source: 'TEXT_ONLY',
+        assetId: null,
+        publicUrl: null,
+        kind: null,
+        approvalMode: null,
+      }),
+    }),
+    category: input.category,
+    subcategory: input.subcategory,
+    description: 'Fixture visual DEV. No forma parte del snapshot publicado.',
+    salePriceSnapshot: input.salePriceSnapshot,
+    selectedPdfAsset: Object.freeze({
+      assetId: null,
+      publicUrl: input.publicUrl,
+      altText: input.altText,
+      sourceId: 'DEV_LOCAL_EDITORIAL_FIXTURE',
+      resolutionSource: 'LEGACY_RENDER_PROJECTION',
+    }),
+    sortOrder: input.sortOrder,
+  });
 }
 
 export function buildStyleCommercialBodyPreview(
-  base: CatalogRenderEntry,
-): readonly CatalogRenderEntry[] {
-  return [
-    fixture(base, {
+  seed: StyleCommercialPreviewSeed,
+): readonly CatalogRenderProductSnapshot[] {
+  return Object.freeze([
+    fixture(seed, {
       catalogEntryId: 'dev-style-preview-enterizo',
       productId: 'dev-style-preview-enterizo',
       sku: 'S04',
       productCatalogCode: 'S04',
       slug: 'dev-enterizo-short-deportivo-seamless',
       productName: 'Enterizo short deportivo seamless',
-      businessLine: 'STYLE',
-      brand: 'LIHEN STYLE',
       category: 'Enterizos deportivos',
       subcategory: 'Enterizos',
-      description: 'Fixture visual DEV. No forma parte del snapshot.',
-      salePrice: 53500,
-      imageUrl: previewEnterizo,
-      imageAlt: 'Enterizo deportivo · colores disponibles',
+      salePriceSnapshot: 53500,
+      publicUrl: previewEnterizo,
+      altText: 'Enterizo deportivo · colores disponibles',
       sortOrder: 10,
     }),
-    fixture(base, {
+    fixture(seed, {
       catalogEntryId: 'dev-style-preview-falda-top',
       productId: 'dev-style-preview-falda-top',
       sku: 'S14',
       productCatalogCode: 'S14',
       slug: 'dev-conjunto-falda-short-top',
       productName: 'Conjunto deportivo falda-short + top',
-      businessLine: 'STYLE',
-      brand: 'LIHEN STYLE',
       category: 'Conjuntos deportivos / Falda + Top',
       subcategory: 'Falda + Top',
-      description: 'Fixture visual DEV. No forma parte del snapshot.',
-      salePrice: 65000,
-      imageUrl: previewFaldaTop,
-      imageAlt: 'Conjunto falda short y top · colores disponibles',
+      salePriceSnapshot: 65000,
+      publicUrl: previewFaldaTop,
+      altText: 'Conjunto falda short y top · colores disponibles',
       sortOrder: 20,
     }),
-    fixture(base, {
+    fixture(seed, {
       catalogEntryId: 'dev-style-preview-shorts',
       productId: 'dev-style-preview-shorts',
       sku: 'SXX-SHORT',
       productCatalogCode: 'STYLE-SHORT',
       slug: 'dev-short-deportivo-con-cordon',
       productName: 'Short deportivo con cordón',
-      businessLine: 'STYLE',
-      brand: 'LIHEN STYLE',
       category: 'Shorts deportivos',
       subcategory: 'Shorts',
-      description: 'Fixture visual DEV. No forma parte del snapshot.',
-      salePrice: 45000,
-      imageUrl: previewShorts,
-      imageAlt: 'Short deportivo · colores disponibles',
+      salePriceSnapshot: 45000,
+      publicUrl: previewShorts,
+      altText: 'Short deportivo · colores disponibles',
       sortOrder: 30,
     }),
-    fixture(base, {
+    fixture(seed, {
       catalogEntryId: 'dev-style-preview-hombre',
       productId: 'dev-style-preview-hombre',
       sku: 'S11',
       productCatalogCode: 'S11',
       slug: 'dev-conjunto-deportivo-hombre',
       productName: 'Conjunto deportivo hombre camiseta + short',
-      businessLine: 'STYLE',
-      brand: 'LIHEN STYLE',
       category: 'Hombre',
       subcategory: 'Conjuntos deportivos hombre',
-      description: 'Fixture visual DEV. No forma parte del snapshot.',
-      salePrice: 65000,
-      imageUrl: previewHombre,
-      imageAlt: 'Conjunto deportivo hombre · referencias disponibles',
+      salePriceSnapshot: 65000,
+      publicUrl: previewHombre,
+      altText: 'Conjunto deportivo hombre · referencias disponibles',
       sortOrder: 40,
     }),
-  ];
+  ]);
 }

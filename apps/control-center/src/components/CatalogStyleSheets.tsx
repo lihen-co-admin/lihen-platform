@@ -1,5 +1,5 @@
 import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
-import type { CatalogRenderEntry } from '../composition/catalogs';
+import type { CatalogRenderProductSnapshot } from '@lihen/catalog';
 import {
   STYLE_FACE_POLICY_MODE,
   getStyleCtaLabel,
@@ -14,7 +14,7 @@ import {
 } from '../composition/catalog-style-product-visual';
 
 type StyleProductSheetProps = {
-  entry: CatalogRenderEntry;
+  entry: CatalogRenderProductSnapshot;
   template: StyleEditorialTemplate;
   pageNumber: number;
   totalPages: number;
@@ -89,6 +89,8 @@ export function StyleProductSheet({
         className="catalog-style-product__photo catalog-style-editorial__photo"
         data-face-policy={STYLE_FACE_POLICY_MODE}
         data-image-preparation={preparedImage.mode}
+        data-editorial-asset-role={preparedImage.editorialRole}
+        data-canonical-asset-authority={preparedImage.canonicalAuthority ? 'true' : 'false'}
       >
         <img
           src={preparedImage.sourceUrl}
@@ -109,7 +111,7 @@ export function StyleProductSheet({
         <div className="catalog-style-product__price-icon" aria-hidden="true">+</div>
         <div>
           <span>{STYLE_PRODUCT_VISUAL_CONTRACT.pricePolicy.label}</span>
-          <strong>{formatPrice(entry.salePrice)}</strong>
+          <strong>{formatPrice(entry.salePriceSnapshot)}</strong>
         </div>
       </div>
 

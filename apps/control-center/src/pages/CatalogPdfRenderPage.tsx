@@ -9,7 +9,6 @@ import {
 import { catalogInstitutionalComposition } from '../composition/catalog-institutional';
 import {
   catalogPdfRenderModelComposition,
-  toLegacyStyleRenderEntry,
   type CatalogPdfRenderModelLoadResult,
 } from '../composition/catalog-pdf-render-model';
 import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
@@ -286,10 +285,8 @@ export function CatalogPdfRenderPage() {
   const styleRenderEntries = useMemo(() => {
     if (pdfLine !== 'STYLE') return [];
 
-    if (renderModel && renderEntries.length > 0) {
-      return renderEntries.map((entry) =>
-        toLegacyStyleRenderEntry(entry, renderModel.version),
-      );
+    if (renderEntries.length > 0) {
+      return renderEntries;
     }
 
     if (stylePreviewRequested && renderSnapshot?.stylePreviewSeed) {
@@ -300,7 +297,6 @@ export function CatalogPdfRenderPage() {
   }, [
     pdfLine,
     renderEntries,
-    renderModel,
     renderSnapshot?.stylePreviewSeed,
     stylePreviewRequested,
   ]);

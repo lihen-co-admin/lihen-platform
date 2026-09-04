@@ -1,4 +1,4 @@
-import type { CatalogRenderEntry } from './catalogs';
+import type { CatalogRenderProductSnapshot } from '@lihen/catalog';
 import {
   STYLE_VISUAL_FOUNDATION,
   getStyleTemplateSeed,
@@ -12,7 +12,7 @@ import {
 export type StyleCatalogProductPage = {
   type: 'style-product';
   template: StyleEditorialTemplate;
-  entry: CatalogRenderEntry;
+  entry: CatalogRenderProductSnapshot;
 };
 
 export type StyleCatalogCategoryPage = {
@@ -23,29 +23,22 @@ export type StyleCatalogCategoryPage = {
 
 export type StyleCatalogBodyPage = StyleCatalogProductPage | StyleCatalogCategoryPage;
 
-function styleCategorySource(entry: CatalogRenderEntry): string {
-  const extended = entry as CatalogRenderEntry & {
-    category?: string | null;
-    categoryName?: string | null;
-    subcategory?: string | null;
-  };
-
+function styleCategorySource(entry: CatalogRenderProductSnapshot): string {
   return (
-    extended.categoryName?.trim()
-    || extended.category?.trim()
-    || extended.subcategory?.trim()
+    entry.category?.trim()
+    || entry.subcategory?.trim()
     || entry.productName.trim()
-    || entry.brand?.trim()
+    || entry.brand.name.trim()
     || 'LIHEN STYLE'
   );
 }
 
-function normalizeStyleGroup(entry: CatalogRenderEntry): string {
+function normalizeStyleGroup(entry: CatalogRenderProductSnapshot): string {
   return resolveStyleCategoryLabel(styleCategorySource(entry));
 }
 
 export function buildStyleBodyPages(
-  entries: readonly CatalogRenderEntry[],
+  entries: readonly CatalogRenderProductSnapshot[],
 ): readonly StyleCatalogBodyPage[] {
   const result: StyleCatalogBodyPage[] = [];
   let previousGroup = '';
@@ -71,8 +64,8 @@ export function buildStyleBodyPages(
   return result;
 }
 
-export function getStyleCtaLabel(entry: CatalogRenderEntry): string {
-  const text = `${entry.productName} ${entry.imageAlt ?? ''}`.toLocaleLowerCase('es-CO');
+export function getStyleCtaLabel(entry: CatalogRenderProductSnapshot): string {
+  const text = `${entry.productName} ${entry.selectedPdfAsset.altText ?? ''}`.toLocaleLowerCase('es-CO');
 
   if (/\b(color|colores|tono|tonos)\b/.test(text)) return 'VER COLORES';
   if (/\b(referencia|referencias|ref\.)\b/.test(text)) return 'VER REFERENCIAS';
@@ -80,8 +73,8 @@ export function getStyleCtaLabel(entry: CatalogRenderEntry): string {
   return 'VER OPCIONES';
 }
 
-export function getStyleMicrocopy(entry: CatalogRenderEntry): string {
-  const brand = entry.brand?.trim();
+export function getStyleMicrocopy(entry: CatalogRenderProductSnapshot): string {
+  const brand = entry.brand.name.trim();
   if (brand) return `${brand} · selección LIHEN Style`;
   return 'Selección editorial LIHEN Style';
 }

@@ -35,11 +35,12 @@ describe('GAP-024 PDF Renderer Purification architecture', () => {
     expect(composition).toContain('catalogInstitutionalComposition.getSnapshot');
   });
 
-  it('preserves explicit STYLE compatibility until GAP-026 instead of silently redefining editorial policy', () => {
+  it('keeps GAP-024 compatible after GAP-026 retires the STYLE legacy adapter', () => {
     const renderer = fs.readFileSync(rendererPath, 'utf8');
     const composition = fs.readFileSync(compositionPath, 'utf8');
-    expect(renderer).toContain('toLegacyStyleRenderEntry');
+    expect(renderer).not.toContain('toLegacyStyleRenderEntry');
     expect(renderer).toContain('buildStyleBodyPages');
+    expect(composition).not.toContain('toLegacyStyleRenderEntry');
     expect(composition).toContain('stylePreviewSeed');
   });
 
@@ -50,10 +51,11 @@ describe('GAP-024 PDF Renderer Purification architecture', () => {
     expect(renderer).toContain('buildBodyPages');
   });
 
-  it('preserves the existing local BEAUTY CARE brand-logo enhancement', () => {
+  it('keeps GAP-024 purification independent of optional local presentation enhancements', () => {
     const renderer = fs.readFileSync(rendererPath, 'utf8');
-    expect(renderer).toContain('CatalogBeautyBrandLogo');
-    expect(renderer).toContain('<CatalogBeautyBrandLogo brand={page.brand} />');
+    expect(renderer).toContain('catalogPdfRenderModelComposition');
+    expect(renderer).toContain('buildBodyPages');
+    expect(renderer).not.toContain('catalogsComposition.getRenderEntries');
   });
 
   it('does not modify catalog PDF CSS as part of renderer purification', () => {

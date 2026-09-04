@@ -1,5 +1,9 @@
-import type { CatalogRenderEntry } from './catalogs';
+import type { CatalogRenderProductSnapshot } from '@lihen/catalog';
 import { STYLE_VISUAL_FOUNDATION } from './catalog-style-visual';
+import {
+  resolveStyleEditorialAsset,
+  STYLE_EDITORIAL_POLICY,
+} from './catalog-style-editorial-policy';
 
 export const STYLE_PRODUCT_VISUAL_CONTRACT = {
   identity: 'LIHEN.CO STYLE',
@@ -17,33 +21,28 @@ export const STYLE_PRODUCT_VISUAL_CONTRACT = {
     ],
   },
   imagePreparation: {
-    requiredPipeline: [
-      'DETECT_PRIMARY_SUBJECT',
-      'REMOVE_OR_CLEAN_BACKGROUND',
-      'PRESERVE_PRODUCT_FIDELITY',
-      'REFRAME_FOR_EDITORIAL_LAYOUT',
-      'INTEGRATE_ON_STYLE_BACKGROUND',
-    ],
+    requiredPipeline: STYLE_EDITORIAL_POLICY.imagePreparation.allowed,
     facePolicy: STYLE_VISUAL_FOUNDATION.facePolicy.mode,
-    forbidden: [
-      'CHANGE_MODEL',
-      'REBUILD_FACE',
-      'INVENT_ANATOMY',
-      'TRANSFORM_PRODUCT',
-      'ALTER_PRODUCT_COLOR',
-      'INVENT_PRODUCT_DETAILS',
-    ],
+    forbidden: STYLE_EDITORIAL_POLICY.imagePreparation.forbidden,
   },
 } as const;
 
-export function getStyleProductImagePreparation(entry: CatalogRenderEntry) {
+export function getStyleProductImagePreparation(
+  entry: CatalogRenderProductSnapshot,
+) {
+  const editorialAsset = resolveStyleEditorialAsset(entry);
+
   return {
-    mode: 'CUTOUT_REQUIRED' as const,
-    sourceUrl: entry.imageUrl,
-    alt: entry.imageAlt || entry.productName,
+    mode: STYLE_EDITORIAL_POLICY.imagePreparation.mode,
+    sourceUrl: editorialAsset.sourcePublicUrl,
+    alt: editorialAsset.sourceAltText || entry.productName,
+    editorialRole: editorialAsset.role,
+    canonicalAuthority: editorialAsset.canonicalAuthority,
   };
 }
 
-export function getStyleProductReference(entry: CatalogRenderEntry): string {
+export function getStyleProductReference(
+  entry: CatalogRenderProductSnapshot,
+): string {
   return entry.sku || entry.productCatalogCode || entry.businessLine;
 }

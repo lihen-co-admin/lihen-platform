@@ -5,7 +5,6 @@ import {
   type CatalogRenderBusinessLine,
   type CatalogRenderInstitutionalSnapshot,
   type CatalogRenderModelVNext,
-  type CatalogRenderProductSnapshot,
   type CatalogRenderScope,
   type CatalogRenderVersionSnapshot,
 } from '@lihen/catalog';
@@ -20,7 +19,7 @@ import {
 
 export interface CatalogPdfRenderModelLoadResult {
   readonly model: CatalogRenderModelVNext | null;
-  readonly stylePreviewSeed: CatalogRenderEntry | null;
+  readonly stylePreviewSeed: { readonly catalogVersionId: string } | null;
 }
 
 export async function loadCatalogPdfRenderModel(
@@ -59,36 +58,8 @@ export function composeCatalogPdfRenderSnapshot(
 
   return Object.freeze({
     model: composeCatalogRenderModel(input).model,
-    stylePreviewSeed: first,
+    stylePreviewSeed: Object.freeze({ catalogVersionId: first.catalogVersionId }),
   });
-}
-
-export function toLegacyStyleRenderEntry(
-  entry: CatalogRenderProductSnapshot,
-  version: CatalogRenderVersionSnapshot,
-): CatalogRenderEntry {
-  return {
-    catalogVersionId: version.catalogVersionId,
-    catalogCode: version.catalogCode,
-    catalogTitle: version.catalogTitle,
-    versionLabel: version.versionLabel,
-    catalogStatus: version.catalogStatus,
-    catalogEntryId: entry.catalogEntryId,
-    productId: entry.productId,
-    sku: entry.sku,
-    productCatalogCode: entry.productCatalogCode,
-    slug: entry.slug,
-    productName: entry.productName,
-    businessLine: entry.businessLine,
-    brand: entry.brand.name,
-    category: entry.category,
-    subcategory: entry.subcategory,
-    description: entry.description,
-    salePrice: entry.salePriceSnapshot,
-    imageUrl: entry.selectedPdfAsset.publicUrl,
-    imageAlt: entry.selectedPdfAsset.altText,
-    sortOrder: entry.sortOrder,
-  };
 }
 
 function toVersionSnapshot(
