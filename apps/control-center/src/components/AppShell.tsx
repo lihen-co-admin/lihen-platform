@@ -42,6 +42,10 @@ const navigation: readonly NavigationGroup[] = [
       { to: '/content/public-hub', label: 'Hub público', icon: '↗' },
     ],
   },
+  {
+    label: 'LIHEN Cloud',
+    items: [{ to: '/cloud', label: 'Workspace', icon: '☁' }],
+  },
   { label: 'Control', items: [{ to: '/operations', label: 'Integridad y auditoría', icon: '✓' }] },
 ];
 
