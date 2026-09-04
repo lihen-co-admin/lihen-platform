@@ -26,6 +26,7 @@ import { CatalogPdfRenderPage } from '../pages/CatalogPdfRenderPage';
 import { CatalogInstitutionalContentPage } from '../pages/CatalogInstitutionalContentPage';
 import { PublicHubPage } from '../pages/PublicHubPage';
 import { CloudWorkspacePage } from '../pages/CloudWorkspacePage';
+import { AssistantPage } from '../pages/AssistantPage';
 
 export function App() {
   return (
@@ -46,6 +47,7 @@ export function App() {
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/operations" element={<OperationsPage />} />
           <Route path="/cloud" element={<CloudWorkspacePage />} />
+          <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/catalogs" element={<CatalogsPage />} />
           <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
           <Route path="/content/public-hub" element={<PublicHubPage />} />

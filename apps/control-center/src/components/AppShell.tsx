@@ -46,6 +46,10 @@ const navigation: readonly NavigationGroup[] = [
     label: 'LIHEN Cloud',
     items: [{ to: '/cloud', label: 'Workspace', icon: '☁' }],
   },
+  {
+    label: 'Intelligence',
+    items: [{ to: '/assistant', label: 'Assistant', icon: '✧' }],
+  },
   { label: 'Control', items: [{ to: '/operations', label: 'Integridad y auditoría', icon: '✓' }] },
 ];
 
