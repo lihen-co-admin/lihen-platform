@@ -29,7 +29,8 @@
     "build:storefront:release": "pnpm check:storefront:release-env && pnpm --filter @lihen/storefront build && pnpm check:storefront:dist",
     "prepare:storefront:release-candidate": "node tooling/prepare-storefront-release-candidate.mjs",
     "check:storefront:release-candidate": "node tooling/validate-storefront-release-candidate.mjs",
-    "check:storefront:pre-rehearsal": "node tooling/validate-storefront-pre-rehearsal.mjs"
+    "check:storefront:pre-rehearsal": "node tooling/validate-storefront-pre-rehearsal.mjs",
+    "check:production-readiness": "node tools/lihen-quality-gate.mjs --production-readiness"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

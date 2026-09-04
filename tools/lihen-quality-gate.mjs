@@ -10,6 +10,14 @@ const REPORT_DIR = path.join(os.tmpdir(), 'lihen-platform-quality-gate');
 const VITEST_JSON = path.join(REPORT_DIR, 'vitest-results.json');
 const REPORT_JSON = path.join(REPORT_DIR, 'LIHEN_QUALITY_GATE_LATEST.json');
 const REPORT_MD = path.join(REPORT_DIR, 'LIHEN_QUALITY_GATE_LATEST.md');
+const PRODUCTION_READINESS_REPORT_JSON = path.join(
+  REPORT_DIR,
+  'LIHEN_PRODUCTION_READINESS_LATEST.json',
+);
+const PRODUCTION_READINESS_REPORT_MD = path.join(
+  REPORT_DIR,
+  'LIHEN_PRODUCTION_READINESS_LATEST.md',
+);
 
 const DOMAIN_ORDER = [
   'PRODUCT MASTER',
@@ -123,6 +131,77 @@ function assertionStatus(assertion) {
 
 function isPassed(assertion) {
   return assertionStatus(assertion) === 'passed';
+}
+
+function readinessStatus(value) {
+  return String(value?.status ?? '').toUpperCase();
+}
+
+function hasTraceablePassEvidence(value) {
+  return (
+    readinessStatus(value) === 'PASS' &&
+    typeof value?.evidenceRef === 'string' &&
+    value.evidenceRef.trim().length > 0 &&
+    typeof value?.verifiedAt === 'string' &&
+    value.verifiedAt.trim().length > 0
+  );
+}
+
+function containsForbiddenSensitiveMaterial(value) {
+  const text = JSON.stringify(value);
+  const forbidden = [
+    /service[_-]?role/i,
+    /sb_secret_/i,
+    /SUPABASE_SERVICE_ROLE/i,
+  ];
+
+  return forbidden.some((pattern) => pattern.test(text));
+}
+
+export function evaluateProductionReadiness({
+  qualityGatePassed,
+  evidence,
+  currentHead,
+  evidencePathOutsideRepository = true,
+}) {
+  if (!qualityGatePassed) return false;
+  if (!evidence || typeof evidence !== 'object') return false;
+  if (!evidencePathOutsideRepository) return false;
+  if (containsForbiddenSensitiveMaterial(evidence)) return false;
+
+  if (evidence.schemaVersion !== 'LIHEN_PRODUCTION_READINESS_EVIDENCE_V1') return false;
+  if (String(evidence.targetEnvironment ?? '').toUpperCase() !== 'PRODUCTION') return false;
+
+  if (typeof evidence.releaseCandidate !== 'string' || !evidence.releaseCandidate.trim()) {
+    return false;
+  }
+
+  if (
+    typeof evidence.gitCommitSha !== 'string' ||
+    evidence.gitCommitSha.trim() !== String(currentHead ?? '').trim()
+  ) {
+    return false;
+  }
+
+  if (readinessStatus(evidence.qualityGate) !== 'PASS') return false;
+
+  const requiredEvidence = [
+    evidence.releaseCandidateVerification,
+    evidence.backup,
+    evidence.rollback,
+    evidence.monitoring,
+    evidence.migrationReproducibility,
+  ];
+
+  if (!requiredEvidence.every(hasTraceablePassEvidence)) return false;
+
+  const safety = evidence.safety ?? {};
+  if (safety.productionTouched !== false) return false;
+  if (safety.deploymentPerformed !== false) return false;
+  if (safety.databaseMutationPerformed !== false) return false;
+  if (safety.secretsStored !== false) return false;
+
+  return true;
 }
 
 function readVitestReport() {
@@ -287,10 +366,116 @@ function selfTest() {
   console.log(`LIHEN quality gate self-test: ${total}/${total} PASS`);
 }
 
+function productionReadinessSelfTest() {
+  const head = 'ecdd93e696bdc73a2d17e424e37ef83b043c7ac9';
+
+  const traceable = () => ({
+    status: 'PASS',
+    evidenceRef: 'evidence://verified/control',
+    verifiedAt: '2026-09-04T00:00:00.000Z',
+  });
+
+  const evidence = () => ({
+    schemaVersion: 'LIHEN_PRODUCTION_READINESS_EVIDENCE_V1',
+    targetEnvironment: 'PRODUCTION',
+    releaseCandidate: 'LIHEN-STOREFRONT-RC-TEST',
+    gitCommitSha: head,
+    qualityGate: { status: 'PASS' },
+    releaseCandidateVerification: traceable(),
+    backup: traceable(),
+    rollback: traceable(),
+    monitoring: traceable(),
+    migrationReproducibility: traceable(),
+    safety: {
+      productionTouched: false,
+      deploymentPerformed: false,
+      databaseMutationPerformed: false,
+      secretsStored: false,
+    },
+  });
+
+  const evaluate = (value, currentHead = head) =>
+    evaluateProductionReadiness({
+      qualityGatePassed: true,
+      evidence: value,
+      currentHead,
+      evidencePathOutsideRepository: true,
+    });
+
+  const cases = [];
+
+  cases.push([evidence(), head, true, 'all evidence passing']);
+
+  {
+    const value = evidence();
+    delete value.backup;
+    cases.push([value, head, false, 'backup missing']);
+  }
+
+  {
+    const value = evidence();
+    value.rollback.status = 'FAIL';
+    cases.push([value, head, false, 'rollback failing']);
+  }
+
+  {
+    const value = evidence();
+    delete value.monitoring;
+    cases.push([value, head, false, 'monitoring missing']);
+  }
+
+  {
+    const value = evidence();
+    value.migrationReproducibility.status = 'FAIL';
+    cases.push([value, head, false, 'migration reproducibility failing']);
+  }
+
+  {
+    const value = evidence();
+    value.releaseCandidateVerification.status = 'FAIL';
+    cases.push([value, head, false, 'release candidate verification failing']);
+  }
+
+  cases.push([evidence(), 'different-head', false, 'HEAD mismatch']);
+
+  {
+    const value = evidence();
+    value.safety.productionTouched = true;
+    cases.push([value, head, false, 'production touched']);
+  }
+
+  {
+    const value = evidence();
+    value.backup.evidenceRef = 'service_role_key://forbidden';
+    cases.push([value, head, false, 'sensitive material present']);
+  }
+
+  for (const [value, currentHead, expected, label] of cases) {
+    const actual = evaluate(value, currentHead);
+    if (actual !== expected) {
+      console.error(
+        `PRODUCTION READINESS SELF TEST FAIL: ${label} => ${actual}, expected ${expected}`,
+      );
+      process.exit(1);
+    }
+  }
+
+  console.log(
+    `LIHEN production readiness self-test: ${cases.length}/${cases.length} PASS`,
+  );
+}
+
+if (process.argv.includes('--self-test-production-readiness')) {
+  productionReadinessSelfTest();
+  process.exit(0);
+}
+
 if (process.argv.includes('--self-test')) {
   selfTest();
   process.exit(0);
 }
+
+const productionReadinessMode = process.argv.includes('--production-readiness');
 
 mkdirSync(REPORT_DIR, { recursive: true });
 rmSync(VITEST_JSON, { force: true });
@@ -397,5 +582,109 @@ const summary = {
 writeFileSync(REPORT_JSON, JSON.stringify({ summary, traceability }, null, 2) + '\n', 'utf8');
 writeFileSync(REPORT_MD, renderMarkdown(summary, traceability), 'utf8');
 renderConsole(summary);
+
+if (productionReadinessMode) {
+  const rawEvidencePath = process.env.LIHEN_PRODUCTION_READINESS_EVIDENCE_PATH?.trim();
+
+  if (!rawEvidencePath) {
+    console.error(
+      '\nProduction Readiness: BLOCKED\nMissing LIHEN_PRODUCTION_READINESS_EVIDENCE_PATH.',
+    );
+    process.exit(1);
+  }
+
+  const evidencePath = path.resolve(rawEvidencePath);
+  const relativeEvidencePath = path.relative(ROOT, evidencePath);
+  const evidencePathOutsideRepository =
+    relativeEvidencePath === '..' ||
+    relativeEvidencePath.startsWith(`..${path.sep}`);
+
+  let evidence;
+  try {
+    evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+  } catch (error) {
+    console.error(
+      `\nProduction Readiness: BLOCKED\nUnable to read evidence: ${error.message}`,
+    );
+    process.exit(1);
+  }
+
+  const headResult = runShell('git rev-parse HEAD');
+  if (headResult.status !== 0 || !headResult.stdout?.trim()) {
+    printFailure('Git HEAD', headResult);
+    process.exit(1);
+  }
+
+  const currentHead = headResult.stdout.trim();
+
+  const productionReadinessPassed = evaluateProductionReadiness({
+    qualityGatePassed: finalPass,
+    evidence,
+    currentHead,
+    evidencePathOutsideRepository,
+  });
+
+  const productionReadinessSummary = {
+    schemaVersion: 'LIHEN_PRODUCTION_READINESS_REPORT_V1',
+    generatedAt: new Date().toISOString(),
+    targetEnvironment: String(evidence.targetEnvironment ?? 'UNKNOWN').toUpperCase(),
+    releaseCandidate: evidence.releaseCandidate ?? 'MISSING',
+    gitCommitSha: currentHead,
+    qualityGatePassed: finalPass,
+    evidencePathOutsideRepository,
+    evidence: {
+      releaseCandidateVerification: evidence.releaseCandidateVerification ?? null,
+      backup: evidence.backup ?? null,
+      rollback: evidence.rollback ?? null,
+      monitoring: evidence.monitoring ?? null,
+      migrationReproducibility: evidence.migrationReproducibility ?? null,
+    },
+    safety: {
+      deploymentPerformedByGate: false,
+      databaseMutationPerformedByGate: false,
+      productionTouchedByGate: false,
+      secretsStoredByGate: false,
+    },
+    finalResult: productionReadinessPassed ? 'PASS' : 'BLOCKED',
+  };
+
+  writeFileSync(
+    PRODUCTION_READINESS_REPORT_JSON,
+    `${JSON.stringify(productionReadinessSummary, null, 2)}\n`,
+    'utf8',
+  );
+
+  writeFileSync(
+    PRODUCTION_READINESS_REPORT_MD,
+    [
+      '# LIHEN PLATFORM PRODUCTION READINESS',
+      '',
+      `- Target: **${productionReadinessSummary.targetEnvironment}**`,
+      `- Release Candidate: **${productionReadinessSummary.releaseCandidate}**`,
+      `- Git Commit: **${productionReadinessSummary.gitCommitSha}**`,
+      `- Quality Gate: **${finalPass ? 'PASS' : 'FAIL'}**`,
+      '',
+      `## FINAL RESULT: **${productionReadinessSummary.finalResult}**`,
+      '',
+      'PASS means readiness evidence is complete. It does not deploy, authorize deployment, mutate a database, or touch production.',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+
+  console.log('\nLIHEN PLATFORM PRODUCTION READINESS');
+  console.log('===================================' );
+  console.log(`Target:         ${productionReadinessSummary.targetEnvironment}`);
+  console.log(`Release:        ${productionReadinessSummary.releaseCandidate}`);
+  console.log(`Commit:         ${currentHead}`);
+  console.log(`Quality Gate:   ${finalPass ? 'PASS' : 'FAIL'}`);
+  console.log(`FINAL RESULT:   ${productionReadinessSummary.finalResult}`);
+  console.log(`Full report:    ${PRODUCTION_READINESS_REPORT_MD}`);
+  console.log('Deployment:     NOT PERFORMED');
+  console.log('Database:       NOT MUTATED');
+  console.log('Production:     NOT TOUCHED');
+
+  process.exit(productionReadinessPassed ? 0 : 1);
+}
 
 process.exit(finalPass ? 0 : 1);
