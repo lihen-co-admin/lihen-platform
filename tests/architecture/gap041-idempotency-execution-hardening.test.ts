@@ -79,7 +79,7 @@ describe('GAP-041 control-plane idempotency hardening', () => {
 
     expect(source).toContain("'execution_enabled', false");
     expect(source).toContain("'PREVIEW_ONLY_NO_BUSINESS_MUTATION'");
-    expect(source).toMatch(/\n\s*false,\n\s*v_intent\.status,/);
+    expect(source).toMatch(/\r?\n\s*false,\r?\n\s*v_intent\.status,/);
   });
 
   it('keeps SQL/RPC persistence out of Intelligence Core', () => {
