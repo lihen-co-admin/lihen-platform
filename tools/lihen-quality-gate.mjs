@@ -255,7 +255,36 @@ function selfTest() {
     }
   }
 
-  console.log(`LIHEN quality gate self-test: ${cases.length}/${cases.length} PASS`);
+  const baseGate = {
+    typecheck: true,
+    lint: true,
+    testsCommandPassed: true,
+    build: true,
+    testFilesPassed: 10,
+    testFilesTotal: 10,
+    testsPassed: 100,
+    testsTotal: 100,
+    allTestsIdentified: true,
+    architecturePassed: 40,
+    architectureTotal: 40,
+  };
+
+  const finalGateCases = [
+    [baseGate, true, 'architecture evidence present and passing'],
+    [{ ...baseGate, architecturePassed: 0, architectureTotal: 0 }, false, 'architecture evidence missing'],
+    [{ ...baseGate, architecturePassed: 39, architectureTotal: 40 }, false, 'architecture evidence failing'],
+  ];
+
+  for (const [input, expected, label] of finalGateCases) {
+    const actual = evaluateFinalPass(input);
+    if (actual !== expected) {
+      console.error(`SELF TEST FAIL: ${label} => ${actual}, expected ${expected}`);
+      process.exit(1);
+    }
+  }
+
+  const total = cases.length + finalGateCases.length;
+  console.log(`LIHEN quality gate self-test: ${total}/${total} PASS`);
 }
 
 if (process.argv.includes('--self-test')) {
@@ -311,14 +340,46 @@ const testFilesPassed = testResults.filter((file) => {
 }).length;
 
 const allTestsIdentified = traceability.length === testsTotal;
-const finalPass =
-  typecheck &&
-  lint &&
-  testsCommandPassed &&
-  build &&
-  testFilesPassed === testFilesTotal &&
-  testsPassed === testsTotal &&
-  allTestsIdentified;
+
+export function evaluateFinalPass({
+  typecheck,
+  lint,
+  testsCommandPassed,
+  build,
+  testFilesPassed,
+  testFilesTotal,
+  testsPassed,
+  testsTotal,
+  allTestsIdentified,
+  architecturePassed,
+  architectureTotal,
+}) {
+  return (
+    typecheck &&
+    lint &&
+    testsCommandPassed &&
+    build &&
+    testFilesPassed === testFilesTotal &&
+    testsPassed === testsTotal &&
+    allTestsIdentified &&
+    architectureTotal > 0 &&
+    architecturePassed === architectureTotal
+  );
+}
+
+const finalPass = evaluateFinalPass({
+  typecheck,
+  lint,
+  testsCommandPassed,
+  build,
+  testFilesPassed,
+  testFilesTotal,
+  testsPassed,
+  testsTotal,
+  allTestsIdentified,
+  architecturePassed: architecture.passed,
+  architectureTotal: architecture.total,
+});
 
 const summary = {
   gates: { typecheck, lint, tests: testsCommandPassed, build },
