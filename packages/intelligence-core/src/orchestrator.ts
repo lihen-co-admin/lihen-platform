@@ -144,6 +144,10 @@ const CAPABILITY_PERMISSION = {
     permission: INTELLIGENCE_PERMISSION.EXTRACT,
     actionClass: 'ANALYZE',
   },
+  REPORT_GENERATION: {
+    permission: INTELLIGENCE_PERMISSION.GENERATE,
+    actionClass: 'PROPOSE',
+  },
   CREATIVE_INTELLIGENCE: {
     permission: INTELLIGENCE_PERMISSION.GENERATE,
     actionClass: 'PROPOSE',

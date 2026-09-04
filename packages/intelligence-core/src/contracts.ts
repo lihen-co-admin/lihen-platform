@@ -46,6 +46,7 @@ export type IntelligenceCapabilityName =
   | 'BRAND_INTELLIGENCE'
   | 'CATALOG_INTELLIGENCE'
   | 'DOCUMENT_INTELLIGENCE'
+  | 'REPORT_GENERATION'
   | 'CREATIVE_INTELLIGENCE'
   | 'ANALYTICS'
   | 'AUTOMATION'
@@ -110,6 +111,7 @@ export type IntelligenceCandidateType =
   | 'SUPPLIER_MAPPING'
   | 'DATA_CORRECTION'
   | 'CATALOG_ASSET'
+  | 'DOCUMENT_ARTIFACT'
   | 'OTHER';
 
 export type IntelligenceCandidateStatus =

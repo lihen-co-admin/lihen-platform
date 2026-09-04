@@ -174,6 +174,31 @@ export interface ImageGenerationPort {
   ): Promise<ProviderResult<readonly GeneratedImage[]>>;
 }
 
+export interface ReportGenerationRequest extends IntelligenceToolContext {
+  readonly reportId: string;
+  readonly title: string;
+  readonly purpose: string;
+  readonly outputFormat: 'MARKDOWN' | 'HTML' | 'PDF' | 'DOCX' | 'CSV';
+  readonly sections: readonly string[];
+  readonly sourceEvidenceIds: readonly string[];
+  readonly constraints: readonly string[];
+}
+
+export interface GeneratedReport {
+  readonly reportRef: string;
+  readonly title: string;
+  readonly mimeType: string;
+  readonly provenance: 'GENERATED';
+  readonly metadata?: Readonly<Record<string, unknown>>;
+}
+
+export interface ReportGenerationPort {
+  readonly descriptor: ToolDescriptor;
+  generate(
+    request: ReportGenerationRequest,
+  ): Promise<ProviderResult<readonly GeneratedReport[]>>;
+}
+
 export interface EmbeddingRequest extends IntelligenceToolContext {
   readonly items: readonly {
     readonly itemRef: string;
@@ -201,6 +226,7 @@ export type IntelligenceProviderPort =
   | SearchPort
   | DocumentExtractionPort
   | ImageGenerationPort
+  | ReportGenerationPort
   | EmbeddingPort;
 
 export interface IntelligenceToolRegistry {
@@ -209,6 +235,7 @@ export interface IntelligenceToolRegistry {
   readonly search?: SearchPort;
   readonly document?: DocumentExtractionPort;
   readonly imageGeneration?: ImageGenerationPort;
+  readonly reportGeneration?: ReportGenerationPort;
   readonly embeddings?: EmbeddingPort;
 }
 

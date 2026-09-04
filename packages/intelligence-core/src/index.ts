@@ -15,3 +15,4 @@ export * from './capabilities/inventory-intelligence';
 export * from './capabilities/procurement-intelligence';
 export * from './capabilities/orders-sales-intelligence';
 export * from './capabilities/creative-intelligence';
+export * from './capabilities/report-generation';
