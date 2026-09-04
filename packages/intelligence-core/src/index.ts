@@ -18,3 +18,4 @@ export * from './capabilities/creative-intelligence';
 export * from './capabilities/report-generation';
 export * from './capabilities/analytics-intelligence';
 export * from './capabilities/controlled-automation';
+export * from './capabilities/audit-intelligence';
