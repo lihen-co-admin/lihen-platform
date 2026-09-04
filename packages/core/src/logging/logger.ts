@@ -3,6 +3,12 @@ export interface LogContext {
   readonly operation?: string;
   readonly entityId?: string;
   readonly operationKey?: string;
+  readonly correlationId?: string;
+  readonly requestId?: string;
+  readonly providerRef?: string;
+  readonly requestRef?: string;
+  readonly durationMs?: number;
+  readonly providerStatus?: string;
   readonly errorCode?: string;
 }
 
