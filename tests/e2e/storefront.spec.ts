@@ -167,14 +167,18 @@ test('Beauty Care and Style navigation open the canonical catalog with the selec
   await expect(footer.getByRole('link', { name: 'Beauty Care' })).toHaveAttribute('href', '#catalogo?business_line=BEAUTY_CARE');
   await expect(footer.getByRole('link', { name: 'Style' })).toHaveAttribute('href', '#catalogo?business_line=STYLE');
 
-  await page.getByRole('link', { name: 'Explorar Beauty Care' }).click();
+  const beautyCareLink = page.getByRole('link', { name: 'Explorar Beauty Care' });
+  await beautyCareLink.focus();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#catalogo\?business_line=BEAUTY_CARE/);
   await expect(page.getByRole('combobox', { name: 'Línea', exact: true })).toHaveValue('BEAUTY_CARE');
   await expect(page.locator('[data-product-card]')).toHaveCount(24);
 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Algo especial para cada momento.' })).toBeVisible();
-  await page.getByRole('link', { name: 'Ver Style' }).click();
+  const styleLink = page.getByRole('link', { name: 'Ver Style' });
+  await styleLink.focus();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#catalogo\?business_line=STYLE/);
   await expect(page.getByRole('combobox', { name: 'Línea', exact: true })).toHaveValue('STYLE');
   await expect(page.locator('[data-product-card]')).toHaveCount(4);
@@ -240,14 +244,20 @@ test('catalog supports search, filters and pagination through the controlled RPC
 
 test('product detail, selection persistence and WhatsApp consultation work together', async ({ page }) => {
   await page.goto('/#catalogo');
-  await page.getByRole('button', { name: 'Ver Labial E2E LIHEN' }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('heading', { name: 'Labial E2E LIHEN' })).toBeVisible();
-  await expect(dialog.getByText('BC-900')).toBeVisible();
-  await expect(dialog.locator('.product-dialog__hero img')).toHaveAttribute('srcset', /600w/);
-  await expect(dialog.locator('.product-dialog__hero img')).not.toHaveAttribute('data-media-fallback', 'true');
-  await dialog.getByRole('button', { name: 'Agregar a mi selección' }).click();
-  await dialog.getByRole('button', { name: 'Cerrar' }).click();
+  await page.getByRole('searchbox', { name: 'Buscar' }).fill('Labial E2E');
+  await page.getByRole('button', { name: 'Buscar' }).click();
+  await expect(page.locator('[data-product-card]')).toHaveCount(1);
+  await page.getByRole('link', { name: 'Ver Labial E2E LIHEN' }).click();
+  await expect(page).toHaveURL(/#producto\//);
+
+  const productPage = page.locator('[data-product-page]');
+  await expect(productPage).toBeVisible();
+  await expect(productPage.getByRole('heading', { name: 'Labial E2E LIHEN', level: 1 })).toBeVisible();
+  await expect(productPage.getByText('SKU BC-900')).toBeVisible();
+  await expect(productPage.locator('[data-product-hero]')).toHaveAttribute('srcset', /600w/);
+  await expect(productPage.locator('[data-product-hero]')).not.toHaveAttribute('data-media-fallback', 'true');
+
+  await productPage.locator('.product-page__buybox').getByRole('button', { name: 'Agregar a mi selección' }).click();
 
   await page.getByRole('button', { name: 'Mi selección', exact: true }).click();
   const drawer = page.getByRole('complementary', { name: 'Mi selección' });
@@ -328,7 +338,7 @@ test('gifts, about and trust pages are real routes instead of empty anchors', as
   await page.getByRole('link', { name: 'Términos y condiciones' }).click();
   await expect(page).toHaveURL(/#terminos$/);
   await expect(page.getByRole('heading', { name: 'Términos y condiciones' })).toBeVisible();
-  await expect(page.getByText('Contenido en revisión para publicación definitiva.')).toBeVisible();
+  await expect(page.getByText('Condiciones generales para utilizar la tienda virtual y confirmar una compra con LIHEN.CO.')).toBeVisible();
 
   await page.getByRole('link', { name: 'Peticiones, quejas y reclamos' }).click();
   await expect(page).toHaveURL(/#pqrs$/);
