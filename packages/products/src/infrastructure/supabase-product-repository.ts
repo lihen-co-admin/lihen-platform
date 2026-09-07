@@ -23,6 +23,7 @@ import { ControlledProductWriteMapper } from './controlled-product-write-mapper'
 import { LegacyProductMapper } from './legacy-product-mapper';
 
 const PRODUCT_READ_COLUMNS = 'id, sku, catalog_code, slug, name, business_line, status, sale_price, brand_id, category_id';
+const PRODUCT_READ_PAGE_SIZE = 1000;
 
 export interface SupabaseProductRepositoryOptions {
   readonly controlledCreateEnabled?: boolean;
@@ -48,13 +49,26 @@ export class SupabaseProductRepository implements ProductRepository, ProductPric
   }
 
   public async findAll(): Promise<readonly Product[]> {
-    const { data, error } = await this.client
-      .from('products')
-      .select(PRODUCT_READ_COLUMNS)
-      .order('name', { ascending: true });
+    const products: Product[] = [];
 
-    if (error) throw new Error(`Unable to read products from Supabase: ${error.message}`);
-    return ((data ?? []) as unknown[]).map((row) => LegacyProductMapper.toDomain(row));
+    for (let from = 0; ; from += PRODUCT_READ_PAGE_SIZE) {
+      const to = from + PRODUCT_READ_PAGE_SIZE - 1;
+      const { data, error } = await this.client
+        .from('products')
+        .select(PRODUCT_READ_COLUMNS)
+        .order('name', { ascending: true })
+        .order('id', { ascending: true })
+        .range(from, to);
+
+      if (error) throw new Error(`Unable to read products from Supabase: ${error.message}`);
+
+      const rows = (data ?? []) as unknown[];
+      products.push(...rows.map((row) => LegacyProductMapper.toDomain(row)));
+
+      if (rows.length < PRODUCT_READ_PAGE_SIZE) break;
+    }
+
+    return products;
   }
 
   public async findById(id: string): Promise<Product | null> {
