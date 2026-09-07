@@ -1,3 +1,4 @@
+import { verifyExternalProductionEvidence } from '../tooling/production-readiness-evidence.mjs';
 /* global console */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -142,9 +143,57 @@ function hasTraceablePassEvidence(value) {
     readinessStatus(value) === 'PASS' &&
     typeof value?.evidenceRef === 'string' &&
     value.evidenceRef.trim().length > 0 &&
+    typeof value?.evidenceSha256 === 'string' &&
+    /^[0-9a-f]{64}$/i.test(value.evidenceSha256.trim()) &&
     typeof value?.verifiedAt === 'string' &&
     value.verifiedAt.trim().length > 0
   );
+}
+
+function verifyProductionReadinessSubEvidence({
+  evidence,
+  currentHead,
+}) {
+  const specs = [
+    {
+      key: 'backup',
+      schemaVersion: 'LIHEN_PRODUCTION_BACKUP_EVIDENCE_V1',
+      allowedEnvironments: ['LOCAL_SUPABASE_REHEARSAL'],
+    },
+    {
+      key: 'rollback',
+      schemaVersion: 'LIHEN_PRODUCTION_ROLLBACK_REHEARSAL_EVIDENCE_V1',
+      allowedEnvironments: ['LOCAL_ISOLATED_WORKTREE'],
+    },
+    {
+      key: 'monitoring',
+      schemaVersion: 'LIHEN_PRODUCTION_MONITORING_EVIDENCE_V1',
+      allowedEnvironments: ['LOCAL_RELEASE_REHEARSAL'],
+    },
+    {
+      key: 'migrationReproducibility',
+      schemaVersion: 'LIHEN_MIGRATION_REPRODUCIBILITY_EVIDENCE_V1',
+      allowedEnvironments: ['DEV_HISTORY_TO_LOCAL_SCHEMA_REHEARSAL'],
+    },
+  ];
+
+  for (const spec of specs) {
+    const trace = evidence?.[spec.key];
+
+    if (!hasTraceablePassEvidence(trace)) {
+      throw new Error(`${spec.key} evidence manifest is incomplete.`);
+    }
+
+    verifyExternalProductionEvidence({
+      rawPath: trace.evidenceRef,
+      repoRoot: ROOT,
+      expectedSha256: trace.evidenceSha256,
+      expectedSchemaVersion: spec.schemaVersion,
+      expectedGitCommitSha: currentHead,
+      expectedReleaseCandidate: evidence.releaseCandidate,
+      allowedEnvironments: spec.allowedEnvironments,
+    });
+  }
 }
 
 function containsForbiddenSensitiveMaterial(value) {
@@ -372,6 +421,7 @@ function productionReadinessSelfTest() {
   const traceable = () => ({
     status: 'PASS',
     evidenceRef: 'evidence://verified/control',
+    evidenceSha256: 'a'.repeat(64),
     verifiedAt: '2026-09-04T00:00:00.000Z',
   });
 
@@ -616,6 +666,18 @@ if (productionReadinessMode) {
   }
 
   const currentHead = headResult.stdout.trim();
+
+  try {
+    verifyProductionReadinessSubEvidence({
+      evidence,
+      currentHead,
+    });
+  } catch (error) {
+    console.error(
+      `\nProduction Readiness: BLOCKED\nExternal sub-evidence verification failed: ${error.message}`,
+    );
+    process.exit(1);
+  }
 
   const productionReadinessPassed = evaluateProductionReadiness({
     qualityGatePassed: finalPass,
