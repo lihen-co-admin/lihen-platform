@@ -33,7 +33,8 @@ async function buildLensAssetReference(productId: string, file: File): Promise<s
   return `control-center://lens-pending/${productId}/${sha256}?${query.toString()}`;
 }
 
-function mediaStatusLabel(images: readonly ProductImageDTO[]): string {
+function mediaStatusLabel(images: readonly ProductImageDTO[], canReadImages: boolean): string {
+  if (!canReadImages) return 'Lectura bloqueada';
   if (images.length === 0) return 'Sin media';
   if (!images.some((image) => image.isMain)) return 'Falta principal';
   if (images.some((image) => !image.altText?.trim())) return 'Revisar accesibilidad';
@@ -235,7 +236,7 @@ export function ProductImagesPage() {
         description="Administra la galería canónica, revisa completitud visual y usa Lens Mode como evidencia asistida sin convertir señales en publicación automática."
         accent="lilac"
         actions={<Link className="button-link button-link--secondary" to={id ? `/products/${id}` : '/products'}>← Volver al producto</Link>}
-        status={product ? <span className="status-badge">{mediaStatusLabel(images)}</span> : undefined}
+        status={product ? <span className="status-badge">{mediaStatusLabel(images, productsComposition.canReadImages)}</span> : undefined}
       />
 
       {loading ? <div className="empty-state">Cargando imágenes…</div> : null}
@@ -247,9 +248,9 @@ export function ProductImagesPage() {
         <>
           <SummaryStrip
             items={[
-              { label: 'Imágenes', value: images.length, detail: productsComposition.canReadImages ? 'registradas' : 'lectura bloqueada' },
-              { label: 'Principal', value: mainImage ? 'Sí' : 'No' },
-              { label: 'Alt text', value: `${altCoverage}/${images.length}`, detail: 'cobertura accesible' },
+              { label: 'Imágenes', value: productsComposition.canReadImages ? images.length : 'No verificable', detail: productsComposition.canReadImages ? 'registradas' : 'lectura bloqueada' },
+              { label: 'Principal', value: productsComposition.canReadImages ? (mainImage ? 'Sí' : 'No') : 'No verificable' },
+              { label: 'Alt text', value: productsComposition.canReadImages ? `${altCoverage}/${images.length}` : 'No verificable', detail: productsComposition.canReadImages ? 'cobertura accesible' : 'lectura bloqueada' },
               { label: 'Lens Mode', value: visualIntelligenceComposition.enabled ? 'DEV activo' : 'Bloqueado', detail: 'solo evidencia asistida' },
             ]}
           />
