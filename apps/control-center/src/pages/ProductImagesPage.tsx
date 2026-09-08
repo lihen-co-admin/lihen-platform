@@ -229,7 +229,7 @@ export function ProductImagesPage() {
   }
 
   return (
-    <section>
+    <section className="stack">
       <AdminPageHero
         eyebrow="PRODUCT MASTER · MEDIA"
         title={product ? `Imágenes · ${product.name}` : 'Imágenes del producto'}

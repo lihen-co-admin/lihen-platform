@@ -43,12 +43,12 @@ export function AssistantPage() {
         </p>
       </OperationalNotice>
 
-      <div className="table-card">
-        <div className="table-summary">
+      <div className="card stack">
+        <div className="card-heading">
           <div>
-            <strong>Conversación gobernada</strong>
-            <br />
-            <span>DEV · proveedor desacoplado mediante ModelPort</span>
+            <span className="card-label">Intelligence</span>
+            <h2>Conversación gobernada</h2>
+            <p>DEV · proveedor desacoplado mediante ModelPort</p>
           </div>
         </div>
 

@@ -254,19 +254,36 @@ export function ProductsPage() {
             </table>
           </div>
 
-          <div className="table-pagination">
-            <span>
+          <div className="table-pagination product-pagination">
+            <span className="product-pagination__summary">
               {filteredProducts.length === 0
                 ? '0 resultados'
                 : `${(safePage - 1) * PAGE_SIZE + 1}–${Math.min(safePage * PAGE_SIZE, filteredProducts.length)} de ${filteredProducts.length}`}
             </span>
-            <div className="pagination-actions" aria-label="Paginación de productos">
-              <button type="button" className="icon-button" disabled={safePage <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>
-                ‹ <span className="sr-only">Página anterior</span>
+
+            <div className="pagination-actions product-pagination__actions" aria-label="Paginación de productos">
+              <button
+                type="button"
+                className="product-pagination__button"
+                disabled={safePage <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                <span aria-hidden="true">←</span>
+                <span>Anterior</span>
               </button>
-              <span>Página {safePage} de {totalPages}</span>
-              <button type="button" className="icon-button" disabled={safePage >= totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))}>
-                › <span className="sr-only">Página siguiente</span>
+
+              <span className="product-pagination__indicator" aria-live="polite">
+                Página {safePage} de {totalPages}
+              </span>
+
+              <button
+                type="button"
+                className="product-pagination__button product-pagination__button--primary"
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              >
+                <span>Siguiente</span>
+                <span aria-hidden="true">→</span>
               </button>
             </div>
           </div>

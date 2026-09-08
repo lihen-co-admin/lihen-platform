@@ -51,7 +51,12 @@ export function CategoriesPage() {
       {error ? <div className="error-state" role="alert">{error}</div> : null}
       {!loading && !error ? (
         <div className="table-card">
-          <div className="table-summary"><strong>{items.length} categorías</strong><span>Jerarquía canónica · RLS activo</span></div>
+          <div className="table-toolbar table-toolbar--unified">
+            <div className="table-summary-copy">
+              <strong>{items.length} categorías</strong>
+              <span>Jerarquía canónica · RLS activo</span>
+            </div>
+          </div>
           <div className="table-scroll"><table className="data-table"><thead><tr><th>Categoría</th><th>Línea</th><th>Parent ID</th><th>Estado</th></tr></thead><tbody>{items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td><span className="line-badge">{item.businessLine === 'BEAUTY_CARE' ? 'Beauty Care' : 'Style'}</span></td><td className="code-text">{item.parentId ?? 'Raíz'}</td><td><span className={`product-status product-status--${item.status === 'ACTIVE' ? 'active' : 'inactive'}`}>{item.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</span></td></tr>)}</tbody></table></div>
         </div>
       ) : null}

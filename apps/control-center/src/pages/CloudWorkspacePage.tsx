@@ -186,10 +186,9 @@ export function CloudWorkspacePage() {
 
       {!loading && !error ? (
         <div className="table-card">
-          <div className="table-summary">
-            <div>
+          <div className="table-toolbar table-toolbar--unified">
+            <div className="table-summary-copy">
               <strong>{filteredAssets.length} resultados</strong>
-              <br />
               <span>Fuente: {cloudWorkspaceComposition.source}</span>
             </div>
 

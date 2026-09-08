@@ -301,9 +301,9 @@ export function SalesPage() {
       <AdminPageHero
         eyebrow="COMERCIO"
         title="Ventas / POS"
-        description="Completa pedidos o registra ventas directas sin separar artificialmente inventario y finanzas: una venta válida conserva todo el rastro de dominio."
+        description="Completa pedidos o registra ventas directas sin separar artificialmente inventario y finanzas: una venta válida conserva todo el rastro de dominio. La UI no modifica saldos ni stock directamente."
         accent="pink"
-        status={<><strong>{salesComposition.canWrite ? 'Operación controlada disponible' : 'Escritura bloqueada'}</strong><p>La UI no modifica saldos ni stock directamente.</p></>}
+        status={salesComposition.canWrite ? 'Operación controlada disponible' : 'Escritura bloqueada'}
       />
 
       <SummaryStrip items={[

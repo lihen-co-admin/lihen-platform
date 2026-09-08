@@ -110,7 +110,7 @@ export function ChangeProductSalePricePage() {
   }
 
   return (
-    <section>
+    <section className="stack">
       <AdminPageHero
         eyebrow="PRODUCT PRICING"
         title="Cambiar precio"

@@ -172,8 +172,17 @@ export function InventoryPage() {
     {error ? <div className="error-state" role="alert">{error}</div> : null}
 
     <div className="table-card">
-      <div className="table-summary"><div><span className="card-label">Saldo derivado</span><h2>Existencias por producto</h2></div><span>Máximo 100 resultados por vista</span></div>
-      <div className="table-toolbar"><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar producto o SKU" /></div>
+      <div className="table-toolbar table-toolbar--unified">
+        <div className="table-summary-copy">
+          <strong>Existencias por producto</strong>
+          <span>Saldo derivado · máximo 100 resultados por vista</span>
+        </div>
+        <label className="table-search">
+          <span className="sr-only">Buscar inventario</span>
+          <span aria-hidden="true">⌕</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar producto o SKU" />
+        </label>
+      </div>
       {loading ? <div className="loading-card loading-card--embedded"><span className="loading-spinner" /><div><strong>Cargando inventario</strong><p>Calculando saldos desde el ledger…</p></div></div> : <div className="table-scroll"><table className="data-table"><thead><tr><th>Producto</th><th>ON_HAND</th><th>Reservado</th><th>Pendiente</th><th>Disponible</th><th></th></tr></thead><tbody>{rows.map((row) => <tr key={row.productId}><td><strong>{row.product?.name ?? row.productId}</strong><br /><small>{row.product?.sku ?? 'Sin SKU'}</small></td><td>{row.stockOnHand}</td><td>{row.stockReserved}</td><td>{row.stockPending}</td><td><strong>{row.stockAvailable}</strong></td><td className="align-right"><button type="button" className="table-action" onClick={() => setTraceProductId(row.productId)}>Ver movimientos</button></td></tr>)}</tbody></table></div>}
     </div>
 

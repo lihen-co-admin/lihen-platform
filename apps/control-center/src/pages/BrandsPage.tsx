@@ -52,9 +52,11 @@ export function BrandsPage() {
       {!loading && !error ? (
         <>
           <div className="table-card">
-            <div className="table-summary">
-              <strong>{workspace.total} marcas</strong>
-              <span>Brand Master · lectura canónica</span>
+            <div className="table-toolbar table-toolbar--unified">
+              <div className="table-summary-copy">
+                <strong>{workspace.total} marcas</strong>
+                <span>Brand Master · lectura canónica</span>
+              </div>
             </div>
             <div className="table-scroll">
               <table className="data-table">
@@ -83,9 +85,11 @@ export function BrandsPage() {
           </div>
 
           <div className="table-card">
-            <div className="table-summary">
-              <strong>Gobierno de identidad visual</strong>
-              <span>GAP-015 + GAP-016 + Unified Human Review Queue</span>
+            <div className="table-toolbar table-toolbar--unified">
+              <div className="table-summary-copy">
+                <strong>Gobierno de identidad visual</strong>
+                <span>GAP-015 + GAP-016 + Unified Human Review Queue</span>
+              </div>
             </div>
             <div className="table-scroll">
               <table className="data-table">

@@ -149,7 +149,7 @@ export function UpdateProductPage() {
   }
 
   return (
-    <section>
+    <section className="stack">
       <AdminPageHero
         eyebrow="PRODUCT MASTER"
         title="Editar producto"

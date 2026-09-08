@@ -272,12 +272,12 @@ export function PurchasesPage() {
       {error ? <div className="error-state">{error}</div> : null}
 
       <section className="table-card">
-        <div className="table-summary">
-          <div>
+        <div className="table-toolbar table-toolbar--unified">
+          <div className="table-summary-copy">
             <span className="card-label">Historial operativo</span>
             <h2>Compras registradas</h2>
+            <span>{rows.length} registro{rows.length === 1 ? '' : 's'}</span>
           </div>
-          <span>{rows.length} registro{rows.length === 1 ? '' : 's'}</span>
         </div>
         <div className="table-scroll">
           <table className="data-table">

@@ -195,7 +195,7 @@ export function ProductDetailPage() {
   }, [masterReadiness, priceHistory.length, product]);
 
   return (
-    <section>
+    <section className="stack">
       <AdminPageHero
         eyebrow="PRODUCT MASTER"
         title={product?.name ?? 'Detalle de producto'}
@@ -241,7 +241,14 @@ export function ProductDetailPage() {
 
           <IntelligencePanel insights={insights} description="Evalúa identidad canónica y lifecycle. No decide por sí sola la publicación en catálogo o storefront." />
 
-          <div className="detail-card">
+          <div className="detail-card detail-card--metadata">
+            <div className="detail-card__heading">
+              <div>
+                <span className="card-label">Información canónica</span>
+                <h2>Datos del producto</h2>
+              </div>
+              <span className="status-badge">{statusLabel(product.status)}</span>
+            </div>
             <dl className="detail-grid">
               <div><dt>Nombre</dt><dd>{product.name}</dd></div>
               <div><dt>SKU</dt><dd>{product.sku ?? '—'}</dd></div>

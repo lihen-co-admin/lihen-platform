@@ -139,7 +139,7 @@ export function CreateProductPage() {
   }
 
   return (
-    <section>
+    <section className="stack">
       <AdminPageHero
         eyebrow="PRODUCT MASTER"
         title="Nuevo producto"

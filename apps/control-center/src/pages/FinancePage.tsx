@@ -299,9 +299,9 @@ export function FinancePage() {
       <AdminPageHero
         eyebrow="FINANZAS"
         title="Caja y finanzas"
-        description="Administra cuentas, egresos, transferencias y cierres sin perder el origen de cada peso: los saldos se derivan del ledger, no se editan manualmente."
+        description="Administra cuentas, egresos, transferencias y cierres sin perder el origen de cada peso: los saldos se derivan del ledger, no se editan manualmente. Las reversiones se realizan mediante contramovimiento."
         accent="gold"
-        status={<><strong>{financeComposition.canWrite ? 'Operación controlada disponible' : 'Escritura bloqueada'}</strong><p>Reversiones mediante contramovimiento.</p></>}
+        status={financeComposition.canWrite ? 'Operación controlada disponible' : 'Escritura bloqueada'}
       />
 
       <SummaryStrip items={[
