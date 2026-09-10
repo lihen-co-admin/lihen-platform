@@ -174,6 +174,32 @@ export interface ImageGenerationPort {
   ): Promise<ProviderResult<readonly GeneratedImage[]>>;
 }
 
+export type ImageTransformationOperation =
+  | 'REMOVE_BACKGROUND';
+
+export interface ImageTransformationRequest extends IntelligenceToolContext {
+  readonly operation: ImageTransformationOperation;
+  readonly sourceAssetRef: string;
+  readonly intendedUse: string;
+  readonly constraints: readonly string[];
+}
+
+export interface TransformedImage {
+  readonly transformedRef: string;
+  readonly sourceAssetRef: string;
+  readonly mimeType: string;
+  readonly width?: number;
+  readonly height?: number;
+  readonly provenance: 'TRANSFORMED';
+}
+
+export interface ImageTransformationPort {
+  readonly descriptor: ToolDescriptor;
+  transform(
+    request: ImageTransformationRequest,
+  ): Promise<ProviderResult<readonly TransformedImage[]>>;
+}
+
 export interface ReportGenerationRequest extends IntelligenceToolContext {
   readonly reportId: string;
   readonly title: string;
@@ -226,6 +252,7 @@ export type IntelligenceProviderPort =
   | SearchPort
   | DocumentExtractionPort
   | ImageGenerationPort
+  | ImageTransformationPort
   | ReportGenerationPort
   | EmbeddingPort;
 
@@ -235,6 +262,7 @@ export interface IntelligenceToolRegistry {
   readonly search?: SearchPort;
   readonly document?: DocumentExtractionPort;
   readonly imageGeneration?: ImageGenerationPort;
+  readonly imageTransformation?: ImageTransformationPort;
   readonly reportGeneration?: ReportGenerationPort;
   readonly embeddings?: EmbeddingPort;
 }
@@ -258,4 +286,64 @@ export function validateToolDescriptor(
   if (descriptor.kind !== expectedKind) issues.push('TOOL_KIND_MISMATCH');
 
   return issues;
+}
+
+/**
+ * Governed outbound messaging boundary.
+ *
+ * This port does not authorize contact by itself.
+ * Application infrastructure may call sendApproved only after a separately
+ * governed approval/control-plane flow has produced an authorization reference.
+ */
+export interface ApprovedMessagingRequest extends IntelligenceToolContext {
+  readonly channel: string;
+  readonly recipientRef: string;
+  readonly messageBody: string;
+  readonly authorizationRef: string;
+  readonly approvedBy: string;
+}
+
+export interface MessagingDelivery {
+  readonly deliveryRef: string;
+  readonly channel: string;
+  readonly status: 'SENT' | 'ACCEPTED' | 'FAILED';
+  readonly sentAt?: string;
+}
+
+export interface MessagingPort {
+  readonly descriptor: ToolDescriptor;
+  sendApproved(
+    request: ApprovedMessagingRequest,
+  ): Promise<ProviderResult<MessagingDelivery>>;
+}
+
+/**
+ * Governed social-publication boundary.
+ *
+ * Publishing is allowed only for content already approved through LIHEN's
+ * governance/control-plane process. Intelligence itself must never call this
+ * as autonomous publication authority.
+ */
+export interface ApprovedSocialPublicationRequest
+  extends IntelligenceToolContext {
+  readonly channel: string;
+  readonly contentRef: string;
+  readonly caption: string;
+  readonly assetRefs: readonly string[];
+  readonly authorizationRef: string;
+  readonly approvedBy: string;
+}
+
+export interface SocialPublicationResult {
+  readonly publicationRef: string;
+  readonly channel: string;
+  readonly status: 'PUBLISHED' | 'ACCEPTED' | 'FAILED';
+  readonly publishedAt?: string;
+}
+
+export interface SocialPublishingPort {
+  readonly descriptor: ToolDescriptor;
+  publishApproved(
+    request: ApprovedSocialPublicationRequest,
+  ): Promise<ProviderResult<SocialPublicationResult>>;
 }

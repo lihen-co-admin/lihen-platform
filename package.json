@@ -30,11 +30,14 @@
     "prepare:storefront:release-candidate": "node tooling/prepare-storefront-release-candidate.mjs",
     "check:storefront:release-candidate": "node tooling/validate-storefront-release-candidate.mjs",
     "check:storefront:pre-rehearsal": "node tooling/validate-storefront-pre-rehearsal.mjs",
-    "check:production-readiness": "node tools/lihen-quality-gate.mjs --production-readiness"
+    "check:production-readiness": "node tools/lihen-quality-gate.mjs --production-readiness",
+    "intelligence:runtime:bundle:check": "node tooling/intelligence-runtime/build-core-bundle.mjs --check",
+    "intelligence:runtime:bundle:write": "node tooling/intelligence-runtime/build-core-bundle.mjs --write"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.50.0",
+    "esbuild": "0.28.2",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
     "typescript": "^6.0.0",

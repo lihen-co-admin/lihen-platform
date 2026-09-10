@@ -16,10 +16,17 @@ import {
   promoteApprovedCandidateToCatalogPdf,
 } from './promote-catalog-pdf-candidate.ts';
 import {
+  readAssistantProductContext,
+} from './assistant-product-context-reader.ts';
+import {
+  createGroqModelPort,
+} from './providers/groq-model.ts';
+import {
   INTELLIGENCE_PERMISSION,
   createCreativeIntelligenceHandler,
   createImageTransformationHandler,
   orchestrateIntelligenceRequest,
+  runLihenAssistantTurn,
 } from './intelligence-core-edge.mjs';
 
 const corsHeaders = {
@@ -148,6 +155,121 @@ Deno.serve(async (req: Request) => {
 
     const action =
       typeof body.action === 'string' ? body.action.trim() : '';
+
+    if (action === 'ASSISTANT') {
+      const productId =
+        typeof body.productId === 'string'
+        && body.productId.trim()
+          ? body.productId.trim()
+          : '';
+
+      const prompt =
+        typeof body.prompt === 'string'
+        && body.prompt.trim()
+          ? body.prompt.trim()
+          : '';
+
+      if (!productId) {
+        return json(
+          { error: 'LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED' },
+          400,
+        );
+      }
+
+      if (!prompt) {
+        return json(
+          { error: 'LIHEN_ASSISTANT_PROMPT_REQUIRED' },
+          400,
+        );
+      }
+
+      const requestId = crypto.randomUUID();
+      const correlationId = crypto.randomUUID();
+
+      const assistantPrincipal = {
+        actorId: 'lihen-assistant-intelligence',
+        actorType: 'INTELLIGENCE' as const,
+        grants: [
+          {
+            permission: INTELLIGENCE_PERMISSION.READ_CONTEXT,
+            effect: 'ALLOW' as const,
+            source: 'intelligence-runtime-assistant-policy',
+          },
+          {
+            permission: INTELLIGENCE_PERMISSION.ANALYZE,
+            effect: 'ALLOW' as const,
+            source: 'intelligence-runtime-assistant-policy',
+          },
+        ],
+      };
+
+      const assistant = await runLihenAssistantTurn(
+        {
+          context: {
+            sources: [
+              {
+                type: 'PRODUCT' as const,
+                async resolve({ query }) {
+                  const requestedProductId =
+                    query.entityId?.trim();
+
+                  if (!requestedProductId) {
+                    throw new Error(
+                      'LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED',
+                    );
+                  }
+
+                  const product =
+                    await readAssistantProductContext(
+                      supabase,
+                      requestedProductId,
+                    );
+
+                  if (!product) {
+                    throw new Error(
+                      'PRODUCT_NOT_FOUND',
+                    );
+                  }
+
+                  return {
+                    source: 'ProductMaster:GetProductById',
+                    attributes: {
+                      product,
+                    },
+                  };
+                },
+              },
+            ],
+          },
+          ...(Deno.env.get('GROQ_API_KEY')?.trim()
+            ? {
+                model: createGroqModelPort({
+                  apiKey: Deno.env.get('GROQ_API_KEY')!.trim(),
+                }),
+              }
+            : {}),
+        },
+        {
+          requestId,
+          correlationId,
+          requestedBy: user.id,
+          principal: assistantPrincipal,
+          prompt,
+          contextQuery: {
+            contextId: `assistant-product:${productId}`,
+            type: 'PRODUCT',
+            entityId: productId,
+          },
+        },
+      );
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        assistant,
+      });
+    }
 
     if (action === 'PROMOTE_CATALOG_PDF') {
       const candidateId =

@@ -59,6 +59,9 @@ describe('GAP-033 Assistant Context Resolver', () => {
       'SALE',
       'FINANCE',
       'AUDIT',
+      'CUSTOMER',
+      'MARKETING',
+      'CONVERSATION',
     ]);
     expect(ASSISTANT_CONTEXT_TYPES).not.toContain('GLOBAL');
     expect(ASSISTANT_CONTEXT_TYPES).not.toContain('DOCUMENT');

@@ -26,7 +26,10 @@ export type IntelligenceContextType =
   | 'FINANCE'
   | 'AUDIT'
   | 'DOCUMENT'
-  | 'ASSET';
+  | 'ASSET'
+  | 'CUSTOMER'
+  | 'MARKETING'
+  | 'CONVERSATION';
 
 export type BusinessLine = 'BEAUTY_CARE' | 'STYLE';
 
@@ -48,6 +51,10 @@ export type IntelligenceCapabilityName =
   | 'DOCUMENT_INTELLIGENCE'
   | 'REPORT_GENERATION'
   | 'CREATIVE_INTELLIGENCE'
+  | 'IMAGE_TRANSFORMATION'
+  | 'CUSTOMER_INTELLIGENCE'
+  | 'MARKETING_INTELLIGENCE'
+  | 'CONVERSATION_INTELLIGENCE'
   | 'ANALYTICS'
   | 'AUTOMATION'
   | 'AUDIT_INTELLIGENCE'
@@ -232,7 +239,9 @@ export type ToolKind =
   | 'GENERATION'
   | 'EMBEDDING'
   | 'DOMAIN_READ'
-  | 'AUDIT_READ';
+  | 'AUDIT_READ'
+  | 'MESSAGING'
+  | 'SOCIAL_PUBLISHING';
 
 export interface ToolDescriptor {
   readonly toolId: string;

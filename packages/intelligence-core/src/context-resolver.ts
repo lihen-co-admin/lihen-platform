@@ -39,6 +39,9 @@ export const ASSISTANT_CONTEXT_TYPES = [
   'SALE',
   'FINANCE',
   'AUDIT',
+  'CUSTOMER',
+  'MARKETING',
+  'CONVERSATION',
 ] as const satisfies readonly IntelligenceContextType[];
 
 export type AssistantContextType = (typeof ASSISTANT_CONTEXT_TYPES)[number];

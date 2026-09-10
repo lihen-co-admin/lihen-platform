@@ -85,14 +85,29 @@ function assistantIntent(prompt: string): IntelligenceIntent {
   };
 }
 
-function modelMessages(prompt: string): readonly ModelMessage[] {
+function modelMessages(
+  prompt: string,
+  context: IntelligenceCapabilityExecutionInput['context'],
+): readonly ModelMessage[] {
+  const governedContext = JSON.stringify(
+    context,
+    null,
+    2,
+  );
+
   return [
     {
       role: 'SYSTEM',
-      content:
-        'You are LIHEN Assistant. Use only the governed context supplied to you. '
-        + 'Do not claim authority to mutate master data, publish, post finance, '
-        + 'change inventory or execute controlled operations.',
+      content: [
+        'You are LIHEN Assistant.',
+        'Use only the governed context supplied below.',
+        'Do not invent missing business facts.',
+        'Do not claim authority to mutate master data, publish, post finance, '
+          + 'change inventory or execute controlled operations.',
+        '',
+        'GOVERNED_CONTEXT:',
+        governedContext,
+      ].join('\n'),
     },
     {
       role: 'USER',
@@ -191,7 +206,10 @@ export async function runLihenAssistantTurn(
         correlationId: input.correlationId,
         requestedBy: input.requestedBy,
         context: input.context,
-        messages: modelMessages(prompt),
+        messages: modelMessages(
+          prompt,
+          input.context,
+        ),
         responseFormat: 'TEXT',
         temperature: 0.2,
       });
@@ -212,7 +230,10 @@ export async function runLihenAssistantTurn(
         evidence: [],
         candidates: [],
         recommendations: [],
-        messages: result.messages,
+        messages: [
+          ...result.messages,
+          'Assistant answer generated from governed context.',
+        ],
       };
     },
   };
