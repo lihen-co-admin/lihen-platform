@@ -19,6 +19,8 @@ export type StyleCatalogCategoryPage = {
   type: 'style-category';
   label: string;
   coverKey: import('./catalog-style-category-covers').StyleCategoryCoverKey;
+  heroImageUrl: string;
+  heroImageAlt: string;
 };
 
 export type StyleCatalogBodyPage = StyleCatalogProductPage | StyleCatalogCategoryPage;
@@ -50,6 +52,8 @@ export function buildStyleBodyPages(
         type: 'style-category',
         label: group,
         coverKey: resolveStyleCategoryCoverKey(styleCategorySource(entry)),
+        heroImageUrl: entry.selectedPdfAsset.publicUrl,
+        heroImageAlt: entry.selectedPdfAsset.altText ?? entry.productName,
       });
       previousGroup = group;
     }

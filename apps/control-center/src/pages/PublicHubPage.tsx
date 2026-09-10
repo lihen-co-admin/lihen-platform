@@ -244,13 +244,6 @@ export function PublicHubPage() {
       <OperationalNotice title="Publicación controlada" tone="info">Los productos del Hub se resuelven desde Product Master. Archivar u ocultar contenido no debe borrar su historia administrativa.</OperationalNotice>
       <IntelligencePanel insights={hubInsights} description="Resume readiness editorial, programación y lifecycle sin publicar ni modificar bloques automáticamente." />
 
-      <div className="hub-admin-toolbar" aria-label="Resumen del Hub público">
-        <div><strong>{counts.active}</strong><span>Activos</span></div>
-        <div><strong>{counts.published}</strong><span>Publicados ahora</span></div>
-        <div><strong>{counts.scheduled}</strong><span>Programados</span></div>
-        <div><strong>{counts.archived}</strong><span>Archivados</span></div>
-        <a className="hub-preview-link" href="/#descubre" target="_blank" rel="noreferrer">Abrir Hub público ↗</a>
-      </div>
 
       {error ? <div className="error-state" role="alert">{error}</div> : null}
       {notice ? <div className="success-state" role="status">{notice}</div> : null}

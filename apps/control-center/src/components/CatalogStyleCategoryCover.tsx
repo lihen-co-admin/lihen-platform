@@ -1,3 +1,4 @@
+import lihenLogoOfficial from '../assets/brand/lihen-logo-official.png';
 import enterizosCover from '../assets/catalog/style/category-covers/style-enterizos-cover.png';
 import faldaTopCover from '../assets/catalog/style/category-covers/style-falda-top-cover.png';
 import shortsCover from '../assets/catalog/style/category-covers/style-shorts-cover.png';
@@ -14,11 +15,15 @@ const COVER_ART: Partial<Record<StyleCategoryCoverKey, string>> = {
 export function CatalogStyleCategoryCover({
   coverKey,
   label,
+  heroImageUrl,
+  heroImageAlt,
   pageNumber,
   totalPages,
 }: {
   coverKey: StyleCategoryCoverKey;
   label: string;
+  heroImageUrl: string;
+  heroImageAlt: string;
   pageNumber: number;
   totalPages: number;
 }) {
@@ -45,15 +50,38 @@ export function CatalogStyleCategoryCover({
   }
 
   return (
-    <section className="catalog-sheet catalog-style-category catalog-style-editorial">
-      <div className="catalog-style-category__index">LIHEN.CO STYLE</div>
-      <div className="catalog-style-category__rule" />
-      <h2>{label}</h2>
-      <p>Una pausa editorial para descubrir la siguiente selección.</p>
-      <footer className="catalog-style-footer">
-        <span>LIHEN.CO · STYLE</span>
-        <span>PÁGINA {pageNumber} DE {totalPages}</span>
-      </footer>
+    <section
+      className="catalog-sheet catalog-style-category-cover catalog-style-category-cover--dynamic"
+      data-style-category-cover="GENERIC"
+      aria-label={`Introducción de categoría ${label}`}
+    >
+      <header className="catalog-style-category-cover__masthead">
+        <div className="catalog-style-category-cover__collection">
+          <span>COLECCIÓN</span>
+          <strong>2026</strong>
+        </div>
+        <img
+          className="catalog-style-category-cover__logo"
+          src={lihenLogoOfficial}
+          alt="Logo oficial LIHEN"
+        />
+        <div className="catalog-style-category-cover__line-label">LIHEN STYLE</div>
+      </header>
+
+      <div className="catalog-style-category-cover__hero">
+        <img src={heroImageUrl} alt={heroImageAlt} loading="eager" />
+      </div>
+
+      <div className="catalog-style-category-cover__veil" aria-hidden="true" />
+
+      <div className="catalog-style-category-cover__title-block">
+        <h2>{label}</h2>
+        <div className="catalog-style-category-cover__title-rule" />
+      </div>
+
+      <span className="catalog-style-category-cover__page-marker" aria-hidden="true">
+        {pageNumber}/{totalPages}
+      </span>
     </section>
   );
 }

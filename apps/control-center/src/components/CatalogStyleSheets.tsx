@@ -35,11 +35,15 @@ function formatPrice(value: number): string {
 export function StyleCategorySheet({
   label,
   coverKey,
+  heroImageUrl,
+  heroImageAlt,
   pageNumber,
   totalPages,
 }: {
   label: string;
   coverKey: StyleCategoryCoverKey;
+  heroImageUrl: string;
+  heroImageAlt: string;
   pageNumber: number;
   totalPages: number;
 }) {
@@ -47,6 +51,8 @@ export function StyleCategorySheet({
     <CatalogStyleCategoryCover
       coverKey={coverKey}
       label={label}
+      heroImageUrl={heroImageUrl}
+      heroImageAlt={heroImageAlt}
       pageNumber={pageNumber}
       totalPages={totalPages}
     />

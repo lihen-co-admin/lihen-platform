@@ -17,6 +17,7 @@ import '../styles/catalog-pdf-print.css';
 import { STYLE_VISUAL_FOUNDATION } from '../composition/catalog-style-visual';
 import { buildStyleBodyPages } from '../composition/catalog-style-templates';
 import { StyleCategorySheet, StyleProductSheet } from '../components/CatalogStyleSheets';
+import { CatalogBeautyBrandLogo } from '../components/CatalogBeautyBrandLogo';
 import '../styles/catalog-style-foundation.css';
 import { buildStyleCommercialBodyPreview } from '../composition/catalog-style-commercial-preview';
 import { evaluateCatalogRenderIntegrity } from '../read-models/catalog-render-integrity';
@@ -527,6 +528,8 @@ export function CatalogPdfRenderPage() {
               key={`style-category-${styleIndex}-${page.label}`}
               label={page.label}
               coverKey={page.coverKey}
+              heroImageUrl={page.heroImageUrl}
+              heroImageAlt={page.heroImageAlt}
               pageNumber={pageNumber}
               totalPages={totalPages}
             />
@@ -552,7 +555,13 @@ export function CatalogPdfRenderPage() {
           return (
             <section className="catalog-sheet catalog-brand-page catalog-pastel-page" key={`brand-${bodyIndex}-${page.brand}`}>
               <div className="catalog-brand-heading">MARCA DESTACADA</div>
-              <div className="catalog-brand-logo-card"><span>{page.brand}</span></div>
+              <div className="catalog-brand-logo-card">
+                  {pdfLine === 'BEAUTY_CARE' ? (
+                    <CatalogBeautyBrandLogo brand={page.brand} />
+                  ) : (
+                    <span>{page.brand}</span>
+                  )}
+                </div>
               <div className="catalog-brand-tagline">{pdfLine === 'ALL' ? (institutional?.footerLabel || pdfLineLabel) : pdfLineLabel}</div>
               <div className="catalog-simple-footer"><span>LIHEN.CO</span><span>PÁGINA {pageNumber} DE {totalPages}</span></div>
             </section>
