@@ -1,6 +1,6 @@
 import { getStorefrontRuntimeConfig } from './storefront-runtime-config';
 
-export const publicHubBlockTypes = ['LINK', 'SOCIAL', 'PRODUCT', 'PRODUCT_COLLECTION', 'BANNER', 'TEXT', 'HEADING', 'CTA'] as const;
+export const publicHubBlockTypes = ['LINK', 'SOCIAL','PRODUCT', 'PRODUCT_COLLECTION', 'BANNER', 'TEXT', 'HEADING', 'CTA'] as const;
 export type PublicHubBlockType = (typeof publicHubBlockTypes)[number];
 
 export type PublicHubBlock = {
@@ -22,6 +22,17 @@ export type PublicHubBlock = {
   collection_key: string | null;
 };
 
+export type PublicHubResources = {
+  storefrontUrl: string | null;
+  whatsappUrl: string | null;
+  instagramUrl: string | null;
+  tiktokUrl: string | null;
+  facebookUrl: string | null;
+  whatsappCommunityUrl: string | null;
+  beautyCarePdfUrl: string | null;
+  stylePdfUrl: string | null;
+};
+
 function nullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
@@ -32,6 +43,10 @@ function isSafeTargetUrl(value: string | null): boolean {
 
 function isSafeImageUrl(value: string | null): boolean {
   return value === null || /^https?:\/\//i.test(value);
+}
+
+function isSafePublicResourceUrl(value: unknown): value is string | null {
+  return value === null || (typeof value === 'string' && /^https:\/\//i.test(value));
 }
 
 function isMoneyValue(value: unknown): value is number | string | null {
@@ -68,12 +83,47 @@ function isPublicHubBlock(value: unknown): value is PublicHubBlock {
 
 export function parsePublicHubPayload(payload: unknown): PublicHubBlock[] {
   if (!Array.isArray(payload)) return [];
-  return payload.filter(isPublicHubBlock).sort((left, right) => left.sort_order - right.sort_order || left.block_id.localeCompare(right.block_id));
+  return payload
+    .filter(isPublicHubBlock)
+    .sort((left, right) => left.sort_order - right.sort_order || left.block_id.localeCompare(right.block_id));
 }
 
-export async function getPublicHub(): Promise<PublicHubBlock[]> {
+export function parsePublicHubResources(payload: unknown): PublicHubResources | null {
+  if (!Array.isArray(payload) || payload.length === 0) return null;
+
+  const row = payload[0];
+  if (!row || typeof row !== 'object') return null;
+
+  const value = row as Record<string, unknown>;
+
+  const fields = [
+    value.storefront_url,
+    value.whatsapp_url,
+    value.instagram_url,
+    value.tiktok_url,
+    value.facebook_url,
+    value.whatsapp_community_url,
+    value.beauty_care_pdf_url,
+    value.style_pdf_url,
+  ];
+
+  if (!fields.every(isSafePublicResourceUrl)) return null;
+
+  return {
+    storefrontUrl: value.storefront_url as string | null,
+    whatsappUrl: value.whatsapp_url as string | null,
+    instagramUrl: value.instagram_url as string | null,
+    tiktokUrl: value.tiktok_url as string | null,
+    facebookUrl: value.facebook_url as string | null,
+    whatsappCommunityUrl: value.whatsapp_community_url as string | null,
+    beautyCarePdfUrl: value.beauty_care_pdf_url as string | null,
+    stylePdfUrl: value.style_pdf_url as string | null,
+  };
+}
+
+async function callPublicRpc(name: string): Promise<unknown> {
   const config = getStorefrontRuntimeConfig();
-  const response = await fetch(`${config.url}/rest/v1/rpc/get_public_hub_controlled`, {
+  const response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
       apikey: config.publishableKey,
@@ -82,6 +132,20 @@ export async function getPublicHub(): Promise<PublicHubBlock[]> {
     },
     body: '{}',
   });
-  if (!response.ok) throw new Error(`No fue posible cargar el Hub (${response.status}).`);
-  return parsePublicHubPayload(await response.json());
+
+  if (!response.ok) {
+    throw new Error(`No fue posible consultar ${name} (${response.status}).`);
+  }
+
+  return response.json();
+}
+
+export async function getPublicHub(): Promise<PublicHubBlock[]> {
+  return parsePublicHubPayload(await callPublicRpc('get_public_hub_controlled'));
+}
+
+export async function getPublicHubResources(): Promise<PublicHubResources | null> {
+  return parsePublicHubResources(
+    await callPublicRpc('get_public_hub_resources_controlled'),
+  );
 }

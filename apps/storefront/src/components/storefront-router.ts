@@ -56,6 +56,7 @@ export async function renderCurrentRoute(root: HTMLElement, force = false): Prom
   const main = root.querySelector<HTMLElement>('#contenido');
   if (!main) return;
   const route = routeFromHash();
+  document.body.classList.toggle('public-hub-route', route.kind === 'hub');
   const key = routeKey(route);
   if (!force && activeRouteKey === key) return;
   activeRouteKey = key;
