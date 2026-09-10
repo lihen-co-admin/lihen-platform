@@ -11,3 +11,6 @@ export * from './application/commands/confirm-order.command';
 export * from './application/commands/confirm-order.handler';
 export * from './application/commands/cancel-order.command';
 export * from './application/commands/cancel-order.handler';
+
+export * from './application/commands/assign-order-customer.command';
+export * from './application/commands/assign-order-customer.handler';

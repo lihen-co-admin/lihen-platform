@@ -4,7 +4,7 @@ export const orderChannels = ['WHATSAPP','INSTAGRAM','FACEBOOK','TIKTOK','WEB','
 export type OrderChannel = (typeof orderChannels)[number];
 export interface Order {
   readonly id:string; readonly orderNumber:string; readonly status:OrderStatus; readonly channel:OrderChannel;
-  readonly customerName:string|null; readonly customerPhone:string|null; readonly notes:string|null;
+  readonly customerId:string|null; readonly customerName:string|null; readonly customerPhone:string|null; readonly notes:string|null;
   readonly requestedAt:Date|null; readonly createdAt:Date; readonly updatedAt:Date;
 }
 export interface OrderItem {readonly id:string;readonly orderId:string;readonly productId:string;readonly quantity:number;readonly unitPrice:number;readonly notes:string|null;}
