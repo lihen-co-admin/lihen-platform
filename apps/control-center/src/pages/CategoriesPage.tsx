@@ -21,7 +21,7 @@ export function CategoriesPage() {
 
   const metrics = useMemo(() => {
     const active = items.filter((item) => item.status === 'ACTIVE').length;
-    const roots = items.filter((item) => item.parentId === null).length;
+    const roots = items.filter((item) => item.parentId == null).length;
     const beauty = items.filter((item) => item.businessLine === 'BEAUTY_CARE').length;
     const style = items.filter((item) => item.businessLine === 'STYLE').length;
     return { active, roots, beauty, style };
