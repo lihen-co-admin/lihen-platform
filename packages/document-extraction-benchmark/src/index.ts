@@ -6,3 +6,5 @@ export * from './scorer';
 export * from './multipart';
 export * from './benchmark-runner';
 export * from './report';
+
+export * from './visible-evidence';
