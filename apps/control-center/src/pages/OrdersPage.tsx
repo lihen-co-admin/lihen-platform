@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import type { Customer } from '@lihen/customer';
 import { isOrderEligibleForSale, orderChannels, type Order, type OrderChannel } from '@lihen/orders';
 import { AdminPageHero } from '../components/AdminPageHero';
 import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
+import { customersComposition } from '../composition/customers';
 import { ordersComposition } from '../composition/orders';
 import { productsComposition } from '../composition/products';
 
@@ -44,9 +46,11 @@ const orderChannelLabel: Record<OrderChannel, string> = {
 
 export function OrdersPage() {
   const [rows, setRows] = useState<readonly Order[]>([]);
+  const [customers, setCustomers] = useState<readonly Customer[]>([]);
   const [products, setProducts] = useState<readonly { id: string; name: string; sku: string | null; salePrice: number }[]>([]);
   const [number, setNumber] = useState('');
   const [channel, setChannel] = useState<OrderChannel>('WHATSAPP');
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -55,12 +59,14 @@ export function OrdersPage() {
   const [error, setError] = useState('');
 
   async function refresh() {
-    const [orders, productRows] = await Promise.all([
+    const [orders, customerRows, productRows] = await Promise.all([
       ordersComposition.getOrders.execute(),
+      customersComposition.getCustomers.execute(),
       productsComposition.repository.findAll(),
     ]);
 
     setRows(orders);
+    setCustomers(customerRows);
     setProducts(productRows.map((product) => ({
       id: product.id,
       name: product.name,
@@ -153,6 +159,33 @@ export function OrdersPage() {
     return insights;
   }, [rows]);
 
+  function chooseCustomer(customerId: string) {
+    setSelectedCustomerId(customerId);
+
+    if (!customerId) {
+      setCustomerName('');
+      setCustomerPhone('');
+      return;
+    }
+
+    const customer = customers.find(
+      (candidate) => candidate.id === customerId,
+    );
+
+    if (!customer) {
+      setCustomerName('');
+      setCustomerPhone('');
+      return;
+    }
+
+    setCustomerName(customer.fullName);
+    setCustomerPhone(
+      customer.whatsappPhone ??
+      customer.phoneNormalized ??
+      customer.phone,
+    );
+  }
+
   function updateLine(key: string, patch: Partial<DraftLine>) {
     setLines((current) => current.map((line) => (line.key === key ? { ...line, ...patch } : line)));
   }
@@ -205,10 +238,13 @@ export function OrdersPage() {
     event.preventDefault();
     setError('');
     setMessage('');
+
     try {
+      const orderId = ordersComposition.ids.generate();
+
       await ordersComposition.createDraft.execute({
         operationKey: `order-draft:${crypto.randomUUID()}`,
-        orderId: ordersComposition.ids.generate(),
+        orderId,
         orderNumber: number,
         channel,
         customerName: customerName.trim() || null,
@@ -224,15 +260,33 @@ export function OrdersPage() {
         })),
       });
 
+      if (selectedCustomerId) {
+        await ordersComposition.assignCustomer.execute({
+          operationKey:
+            `order-assign-customer:${crypto.randomUUID()}`,
+          orderId,
+          customerId: selectedCustomerId,
+        });
+      }
+
       setNumber('');
+      setSelectedCustomerId('');
       setCustomerName('');
       setCustomerPhone('');
       setNotes('');
       setLines([createDraftLine()]);
-      setMessage('Pedido guardado como borrador. Todavía no reserva inventario ni mueve caja.');
+      setMessage(
+        selectedCustomerId
+          ? 'Pedido guardado como borrador y vinculado al Customer Master. Todavía no reserva inventario ni mueve caja.'
+          : 'Pedido guardado como borrador. Todavía no reserva inventario ni mueve caja.',
+      );
       await refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No fue posible crear el pedido.');
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible crear el pedido.',
+      );
     }
   }
 
@@ -284,13 +338,59 @@ export function OrdersPage() {
                 {orderChannels.map((candidate) => <option key={candidate} value={candidate}>{orderChannelLabel[candidate]}</option>)}
               </select>
             </label>
-            <label>
-              <span>Cliente</span>
-              <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} />
+            <label className="form-field--wide">
+              <span>Cliente registrado</span>
+              <select
+                value={selectedCustomerId}
+                onChange={(event) =>
+                  chooseCustomer(event.target.value)
+                }
+              >
+                <option value="">
+                  Sin cliente registrado · ingreso manual
+                </option>
+                {customers.map((customer) => (
+                  <option
+                    key={customer.id}
+                    value={customer.id}
+                  >
+                    {customer.customerCode}
+                    {' · '}
+                    {customer.fullName}
+                    {' · '}
+                    {customer.whatsappPhone ??
+                      customer.phoneNormalized ??
+                      customer.phone}
+                  </option>
+                ))}
+              </select>
+              <small>
+                Selecciona un cliente registrado para vincular
+                el pedido al Customer Master. Si no está
+                registrado, usa el ingreso manual.
+              </small>
             </label>
+
             <label>
-              <span>Teléfono</span>
-              <input value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} />
+              <span>Cliente / snapshot</span>
+              <input
+                value={customerName}
+                readOnly={Boolean(selectedCustomerId)}
+                onChange={(event) =>
+                  setCustomerName(event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              <span>Teléfono / snapshot</span>
+              <input
+                value={customerPhone}
+                readOnly={Boolean(selectedCustomerId)}
+                onChange={(event) =>
+                  setCustomerPhone(event.target.value)
+                }
+              />
             </label>
             <label className="form-field--wide">
               <span>Notas</span>

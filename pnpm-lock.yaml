@@ -41,6 +41,9 @@ importers:
       '@lihen/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@lihen/customer':
+        specifier: workspace:*
+        version: link:../../packages/customer
       '@lihen/database':
         specifier: workspace:*
         version: link:../../packages/database
