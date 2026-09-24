@@ -101,5 +101,9 @@ export function createDefaultAssistantRuntimeInvoker(
   );
 }
 
-export const assistantRuntimeInvoker =
-  createDefaultAssistantRuntimeInvoker();
+export const assistantRuntimeInvoker: AssistantRuntimeInvoker = {
+  invokeProductTurn(request) {
+    return createDefaultAssistantRuntimeInvoker()
+      .invokeProductTurn(request);
+  },
+};

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@Supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CreateCustomerCommand } from '../application/commands/create-customer.command';
 import type { Customer } from '../domain/customer';
 import type { CustomerRepository } from '../ports/customer-repository';
