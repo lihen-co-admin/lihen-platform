@@ -15,3 +15,18 @@ export class MarketingSocialPersistenceUnavailableError extends Error {
     this.name = 'MarketingSocialPersistenceUnavailableError';
   }
 }
+
+
+export class MarketingSocialOperationKeyRequiredError extends Error {
+  public constructor() {
+    super('Marketing social controlled writes require a non-blank operation key.');
+    this.name = 'MarketingSocialOperationKeyRequiredError';
+  }
+}
+
+export class MarketingSocialWriteOperationConflictError extends Error {
+  public constructor() {
+    super('Marketing social operation key conflicts with an existing write.');
+    this.name = 'MarketingSocialWriteOperationConflictError';
+  }
+}
