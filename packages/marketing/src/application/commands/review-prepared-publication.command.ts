@@ -10,4 +10,5 @@ export type PreparedPublicationReviewDecision =
 export interface ReviewPreparedPublicationCommand {
   readonly preparedPublicationId: string;
   readonly decision: PreparedPublicationReviewDecision;
+  readonly operationKey: string;
 }

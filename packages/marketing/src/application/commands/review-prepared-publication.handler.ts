@@ -61,9 +61,12 @@ export class ReviewPreparedPublicationHandler {
       );
     }
 
-    return this.repository.savePreparedPublication({
-      ...publication,
-      status: nextStatus,
-    });
+    return this.repository.savePreparedPublication(
+      {
+        ...publication,
+        status: nextStatus,
+      },
+      { operationKey: command.operationKey },
+    );
   }
 }

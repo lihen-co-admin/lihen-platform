@@ -10,4 +10,5 @@ export type ContentScheduleReviewDecision =
 export interface ReviewContentScheduleCommand {
   readonly scheduleId: string;
   readonly decision: ContentScheduleReviewDecision;
+  readonly operationKey: string;
 }

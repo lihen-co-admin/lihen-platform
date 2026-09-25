@@ -41,13 +41,14 @@ const makePublication = (
 describe('Marketing social human review governance', () => {
   it('moves a content schedule through human review to approval', async () => {
     const repository = new InMemoryMarketingSocialRepository();
-    await repository.saveContentSchedule(makeSchedule());
+    await repository.saveContentSchedule(makeSchedule(), { operationKey: 'fixture-schedule' });
 
     const handler = new ReviewContentScheduleHandler(repository);
 
     const review = await handler.execute({
       scheduleId: 'schedule-1',
       decision: 'SUBMIT_FOR_REVIEW',
+        operationKey: 'review-operation',
     });
 
     expect(review.status).toBe('READY_FOR_REVIEW');
@@ -55,6 +56,7 @@ describe('Marketing social human review governance', () => {
     const approved = await handler.execute({
       scheduleId: 'schedule-1',
       decision: 'APPROVE',
+        operationKey: 'review-operation',
     });
 
     expect(approved.status).toBe('APPROVED');
@@ -64,6 +66,7 @@ describe('Marketing social human review governance', () => {
     const repository = new InMemoryMarketingSocialRepository();
     await repository.saveContentSchedule(
       makeSchedule('READY_FOR_REVIEW'),
+      { operationKey: 'fixture-schedule' },
     );
 
     const result = await new ReviewContentScheduleHandler(
@@ -71,6 +74,7 @@ describe('Marketing social human review governance', () => {
     ).execute({
       scheduleId: 'schedule-1',
       decision: 'CANCEL',
+      operationKey: 'review-operation',
     });
 
     expect(result.status).toBe('CANCELLED');
@@ -78,25 +82,27 @@ describe('Marketing social human review governance', () => {
 
   it('rejects an invalid content schedule transition', async () => {
     const repository = new InMemoryMarketingSocialRepository();
-    await repository.saveContentSchedule(makeSchedule());
+    await repository.saveContentSchedule(makeSchedule(), { operationKey: 'fixture-schedule' });
 
     await expect(
       new ReviewContentScheduleHandler(repository).execute({
         scheduleId: 'schedule-1',
         decision: 'APPROVE',
+        operationKey: 'review-operation',
       }),
     ).rejects.toBeInstanceOf(MarketingSocialInvalidTransitionError);
   });
 
   it('moves a prepared publication through human review to approval', async () => {
     const repository = new InMemoryMarketingSocialRepository();
-    await repository.savePreparedPublication(makePublication());
+    await repository.savePreparedPublication(makePublication(), { operationKey: 'fixture-publication' });
 
     const handler = new ReviewPreparedPublicationHandler(repository);
 
     const review = await handler.execute({
       preparedPublicationId: 'publication-1',
       decision: 'SUBMIT_FOR_REVIEW',
+        operationKey: 'review-operation',
     });
 
     expect(review.status).toBe('IN_REVIEW');
@@ -104,6 +110,7 @@ describe('Marketing social human review governance', () => {
     const approved = await handler.execute({
       preparedPublicationId: 'publication-1',
       decision: 'APPROVE',
+        operationKey: 'review-operation',
     });
 
     expect(approved.status).toBe('APPROVED');
@@ -113,6 +120,7 @@ describe('Marketing social human review governance', () => {
     const repository = new InMemoryMarketingSocialRepository();
     await repository.savePreparedPublication(
       makePublication('IN_REVIEW'),
+      { operationKey: 'fixture-publication' },
     );
 
     const result = await new ReviewPreparedPublicationHandler(
@@ -120,6 +128,7 @@ describe('Marketing social human review governance', () => {
     ).execute({
       preparedPublicationId: 'publication-1',
       decision: 'CANCEL',
+      operationKey: 'review-operation',
     });
 
     expect(result.status).toBe('CANCELLED');
@@ -127,12 +136,13 @@ describe('Marketing social human review governance', () => {
 
   it('rejects an invalid prepared publication transition', async () => {
     const repository = new InMemoryMarketingSocialRepository();
-    await repository.savePreparedPublication(makePublication());
+    await repository.savePreparedPublication(makePublication(), { operationKey: 'fixture-publication' });
 
     await expect(
       new ReviewPreparedPublicationHandler(repository).execute({
         preparedPublicationId: 'publication-1',
         decision: 'APPROVE',
+        operationKey: 'review-operation',
       }),
     ).rejects.toBeInstanceOf(MarketingSocialInvalidTransitionError);
   });
@@ -144,6 +154,7 @@ describe('Marketing social human review governance', () => {
       new ReviewContentScheduleHandler(repository).execute({
         scheduleId: 'missing',
         decision: 'SUBMIT_FOR_REVIEW',
+        operationKey: 'review-operation',
       }),
     ).rejects.toBeInstanceOf(MarketingSocialEntityNotFoundError);
 
@@ -151,6 +162,7 @@ describe('Marketing social human review governance', () => {
       new ReviewPreparedPublicationHandler(repository).execute({
         preparedPublicationId: 'missing',
         decision: 'SUBMIT_FOR_REVIEW',
+        operationKey: 'review-operation',
       }),
     ).rejects.toBeInstanceOf(MarketingSocialEntityNotFoundError);
   });
@@ -159,11 +171,13 @@ describe('Marketing social human review governance', () => {
     const repository = new InMemoryMarketingSocialRepository();
     await repository.savePreparedPublication(
       makePublication('IN_REVIEW'),
+      { operationKey: 'fixture-publication' },
     );
 
     await new ReviewPreparedPublicationHandler(repository).execute({
       preparedPublicationId: 'publication-1',
       decision: 'APPROVE',
+        operationKey: 'review-operation',
     });
 
     expect(
