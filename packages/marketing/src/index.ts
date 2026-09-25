@@ -6,3 +6,5 @@ export * from './domain/prepared-publication';
 export * from './domain/publication-attempt';
 export * from './ports/marketing-social-repository';
 export * from './infrastructure/in-memory-marketing-social-repository';
+export * from './domain/errors/marketing-social-errors';
+export * from './infrastructure/supabase-marketing-social-repository';

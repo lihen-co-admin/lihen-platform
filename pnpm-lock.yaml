@@ -220,6 +220,10 @@ importers:
         version: 6.0.3
 
   packages/marketing:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.0.0
+        version: 2.112.3
     devDependencies:
       typescript:
         specifier: ^6.0.0
