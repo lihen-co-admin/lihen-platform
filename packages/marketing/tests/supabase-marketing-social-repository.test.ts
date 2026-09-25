@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  MarketingSocialOperationKeyRequiredError,
   MarketingSocialWriteBlockedError,
+  MarketingSocialWriteOperationConflictError,
   SupabaseMarketingSocialRepository,
 } from '../src';
 import type {
@@ -285,4 +287,196 @@ describe('SupabaseMarketingSocialRepository safety boundary', () => {
 
     expect(rpc).not.toHaveBeenCalled();
   });
+});
+
+
+describe('SupabaseMarketingSocialRepository controlled review writes', () => {
+  it('keeps controlled writes disabled by default', async () => {
+    const rpc = vi.fn();
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+    );
+
+    await expect(
+      repository.saveContentSchedule(
+        {
+          id: '10000000-0000-0000-0000-000000000001',
+          channelVariantId: '20000000-0000-0000-0000-000000000001',
+          scheduledFor: new Date('2026-09-25T15:00:00.000Z'),
+          timezone: 'America/Bogota',
+          status: 'APPROVED',
+          createdAt: new Date('2026-09-25T14:00:00.000Z'),
+          updatedAt: new Date('2026-09-25T14:30:00.000Z'),
+        },
+        { operationKey: 'social-08-schedule' },
+      ),
+    ).rejects.toBeInstanceOf(MarketingSocialWriteBlockedError);
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('uses the controlled schedule RPC when explicitly enabled', async () => {
+    const row = {
+      id: '10000000-0000-0000-0000-000000000001',
+      channel_variant_id: '20000000-0000-0000-0000-000000000001',
+      scheduled_for: '2026-09-25T15:00:00.000Z',
+      timezone: 'America/Bogota',
+      status: 'APPROVED',
+      created_at: '2026-09-25T14:00:00.000Z',
+      updated_at: '2026-09-25T14:30:00.000Z',
+    };
+    const rpc = vi.fn().mockResolvedValue({ data: [row], error: null });
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+      true,
+    );
+
+    const result = await repository.saveContentSchedule(
+      {
+        id: row.id,
+        channelVariantId: row.channel_variant_id,
+        scheduledFor: new Date(row.scheduled_for),
+        timezone: row.timezone,
+        status: 'APPROVED',
+        createdAt: new Date(row.created_at),
+        updatedAt: new Date(row.updated_at),
+      },
+      { operationKey: ' social-08-schedule ' },
+    );
+
+    expect(rpc).toHaveBeenCalledWith(
+      'save_marketing_content_schedule_controlled',
+      expect.objectContaining({
+        p_operation_key: 'social-08-schedule',
+        p_id: row.id,
+      }),
+    );
+    expect(result.id).toBe(row.id);
+  });
+
+  it('uses the controlled prepared-publication RPC when explicitly enabled', async () => {
+    const row = {
+      id: '30000000-0000-0000-0000-000000000001',
+      campaign_id: '40000000-0000-0000-0000-000000000001',
+      campaign_content_id: '50000000-0000-0000-0000-000000000001',
+      channel_variant_id: '60000000-0000-0000-0000-000000000001',
+      schedule_id: null,
+      channel: 'INSTAGRAM_FEED',
+      copy: 'Prepared copy',
+      cta: null,
+      hashtags: ['lihen'],
+      creative_asset_ids: [],
+      status: 'APPROVED',
+      prepared_at: '2026-09-25T14:30:00.000Z',
+    };
+    const rpc = vi.fn().mockResolvedValue({ data: [row], error: null });
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+      true,
+    );
+
+    const result = await repository.savePreparedPublication(
+      {
+        id: row.id,
+        campaignId: row.campaign_id,
+        campaignContentId: row.campaign_content_id,
+        channelVariantId: row.channel_variant_id,
+        scheduleId: null,
+        channel: 'INSTAGRAM_FEED',
+        copy: row.copy,
+        callToAction: '',
+        hashtags: row.hashtags,
+        creativeAssetIds: [],
+        status: 'APPROVED',
+        preparedAt: new Date(row.prepared_at),
+      },
+      { operationKey: 'social-08-publication' },
+    );
+
+    expect(rpc).toHaveBeenCalledWith(
+      'save_marketing_prepared_publication_controlled',
+      expect.objectContaining({
+        p_operation_key: 'social-08-publication',
+        p_id: row.id,
+      }),
+    );
+    expect(result.id).toBe(row.id);
+  });
+
+  it('rejects a blank operation key before calling the controlled RPC', async () => {
+    const rpc = vi.fn();
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+      true,
+    );
+
+    await expect(
+      repository.saveContentSchedule(
+        {
+          id: '10000000-0000-0000-0000-000000000001',
+          channelVariantId: '20000000-0000-0000-0000-000000000001',
+          scheduledFor: new Date('2026-09-25T15:00:00.000Z'),
+          timezone: 'America/Bogota',
+          status: 'APPROVED',
+          createdAt: new Date('2026-09-25T14:00:00.000Z'),
+          updatedAt: new Date('2026-09-25T14:30:00.000Z'),
+        },
+        { operationKey: '   ' },
+      ),
+    ).rejects.toBeInstanceOf(MarketingSocialOperationKeyRequiredError);
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('maps a controlled-write operation conflict to the social domain error', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        message: 'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+      },
+    });
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+      true,
+    );
+
+    await expect(
+      repository.saveContentSchedule(
+        {
+          id: '10000000-0000-0000-0000-000000000001',
+          channelVariantId: '20000000-0000-0000-0000-000000000001',
+          scheduledFor: new Date('2026-09-25T15:00:00.000Z'),
+          timezone: 'America/Bogota',
+          status: 'APPROVED',
+          createdAt: new Date('2026-09-25T14:00:00.000Z'),
+          updatedAt: new Date('2026-09-25T14:30:00.000Z'),
+        },
+        { operationKey: 'social-08-conflict' },
+      ),
+    ).rejects.toBeInstanceOf(MarketingSocialWriteOperationConflictError);
+  });
+
+  it('keeps publication-attempt persistence blocked when controlled writes are enabled', async () => {
+    const rpc = vi.fn();
+    const repository = new SupabaseMarketingSocialRepository(
+      { rpc } as never,
+      true,
+    );
+
+    await expect(
+      repository.savePublicationAttempt({
+        id: '70000000-0000-0000-0000-000000000001',
+        preparedPublicationId: '30000000-0000-0000-0000-000000000001',
+        attemptNumber: 1,
+        status: 'PENDING',
+        startedAt: null,
+        completedAt: null,
+        externalPublicationRef: null,
+        failureCode: null,
+      }),
+    ).rejects.toBeInstanceOf(MarketingSocialWriteBlockedError);
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
 });

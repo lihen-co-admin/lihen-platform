@@ -3,7 +3,11 @@ import type {
   ContentSchedule,
   ContentScheduleStatus,
 } from '../domain/content-schedule';
-import { MarketingSocialWriteBlockedError } from '../domain/errors/marketing-social-errors';
+import {
+  MarketingSocialOperationKeyRequiredError,
+  MarketingSocialWriteBlockedError,
+  MarketingSocialWriteOperationConflictError,
+} from '../domain/errors/marketing-social-errors';
 import type {
   PreparedPublication,
   PreparedPublicationStatus,
@@ -13,7 +17,10 @@ import type {
   PublicationAttemptStatus,
 } from '../domain/publication-attempt';
 import type { MarketingChannel } from '../domain/campaign';
-import type { MarketingSocialRepository } from '../ports/marketing-social-repository';
+import type {
+  MarketingSocialRepository,
+  MarketingSocialWriteContext,
+} from '../ports/marketing-social-repository';
 
 interface ContentScheduleRow {
   id: string;
@@ -101,12 +108,48 @@ function mapPublicationAttempt(
 export class SupabaseMarketingSocialRepository
   implements MarketingSocialRepository
 {
-  public constructor(private readonly client: SupabaseClient) {}
+  public constructor(
+    private readonly client: SupabaseClient,
+    private readonly controlledWriteEnabled = false,
+  ) {}
 
   public async saveContentSchedule(
-    _schedule: ContentSchedule,
+    schedule: ContentSchedule,
+    context: MarketingSocialWriteContext,
   ): Promise<ContentSchedule> {
-    throw new MarketingSocialWriteBlockedError();
+    if (!this.controlledWriteEnabled) {
+      throw new MarketingSocialWriteBlockedError();
+    }
+
+    if (context.operationKey.trim().length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const { data, error } = await this.client.rpc(
+      'save_marketing_content_schedule_controlled',
+      {
+        p_operation_key: context.operationKey.trim(),
+        p_id: schedule.id,
+        p_channel_variant_id: schedule.channelVariantId,
+        p_scheduled_for: schedule.scheduledFor.toISOString(),
+        p_timezone: schedule.timezone,
+        p_status: schedule.status,
+        p_created_at: schedule.createdAt.toISOString(),
+        p_updated_at: schedule.updatedAt.toISOString(),
+      },
+    );
+
+    if (error) {
+      if (error.message?.includes(
+        'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+      )) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+    return mapContentSchedule(row as ContentScheduleRow);
   }
 
   public async getContentScheduleById(
@@ -144,9 +187,47 @@ export class SupabaseMarketingSocialRepository
   }
 
   public async savePreparedPublication(
-    _publication: PreparedPublication,
+    publication: PreparedPublication,
+    context: MarketingSocialWriteContext,
   ): Promise<PreparedPublication> {
-    throw new MarketingSocialWriteBlockedError();
+    if (!this.controlledWriteEnabled) {
+      throw new MarketingSocialWriteBlockedError();
+    }
+
+    if (context.operationKey.trim().length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const { data, error } = await this.client.rpc(
+      'save_marketing_prepared_publication_controlled',
+      {
+        p_operation_key: context.operationKey.trim(),
+        p_id: publication.id,
+        p_campaign_id: publication.campaignId,
+        p_campaign_content_id: publication.campaignContentId,
+        p_channel_variant_id: publication.channelVariantId,
+        p_schedule_id: publication.scheduleId,
+        p_channel: publication.channel,
+        p_copy: publication.copy,
+        p_cta: publication.callToAction || null,
+        p_hashtags: [...publication.hashtags],
+        p_creative_asset_ids: [...publication.creativeAssetIds],
+        p_status: publication.status,
+        p_prepared_at: publication.preparedAt.toISOString(),
+      },
+    );
+
+    if (error) {
+      if (error.message?.includes(
+        'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+      )) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+    return mapPreparedPublication(row as PreparedPublicationRow);
   }
 
   public async getPreparedPublicationById(
