@@ -8,3 +8,8 @@ export * from './ports/marketing-social-repository';
 export * from './infrastructure/in-memory-marketing-social-repository';
 export * from './domain/errors/marketing-social-errors';
 export * from './infrastructure/supabase-marketing-social-repository';
+export * from './application/commands/review-content-schedule.command';
+export * from './application/commands/review-content-schedule.handler';
+export * from './application/commands/review-prepared-publication.command';
+export * from './application/commands/review-prepared-publication.handler';
+export * from './domain/errors/marketing-social-governance-errors';
