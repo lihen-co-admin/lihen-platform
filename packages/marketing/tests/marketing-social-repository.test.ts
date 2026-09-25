@@ -68,7 +68,7 @@ describe('InMemoryMarketingSocialRepository', () => {
 
     const schedule = makeSchedule();
 
-    await repository.saveContentSchedule(schedule);
+    await repository.saveContentSchedule(schedule, { operationKey: 'test-operation' });
 
     await expect(
       repository.getContentScheduleById(schedule.id),
@@ -86,8 +86,8 @@ describe('InMemoryMarketingSocialRepository', () => {
       channelVariantId: 'variant-tiktok',
     });
 
-    await repository.saveContentSchedule(instagram);
-    await repository.saveContentSchedule(tiktok);
+    await repository.saveContentSchedule(instagram, { operationKey: 'test-operation' });
+    await repository.saveContentSchedule(tiktok, { operationKey: 'test-operation' });
 
     await expect(
       repository.listContentSchedulesByChannelVariantId(
@@ -102,7 +102,7 @@ describe('InMemoryMarketingSocialRepository', () => {
 
     const publication = makePreparedPublication();
 
-    await repository.savePreparedPublication(publication);
+    await repository.savePreparedPublication(publication, { operationKey: 'test-operation' });
 
     await expect(
       repository.getPreparedPublicationById(publication.id),
@@ -122,8 +122,8 @@ describe('InMemoryMarketingSocialRepository', () => {
       scheduleId: null,
     });
 
-    await repository.savePreparedPublication(instagram);
-    await repository.savePreparedPublication(tiktok);
+    await repository.savePreparedPublication(instagram, { operationKey: 'test-operation' });
+    await repository.savePreparedPublication(tiktok, { operationKey: 'test-operation' });
 
     await expect(
       repository.listPreparedPublicationsByChannelVariantId(
@@ -206,8 +206,8 @@ describe('InMemoryMarketingSocialRepository', () => {
       updatedAt: new Date('2026-09-24T21:00:00.000Z'),
     });
 
-    await repository.saveContentSchedule(draft);
-    await repository.saveContentSchedule(approved);
+    await repository.saveContentSchedule(draft, { operationKey: 'test-operation' });
+    await repository.saveContentSchedule(approved, { operationKey: 'test-operation' });
 
     await expect(
       repository.getContentScheduleById(draft.id),

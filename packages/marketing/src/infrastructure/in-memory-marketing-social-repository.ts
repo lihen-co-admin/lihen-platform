@@ -1,7 +1,10 @@
 import type { ContentSchedule } from '../domain/content-schedule';
 import type { PreparedPublication } from '../domain/prepared-publication';
 import type { PublicationAttempt } from '../domain/publication-attempt';
-import type { MarketingSocialRepository } from '../ports/marketing-social-repository';
+import type {
+  MarketingSocialRepository,
+  MarketingSocialWriteContext,
+} from '../ports/marketing-social-repository';
 
 export class InMemoryMarketingSocialRepository
 implements MarketingSocialRepository {
@@ -16,6 +19,7 @@ implements MarketingSocialRepository {
 
   public async saveContentSchedule(
     schedule: ContentSchedule,
+    _context: MarketingSocialWriteContext,
   ): Promise<ContentSchedule> {
     this.contentSchedules.set(schedule.id, schedule);
     return schedule;
@@ -39,6 +43,7 @@ implements MarketingSocialRepository {
 
   public async savePreparedPublication(
     publication: PreparedPublication,
+    _context: MarketingSocialWriteContext,
   ): Promise<PreparedPublication> {
     this.preparedPublications.set(
       publication.id,

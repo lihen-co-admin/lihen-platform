@@ -59,10 +59,13 @@ export class ReviewContentScheduleHandler {
       );
     }
 
-    return this.repository.saveContentSchedule({
-      ...schedule,
-      status: nextStatus,
-      updatedAt: new Date(),
-    });
+    return this.repository.saveContentSchedule(
+      {
+        ...schedule,
+        status: nextStatus,
+        updatedAt: new Date(),
+      },
+      { operationKey: command.operationKey },
+    );
   }
 }

@@ -2,9 +2,14 @@ import type { ContentSchedule } from '../domain/content-schedule';
 import type { PreparedPublication } from '../domain/prepared-publication';
 import type { PublicationAttempt } from '../domain/publication-attempt';
 
+export interface MarketingSocialWriteContext {
+  readonly operationKey: string;
+}
+
 export interface MarketingSocialRepository {
   saveContentSchedule(
     schedule: ContentSchedule,
+    context: MarketingSocialWriteContext,
   ): Promise<ContentSchedule>;
 
   getContentScheduleById(
@@ -17,6 +22,7 @@ export interface MarketingSocialRepository {
 
   savePreparedPublication(
     publication: PreparedPublication,
+    context: MarketingSocialWriteContext,
   ): Promise<PreparedPublication>;
 
   getPreparedPublicationById(
