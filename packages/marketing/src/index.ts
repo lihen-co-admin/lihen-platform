@@ -13,3 +13,6 @@ export * from './application/commands/review-content-schedule.handler';
 export * from './application/commands/review-prepared-publication.command';
 export * from './application/commands/review-prepared-publication.handler';
 export * from './domain/errors/marketing-social-governance-errors';
+export * from './application/commands/prepare-due-publication-attempt.command';
+export * from './application/commands/prepare-due-publication-attempt.handler';
+export * from './domain/errors/marketing-social-orchestration-errors';

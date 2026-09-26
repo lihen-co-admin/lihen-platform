@@ -266,10 +266,50 @@ export class SupabaseMarketingSocialRepository
     );
   }
 
-  public async savePublicationAttempt(
-    _attempt: PublicationAttempt,
+  public async createPendingPublicationAttempt(
+    input: {
+      readonly id: string;
+      readonly preparedPublicationId: string;
+    },
+    context: MarketingSocialWriteContext,
   ): Promise<PublicationAttempt> {
-    throw new MarketingSocialWriteBlockedError();
+    if (!this.controlledWriteEnabled) {
+      throw new MarketingSocialWriteBlockedError();
+    }
+
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const { data, error } = await this.client.rpc(
+      'create_marketing_publication_attempt_controlled',
+      {
+        p_operation_key: operationKey,
+        p_id: input.id,
+        p_prepared_publication_id:
+          input.preparedPublicationId,
+      },
+    );
+
+    if (error) {
+      if (
+        error.message?.includes(
+          'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+        )
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+
+    return mapPublicationAttempt(
+      row as PublicationAttemptRow,
+    );
   }
 
   public async listPublicationAttemptsByPreparedPublicationId(

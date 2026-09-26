@@ -33,8 +33,12 @@ export interface MarketingSocialRepository {
     channelVariantId: string,
   ): Promise<readonly PreparedPublication[]>;
 
-  savePublicationAttempt(
-    attempt: PublicationAttempt,
+  createPendingPublicationAttempt(
+    input: {
+      readonly id: string;
+      readonly preparedPublicationId: string;
+    },
+    context: MarketingSocialWriteContext,
   ): Promise<PublicationAttempt>;
 
   listPublicationAttemptsByPreparedPublicationId(
