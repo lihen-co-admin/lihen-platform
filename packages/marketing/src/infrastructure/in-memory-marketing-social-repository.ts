@@ -30,6 +30,24 @@ implements MarketingSocialRepository {
       }
     >();
 
+  private readonly publicationAttemptStartOperations =
+    new Map<
+      string,
+      {
+        readonly id: string;
+      }
+    >();
+
+  private readonly publicationAttemptCompletionOperations =
+    new Map<
+      string,
+      {
+        readonly id: string;
+        readonly outcome: 'SUCCEEDED' | 'FAILED';
+        readonly resultValue: string;
+      }
+    >();
+
   public async saveContentSchedule(
     schedule: ContentSchedule,
     _context: MarketingSocialWriteContext,
@@ -151,6 +169,157 @@ implements MarketingSocialRepository {
     );
 
     return persistedAttempt;
+  }
+
+  public async startPublicationAttempt(
+    input: {
+      readonly id: string;
+    },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt> {
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const existingOperation =
+      this.publicationAttemptStartOperations.get(operationKey);
+
+    if (existingOperation) {
+      if (
+        existingOperation.id !== input.id
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      const replayed = this.publicationAttempts.get(input.id);
+
+      if (
+        !replayed ||
+        (
+          replayed.status !== 'IN_PROGRESS' &&
+          replayed.status !== 'SUCCEEDED' &&
+          replayed.status !== 'FAILED'
+        )
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      return replayed;
+    }
+
+    const attempt = this.publicationAttempts.get(input.id);
+
+    if (!attempt || attempt.status !== 'PENDING') {
+      throw new MarketingSocialWriteOperationConflictError();
+    }
+
+    const started: PublicationAttempt = {
+      ...attempt,
+      status: 'IN_PROGRESS',
+      startedAt: new Date(),
+    };
+
+    this.publicationAttempts.set(started.id, started);
+
+    this.publicationAttemptStartOperations.set(
+      operationKey,
+      {
+        id: input.id,
+      },
+    );
+
+    return started;
+  }
+
+  public async completePublicationAttempt(
+    input:
+      | {
+          readonly id: string;
+          readonly outcome: 'SUCCEEDED';
+          readonly externalPublicationRef: string;
+        }
+      | {
+          readonly id: string;
+          readonly outcome: 'FAILED';
+          readonly failureCode: string;
+        },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt> {
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const resultValue =
+      input.outcome === 'SUCCEEDED'
+        ? input.externalPublicationRef
+        : input.failureCode;
+
+    const existingOperation =
+      this.publicationAttemptCompletionOperations.get(
+        operationKey,
+      );
+
+    if (existingOperation) {
+      if (
+        existingOperation.id !== input.id ||
+        existingOperation.outcome !== input.outcome ||
+        existingOperation.resultValue !== resultValue
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      const replayed = this.publicationAttempts.get(input.id);
+
+      if (
+        !replayed ||
+        replayed.status !== input.outcome
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      return replayed;
+    }
+
+    const attempt = this.publicationAttempts.get(input.id);
+
+    if (!attempt || attempt.status !== 'IN_PROGRESS') {
+      throw new MarketingSocialWriteOperationConflictError();
+    }
+
+    const completed: PublicationAttempt =
+      input.outcome === 'SUCCEEDED'
+        ? {
+            ...attempt,
+            status: 'SUCCEEDED',
+            completedAt: new Date(),
+            externalPublicationRef:
+              input.externalPublicationRef,
+            failureCode: null,
+          }
+        : {
+            ...attempt,
+            status: 'FAILED',
+            completedAt: new Date(),
+            externalPublicationRef: null,
+            failureCode: input.failureCode,
+          };
+
+    this.publicationAttempts.set(completed.id, completed);
+
+    this.publicationAttemptCompletionOperations.set(
+      operationKey,
+      {
+        id: input.id,
+        outcome: input.outcome,
+        resultValue,
+      },
+    );
+
+    return completed;
   }
 
   public async listPublicationAttemptsByPreparedPublicationId(

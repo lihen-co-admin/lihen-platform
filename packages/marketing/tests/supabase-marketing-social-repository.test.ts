@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   MarketingSocialOperationKeyRequiredError,
+  MarketingSocialPublicationAttemptNotInProgressError,
+  MarketingSocialPublicationAttemptNotPendingError,
   MarketingSocialWriteBlockedError,
   MarketingSocialWriteOperationConflictError,
   SupabaseMarketingSocialRepository,
@@ -553,6 +555,356 @@ describe('SupabaseMarketingSocialRepository controlled review writes', () => {
       ),
     ).rejects.toBeInstanceOf(
       MarketingSocialWriteOperationConflictError,
+    );
+  });
+
+
+  it('keeps publication execution transitions blocked by default', async () => {
+    const rpc = vi.fn();
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+      );
+
+    await expect(
+      repository.startPublicationAttempt(
+        { id: 'attempt-1' },
+        { operationKey: 'social-10-start' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialWriteBlockedError,
+    );
+
+    await expect(
+      repository.completePublicationAttempt(
+        {
+          id: 'attempt-1',
+          outcome: 'SUCCEEDED',
+          externalPublicationRef: 'external-ref-1',
+        },
+        { operationKey: 'social-10-complete' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialWriteBlockedError,
+    );
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('starts a publication attempt through the controlled RPC', async () => {
+    const row = {
+      id: '70000000-0000-0000-0000-000000000001',
+      prepared_publication_id:
+        '30000000-0000-0000-0000-000000000001',
+      attempt_number: 1,
+      status: 'IN_PROGRESS',
+      started_at: '2026-09-26T14:30:00.000Z',
+      completed_at: null,
+      external_publication_ref: null,
+      failure_code: null,
+    };
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [row],
+      error: null,
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    const result =
+      await repository.startPublicationAttempt(
+        { id: row.id },
+        { operationKey: ' social-10-start ' },
+      );
+
+    expect(rpc).toHaveBeenCalledWith(
+      'start_marketing_publication_attempt_controlled',
+      {
+        p_operation_key: 'social-10-start',
+        p_attempt_id: row.id,
+      },
+    );
+
+    expect(result).toEqual({
+      id: row.id,
+      preparedPublicationId:
+        row.prepared_publication_id,
+      attemptNumber: 1,
+      status: 'IN_PROGRESS',
+      startedAt: new Date(row.started_at),
+      completedAt: null,
+      externalPublicationRef: null,
+      failureCode: null,
+    });
+  });
+
+  it('rejects a blank operation key before the start RPC', async () => {
+    const rpc = vi.fn();
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.startPublicationAttempt(
+        { id: 'attempt-1' },
+        { operationKey: '   ' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialOperationKeyRequiredError,
+    );
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('maps start operation conflicts to the social domain error', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+      },
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.startPublicationAttempt(
+        { id: 'attempt-1' },
+        { operationKey: 'social-10-start-conflict' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialWriteOperationConflictError,
+    );
+  });
+
+  it('completes a successful publication attempt through the controlled RPC', async () => {
+    const row = {
+      id: '70000000-0000-0000-0000-000000000001',
+      prepared_publication_id:
+        '30000000-0000-0000-0000-000000000001',
+      attempt_number: 1,
+      status: 'SUCCEEDED',
+      started_at: '2026-09-26T14:30:00.000Z',
+      completed_at: '2026-09-26T14:31:00.000Z',
+      external_publication_ref: 'external-ref-1',
+      failure_code: null,
+    };
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [row],
+      error: null,
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    const result =
+      await repository.completePublicationAttempt(
+        {
+          id: row.id,
+          outcome: 'SUCCEEDED',
+          externalPublicationRef: 'external-ref-1',
+        },
+        { operationKey: ' social-10-complete-success ' },
+      );
+
+    expect(rpc).toHaveBeenCalledWith(
+      'complete_marketing_publication_attempt_controlled',
+      {
+        p_operation_key:
+          'social-10-complete-success',
+        p_attempt_id: row.id,
+        p_outcome: 'SUCCEEDED',
+        p_result_value: 'external-ref-1',
+      },
+    );
+
+    expect(result.status).toBe('SUCCEEDED');
+    expect(result.completedAt)
+      .toEqual(new Date(row.completed_at));
+    expect(result.externalPublicationRef)
+      .toBe('external-ref-1');
+    expect(result.failureCode).toBeNull();
+  });
+
+  it('completes an explicit failed publication attempt through the controlled RPC', async () => {
+    const row = {
+      id: '70000000-0000-0000-0000-000000000001',
+      prepared_publication_id:
+        '30000000-0000-0000-0000-000000000001',
+      attempt_number: 1,
+      status: 'FAILED',
+      started_at: '2026-09-26T14:30:00.000Z',
+      completed_at: '2026-09-26T14:31:00.000Z',
+      external_publication_ref: null,
+      failure_code: 'PROVIDER_REJECTED',
+    };
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [row],
+      error: null,
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    const result =
+      await repository.completePublicationAttempt(
+        {
+          id: row.id,
+          outcome: 'FAILED',
+          failureCode: 'PROVIDER_REJECTED',
+        },
+        { operationKey: 'social-10-complete-failure' },
+      );
+
+    expect(rpc).toHaveBeenCalledWith(
+      'complete_marketing_publication_attempt_controlled',
+      {
+        p_operation_key:
+          'social-10-complete-failure',
+        p_attempt_id: row.id,
+        p_outcome: 'FAILED',
+        p_result_value: 'PROVIDER_REJECTED',
+      },
+    );
+
+    expect(result.status).toBe('FAILED');
+    expect(result.externalPublicationRef).toBeNull();
+    expect(result.failureCode)
+      .toBe('PROVIDER_REJECTED');
+  });
+
+  it('rejects a blank operation key before the completion RPC', async () => {
+    const rpc = vi.fn();
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.completePublicationAttempt(
+        {
+          id: 'attempt-1',
+          outcome: 'FAILED',
+          failureCode: 'TEST_FAILURE',
+        },
+        { operationKey: '   ' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialOperationKeyRequiredError,
+    );
+
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it('maps completion operation conflicts to the social domain error', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+      },
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.completePublicationAttempt(
+        {
+          id: 'attempt-1',
+          outcome: 'FAILED',
+          failureCode: 'TEST_FAILURE',
+        },
+        {
+          operationKey:
+            'social-10-complete-conflict',
+        },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialWriteOperationConflictError,
+    );
+  });
+
+
+  it('maps a non-pending start rejection to the execution domain error', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING',
+      },
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.startPublicationAttempt(
+        { id: 'attempt-1' },
+        { operationKey: 'social-10-not-pending' },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialPublicationAttemptNotPendingError,
+    );
+  });
+
+  it('maps a non-in-progress completion rejection to the execution domain error', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_IN_PROGRESS',
+      },
+    });
+
+    const repository =
+      new SupabaseMarketingSocialRepository(
+        { rpc } as never,
+        true,
+      );
+
+    await expect(
+      repository.completePublicationAttempt(
+        {
+          id: 'attempt-1',
+          outcome: 'FAILED',
+          failureCode: 'TEST_FAILURE',
+        },
+        {
+          operationKey:
+            'social-10-not-in-progress',
+        },
+      ),
+    ).rejects.toBeInstanceOf(
+      MarketingSocialPublicationAttemptNotInProgressError,
     );
   });
 
