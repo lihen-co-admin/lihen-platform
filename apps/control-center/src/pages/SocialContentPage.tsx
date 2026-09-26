@@ -11,6 +11,7 @@ import {
 } from '../composition/social-publication-e2e';
 import {
   createControlledSocialDevCase,
+  verifySocialPublicationBlockedInDev,
 } from '../composition/social-dev-runtime';
 import {
   isSimulationAttempt,
@@ -151,6 +152,23 @@ export function SocialContentPage() {
           ? cause.message
           : 'No fue posible crear el caso controlado en DEV.',
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runBlockedPublicationSmoke() {
+    setBusy(true);
+    setError(null);
+
+    try {
+      await verifySocialPublicationBlockedInDev();
+      setError('ERROR: la publicación no fue bloqueada.');
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : String(cause);
+
+      setError(message);
     } finally {
       setBusy(false);
     }
@@ -326,6 +344,16 @@ export function SocialContentPage() {
             {busy
               ? 'Creando caso DEV…'
               : 'Crear caso controlado en DEV'}
+          </button>
+        </div>
+
+        <div className="toolbar">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void runBlockedPublicationSmoke()}
+          >
+            Probar bloqueo de publicación DEV
           </button>
         </div>
 

@@ -58,6 +58,33 @@ async function invoke<T>(
     );
 
   if (error) {
+    const context = (
+      error as {
+        readonly context?: {
+          json?: () => Promise<unknown>;
+        };
+      }
+    ).context;
+
+    if (context?.json) {
+      try {
+        const body = await context.json();
+
+        if (
+          body &&
+          typeof body === 'object' &&
+          'error' in body &&
+          typeof body.error === 'string'
+        ) {
+          throw new Error(body.error);
+        }
+      } catch (cause) {
+        if (cause instanceof Error) {
+          throw cause;
+        }
+      }
+    }
+
     throw new Error(
       `LIHEN_MARKETING_SOCIAL_RUNTIME_INVOKE_FAILED:${
         error.message ?? 'UNKNOWN'
@@ -125,4 +152,28 @@ export async function createControlledSocialDevCase(
     attempt,
     externalPublication: false,
   };
+}
+
+export async function verifySocialPublicationBlockedInDev(
+  client: SocialEdgeFunctionClient =
+    getBrowserSupabaseClient(import.meta.env),
+): Promise<never> {
+  await invoke(
+    client,
+    'EXECUTE_PUBLICATION_ATTEMPT',
+    {
+      attemptId: '622102d8-93d4-43a0-9ecb-4a6180e55fb9',
+      preparedPublicationId:
+        'dbb8e29c-dac5-4a67-904e-0eebdde45d82',
+      productId: '00000000-0000-0000-0000-000000000000',
+      startOperationKey:
+        'social-dev:block-smoke:start:622102d8',
+      completionOperationKey:
+        'social-dev:block-smoke:complete:622102d8',
+    },
+  );
+
+  throw new Error(
+    'LIHEN_MARKETING_SOCIAL_BLOCK_SMOKE_UNEXPECTED_SUCCESS',
+  );
 }
