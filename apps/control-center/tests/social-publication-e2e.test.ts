@@ -88,3 +88,99 @@ describe('Control Center social publication E2E', () => {
     });
   });
 });
+
+describe('Control Center social publication reconciliation visibility', () => {
+  it('surfaces an unresolved IN_PROGRESS attempt for human reconciliation without completing it', async () => {
+    const {
+      runSocialPublicationReconciliationE2E,
+    } = await import(
+      '../src/composition/social-publication-e2e'
+    );
+    const {
+      summarizePublicationReconciliation,
+    } = await import(
+      '../src/domain/social-publication-console'
+    );
+
+    const result =
+      await runSocialPublicationReconciliationE2E({
+        schedule: schedule(),
+        publication: publication(),
+        now: new Date('2026-09-26T14:30:00.000Z'),
+        attemptId: 'attempt-social-13-reconciliation',
+        uncertaintyWindowMs: 5 * 60 * 1000,
+        elapsedMs: 10 * 60 * 1000,
+      });
+
+    expect(result.externalExecution).toBe(false);
+    expect(result.readOnlyAssessment).toBe(true);
+
+    expect(result.attempt.status).toBe('IN_PROGRESS');
+    expect(result.attempt.startedAt).toBeInstanceOf(Date);
+    expect(result.attempt.completedAt).toBeNull();
+    expect(result.attempt.externalPublicationRef).toBeNull();
+    expect(result.attempt.failureCode).toBeNull();
+
+    expect(result.assessments).toHaveLength(1);
+    expect(result.assessments[0]).toMatchObject({
+      attemptId: 'attempt-social-13-reconciliation',
+      status: 'IN_PROGRESS',
+      requiresReconciliation: true,
+      reason: 'IN_PROGRESS_OUTSIDE_UNCERTAINTY_WINDOW',
+    });
+
+    expect(
+      summarizePublicationReconciliation(
+        result.assessments,
+      ),
+    ).toEqual({
+      assessedAttempts: 1,
+      reconciliationRequired: 1,
+      withinUncertaintyWindow: 0,
+    });
+  });
+
+  it('keeps a recent IN_PROGRESS attempt inside the uncertainty window without declaring success or failure', async () => {
+    const {
+      runSocialPublicationReconciliationE2E,
+    } = await import(
+      '../src/composition/social-publication-e2e'
+    );
+    const {
+      summarizePublicationReconciliation,
+    } = await import(
+      '../src/domain/social-publication-console'
+    );
+
+    const result =
+      await runSocialPublicationReconciliationE2E({
+        schedule: schedule(),
+        publication: publication(),
+        now: new Date('2026-09-26T14:30:00.000Z'),
+        attemptId: 'attempt-social-13-window',
+        uncertaintyWindowMs: 5 * 60 * 1000,
+        elapsedMs: 2 * 60 * 1000,
+      });
+
+    expect(result.attempt.status).toBe('IN_PROGRESS');
+    expect(result.attempt.completedAt).toBeNull();
+    expect(result.attempt.externalPublicationRef).toBeNull();
+    expect(result.attempt.failureCode).toBeNull();
+
+    expect(result.assessments[0]).toMatchObject({
+      requiresReconciliation: false,
+      reason: 'WITHIN_UNCERTAINTY_WINDOW',
+      status: 'IN_PROGRESS',
+    });
+
+    expect(
+      summarizePublicationReconciliation(
+        result.assessments,
+      ),
+    ).toEqual({
+      assessedAttempts: 1,
+      reconciliationRequired: 0,
+      withinUncertaintyWindow: 1,
+    });
+  });
+});

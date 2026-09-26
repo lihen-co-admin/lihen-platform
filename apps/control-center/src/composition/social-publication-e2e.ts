@@ -66,3 +66,86 @@ export async function runSocialPublicationE2E(
     simulation: true,
   };
 }
+
+export interface SocialPublicationReconciliationE2EResult {
+  readonly schedule: ContentSchedule;
+  readonly publication: PreparedPublication;
+  readonly attempt: PublicationAttempt;
+  readonly assessments: readonly import('@lihen/marketing').PublicationReconciliationAssessment[];
+  readonly externalExecution: false;
+  readonly readOnlyAssessment: true;
+}
+
+export async function runSocialPublicationReconciliationE2E(
+  input: {
+    readonly schedule: ContentSchedule;
+    readonly publication: PreparedPublication;
+    readonly now: Date;
+    readonly attemptId: string;
+    readonly uncertaintyWindowMs: number;
+    readonly elapsedMs: number;
+  },
+): Promise<SocialPublicationReconciliationE2EResult> {
+  const {
+    AssessPublicationReconciliationHandler,
+  } = await import('@lihen/marketing');
+
+  const repository = new InMemoryMarketingSocialRepository();
+
+  await repository.saveContentSchedule(
+    input.schedule,
+    {
+      operationKey:
+        `social-13:schedule:${input.schedule.id}`,
+    },
+  );
+
+  await repository.savePreparedPublication(
+    input.publication,
+    {
+      operationKey:
+        `social-13:publication:${input.publication.id}`,
+    },
+  );
+
+  const prepare =
+    new PrepareDuePublicationAttemptHandler(repository);
+
+  const pending = await prepare.execute({
+    preparedPublicationId: input.publication.id,
+    attemptId: input.attemptId,
+    operationKey:
+      `social-13:attempt:${input.attemptId}`,
+    now: input.now,
+  });
+
+  const attempt =
+    await repository.startPublicationAttempt(
+      { id: pending.id },
+      {
+        operationKey:
+          `social-13:start:${pending.id}`,
+      },
+    );
+
+  const assessmentNow =
+    new Date(attempt.startedAt!.getTime() + input.elapsedMs);
+
+  const assess =
+    new AssessPublicationReconciliationHandler(repository);
+
+  const assessments = await assess.execute({
+    preparedPublicationId: input.publication.id,
+    now: assessmentNow,
+    uncertaintyWindowMs: input.uncertaintyWindowMs,
+  });
+
+  return {
+    schedule: input.schedule,
+    publication: input.publication,
+    attempt,
+    assessments,
+    externalExecution: false,
+    readOnlyAssessment: true,
+  };
+}
