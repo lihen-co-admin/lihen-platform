@@ -22,3 +22,6 @@ export * from './infrastructure/in-memory-social-publishing-adapter';
 export * from './domain/errors/marketing-social-execution-errors';
 export * from './application/commands/execute-publication-attempt.command';
 export * from './application/commands/execute-publication-attempt.handler';
+export * from './domain/publication-reconciliation';
+export * from './application/queries/assess-publication-reconciliation.query';
+export * from './application/queries/assess-publication-reconciliation.handler';
