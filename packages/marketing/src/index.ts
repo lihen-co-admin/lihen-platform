@@ -28,3 +28,4 @@ export * from './application/queries/assess-publication-reconciliation.handler';
 export * from './domain/publication-reconciliation-resolution';
 export * from './application/commands/resolve-publication-reconciliation.command';
 export * from './application/commands/resolve-publication-reconciliation.handler';
+export * from './infrastructure/meta-social-publishing-adapter';
