@@ -25,3 +25,6 @@ export * from './application/commands/execute-publication-attempt.handler';
 export * from './domain/publication-reconciliation';
 export * from './application/queries/assess-publication-reconciliation.query';
 export * from './application/queries/assess-publication-reconciliation.handler';
+export * from './domain/publication-reconciliation-resolution';
+export * from './application/commands/resolve-publication-reconciliation.command';
+export * from './application/commands/resolve-publication-reconciliation.handler';
