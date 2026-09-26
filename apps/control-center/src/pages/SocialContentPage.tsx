@@ -10,6 +10,9 @@ import {
   runSocialPublicationReconciliationE2E,
 } from '../composition/social-publication-e2e';
 import {
+  createControlledSocialDevCase,
+} from '../composition/social-dev-runtime';
+import {
   isSimulationAttempt,
   summarizePublicationReconciliation,
   summarizeSocialPublicationConsole,
@@ -57,6 +60,12 @@ export function SocialContentPage() {
     useState<PreparedPublication | null>(null);
   const [attempt, setAttempt] =
     useState<PublicationAttempt | null>(null);
+  const [devAttempt, setDevAttempt] =
+    useState<PublicationAttempt | null>(null);
+  const [devSchedule, setDevSchedule] =
+    useState<ContentSchedule | null>(null);
+  const [devPublication, setDevPublication] =
+    useState<PreparedPublication | null>(null);
   const [reconciliationAttempt, setReconciliationAttempt] =
     useState<PublicationAttempt | null>(null);
   const [reconciliationAssessments, setReconciliationAssessments] =
@@ -102,6 +111,45 @@ export function SocialContentPage() {
         cause instanceof Error
           ? cause.message
           : 'No fue posible evaluar la reconciliación.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runControlledDevCase() {
+    setBusy(true);
+    setError(null);
+
+    try {
+      const nextSchedule = {
+        ...createSchedule(),
+        id: crypto.randomUUID(),
+        channelVariantId: crypto.randomUUID(),
+      };
+      const nextPublication = {
+        ...createPublication(nextSchedule),
+        id: crypto.randomUUID(),
+        campaignId: crypto.randomUUID(),
+        campaignContentId: crypto.randomUUID(),
+        channelVariantId: nextSchedule.channelVariantId,
+        scheduleId: nextSchedule.id,
+      };
+
+      const result = await createControlledSocialDevCase({
+        schedule: nextSchedule,
+        publication: nextPublication,
+        attemptId: crypto.randomUUID(),
+      });
+
+      setDevSchedule(nextSchedule);
+      setDevPublication(nextPublication);
+      setDevAttempt(result.attempt);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible crear el caso controlado en DEV.',
       );
     } finally {
       setBusy(false);
@@ -249,6 +297,72 @@ export function SocialContentPage() {
         ) : (
           <p>
             Todavía no se ha ejecutado una simulación en esta sesión.
+          </p>
+        )}
+      </section>
+
+      <section className="card stack">
+        <h2>Caso controlado DEV</h2>
+        <p>
+          Persiste un schedule aprobado, una publicación preparada
+          aprobada y crea únicamente un intento PENDING en Supabase DEV.
+          No inicia ni completa el intento y no publica externamente.
+        </p>
+
+        <div className="info-state stack">
+          <strong>DEV · PUBLICACIÓN EXTERNA BLOQUEADA</strong>
+          <p>
+            Esta acción usa la sesión autenticada del Control Center.
+            No ejecuta START, COMPLETE ni ningún proveedor social.
+          </p>
+        </div>
+
+        <div className="toolbar">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void runControlledDevCase()}
+          >
+            {busy
+              ? 'Creando caso DEV…'
+              : 'Crear caso controlado en DEV'}
+          </button>
+        </div>
+
+        {devAttempt ? (
+          <div className="table-wrap">
+            <table>
+              <tbody>
+                <tr>
+                  <th>Canal</th>
+                  <td>{devPublication?.channel ?? '—'}</td>
+                </tr>
+                <tr>
+                  <th>Schedule</th>
+                  <td>{devSchedule?.status ?? '—'}</td>
+                </tr>
+                <tr>
+                  <th>Publicación preparada</th>
+                  <td>{devPublication?.status ?? '—'}</td>
+                </tr>
+                <tr>
+                  <th>Intento durable</th>
+                  <td>{devAttempt.status}</td>
+                </tr>
+                <tr>
+                  <th>Referencia externa</th>
+                  <td>{devAttempt.externalPublicationRef ?? '—'}</td>
+                </tr>
+                <tr>
+                  <th>Publicación externa</th>
+                  <td>NO</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>
+            No se ha creado un caso durable DEV en esta sesión.
           </p>
         )}
       </section>
