@@ -3,12 +3,15 @@ import type {
   ContentSchedule,
   PreparedPublication,
   PublicationAttempt,
+  PublicationReconciliationAssessment,
 } from '@lihen/marketing';
 import {
   runSocialPublicationE2E,
+  runSocialPublicationReconciliationE2E,
 } from '../composition/social-publication-e2e';
 import {
   isSimulationAttempt,
+  summarizePublicationReconciliation,
   summarizeSocialPublicationConsole,
 } from '../domain/social-publication-console';
 
@@ -54,6 +57,10 @@ export function SocialContentPage() {
     useState<PreparedPublication | null>(null);
   const [attempt, setAttempt] =
     useState<PublicationAttempt | null>(null);
+  const [reconciliationAttempt, setReconciliationAttempt] =
+    useState<PublicationAttempt | null>(null);
+  const [reconciliationAssessments, setReconciliationAssessments] =
+    useState<readonly PublicationReconciliationAssessment[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +69,44 @@ export function SocialContentPage() {
     publications: publication ? [publication] : [],
     attempts: attempt ? [attempt] : [],
   });
+
+  const reconciliationSummary =
+    summarizePublicationReconciliation(
+      reconciliationAssessments,
+    );
+
+  async function runReconciliationSimulation() {
+    setBusy(true);
+    setError(null);
+
+    try {
+      const nextSchedule = createSchedule();
+      const nextPublication =
+        createPublication(nextSchedule);
+
+      const result =
+        await runSocialPublicationReconciliationE2E({
+          schedule: nextSchedule,
+          publication: nextPublication,
+          now: new Date(),
+          attemptId:
+            `reconciliation-attempt-${Date.now()}`,
+          uncertaintyWindowMs: 5 * 60 * 1000,
+          elapsedMs: 10 * 60 * 1000,
+        });
+
+      setReconciliationAttempt(result.attempt);
+      setReconciliationAssessments(result.assessments);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible evaluar la reconciliación.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function runSimulation() {
     setBusy(true);
@@ -204,6 +249,104 @@ export function SocialContentPage() {
         ) : (
           <p>
             Todavía no se ha ejecutado una simulación en esta sesión.
+          </p>
+        )}
+      </section>
+
+      <section className="card stack">
+        <h2>Reconciliación de publicación</h2>
+        <p>
+          Evalúa de forma local y read-only un intento que quedó
+          IN_PROGRESS. No reintenta, no completa el intento y no
+          publica contenido externamente.
+        </p>
+
+        <div className="info-state stack">
+          <strong>RESULTADO EXTERNO DESCONOCIDO</strong>
+          <p>
+            Un intento que requiere reconciliación no significa
+            SUCCEEDED ni FAILED. Requiere revisión humana antes de
+            cualquier decisión posterior.
+          </p>
+        </div>
+
+        <div className="metric-grid metric-grid--premium">
+          <article className="card">
+            <span>Intentos evaluados</span>
+            <strong>
+              {reconciliationSummary.assessedAttempts}
+            </strong>
+          </article>
+          <article className="card">
+            <span>Requieren reconciliación</span>
+            <strong>
+              {reconciliationSummary.reconciliationRequired}
+            </strong>
+          </article>
+          <article className="card">
+            <span>Dentro de ventana</span>
+            <strong>
+              {reconciliationSummary.withinUncertaintyWindow}
+            </strong>
+          </article>
+        </div>
+
+        <div className="toolbar">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() =>
+              void runReconciliationSimulation()
+            }
+          >
+            {busy
+              ? 'Evaluando…'
+              : 'Simular intento incierto'}
+          </button>
+        </div>
+
+        {reconciliationAttempt ? (
+          <div className="table-wrap">
+            <table>
+              <tbody>
+                <tr>
+                  <th>Intento</th>
+                  <td>{reconciliationAttempt.status}</td>
+                </tr>
+                <tr>
+                  <th>Resultado externo</th>
+                  <td>DESCONOCIDO</td>
+                </tr>
+                <tr>
+                  <th>Reconciliación</th>
+                  <td>
+                    {reconciliationAssessments[0]
+                      ?.requiresReconciliation
+                      ? 'REQUIERE REVISIÓN HUMANA'
+                      : 'NO REQUERIDA'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Motivo</th>
+                  <td>
+                    {reconciliationAssessments[0]
+                      ?.reason ?? '—'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Publicación externa confirmada</th>
+                  <td>NO</td>
+                </tr>
+                <tr>
+                  <th>Retry automático</th>
+                  <td>NO</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>
+            No hay un intento incierto evaluado en esta sesión.
           </p>
         )}
       </section>

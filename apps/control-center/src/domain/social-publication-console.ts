@@ -56,3 +56,23 @@ export function isSimulationAttempt(
     attempt.externalPublicationRef === 'local-test-publication'
   );
 }
+
+export interface SocialPublicationReconciliationSummary {
+  readonly assessedAttempts: number;
+  readonly reconciliationRequired: number;
+  readonly withinUncertaintyWindow: number;
+}
+
+export function summarizePublicationReconciliation(
+  assessments: readonly import('@lihen/marketing').PublicationReconciliationAssessment[],
+): SocialPublicationReconciliationSummary {
+  return {
+    assessedAttempts: assessments.length,
+    reconciliationRequired: assessments.filter(
+      (item) => item.requiresReconciliation,
+    ).length,
+    withinUncertaintyWindow: assessments.filter(
+      (item) => item.reason === 'WITHIN_UNCERTAINTY_WINDOW',
+    ).length,
+  };
+}
