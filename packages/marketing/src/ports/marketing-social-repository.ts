@@ -40,6 +40,26 @@ export interface MarketingSocialRepository {
     },
     context: MarketingSocialWriteContext,
   ): Promise<PublicationAttempt>;
+  startPublicationAttempt(
+    input: {
+      readonly id: string;
+    },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt>;
+  completePublicationAttempt(
+    input:
+      | {
+          readonly id: string;
+          readonly outcome: 'SUCCEEDED';
+          readonly externalPublicationRef: string;
+        }
+      | {
+          readonly id: string;
+          readonly outcome: 'FAILED';
+          readonly failureCode: string;
+        },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt>;
 
   listPublicationAttemptsByPreparedPublicationId(
     preparedPublicationId: string,

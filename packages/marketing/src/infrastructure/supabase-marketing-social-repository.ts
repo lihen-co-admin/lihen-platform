@@ -1,4 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+import {
+  MarketingSocialPublicationAttemptNotInProgressError,
+  MarketingSocialPublicationAttemptNotPendingError,
+} from '../domain/errors/marketing-social-execution-errors';
 import type {
   ContentSchedule,
   ContentScheduleStatus,
@@ -300,6 +305,125 @@ export class SupabaseMarketingSocialRepository
         )
       ) {
         throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+
+    return mapPublicationAttempt(
+      row as PublicationAttemptRow,
+    );
+  }
+
+  public async startPublicationAttempt(
+    input: {
+      readonly id: string;
+    },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt> {
+    if (!this.controlledWriteEnabled) {
+      throw new MarketingSocialWriteBlockedError();
+    }
+
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const { data, error } = await this.client.rpc(
+      'start_marketing_publication_attempt_controlled',
+      {
+        p_operation_key: operationKey,
+        p_attempt_id: input.id,
+      },
+    );
+
+    if (error) {
+      if (
+        error.message?.includes(
+          'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+        )
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      if (
+        error.message?.includes(
+          'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING',
+        )
+      ) {
+        throw new MarketingSocialPublicationAttemptNotPendingError(
+          input.id,
+        );
+      }
+
+      throw error;
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+
+    return mapPublicationAttempt(
+      row as PublicationAttemptRow,
+    );
+  }
+
+  public async completePublicationAttempt(
+    input:
+      | {
+          readonly id: string;
+          readonly outcome: 'SUCCEEDED';
+          readonly externalPublicationRef: string;
+        }
+      | {
+          readonly id: string;
+          readonly outcome: 'FAILED';
+          readonly failureCode: string;
+        },
+    context: MarketingSocialWriteContext,
+  ): Promise<PublicationAttempt> {
+    if (!this.controlledWriteEnabled) {
+      throw new MarketingSocialWriteBlockedError();
+    }
+
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const { data, error } = await this.client.rpc(
+      'complete_marketing_publication_attempt_controlled',
+      {
+        p_operation_key: operationKey,
+        p_attempt_id: input.id,
+        p_outcome: input.outcome,
+        p_result_value:
+          input.outcome === 'SUCCEEDED'
+            ? input.externalPublicationRef
+            : input.failureCode,
+      },
+    );
+
+    if (error) {
+      if (
+        error.message?.includes(
+          'LIHEN_MARKETING_SOCIAL_WRITE_OPERATION_CONFLICT',
+        )
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      if (
+        error.message?.includes(
+          'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_IN_PROGRESS',
+        )
+      ) {
+        throw new MarketingSocialPublicationAttemptNotInProgressError(
+          input.id,
+        );
       }
 
       throw error;
