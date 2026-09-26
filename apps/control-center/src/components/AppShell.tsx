@@ -40,6 +40,7 @@ const navigation: readonly NavigationGroup[] = [
     items: [
       { to: '/finance', label: 'Caja y finanzas', icon: '$' },
       { to: '/content/public-hub', label: 'Hub público', icon: '↗' },
+      { to: '/content/social', label: 'Social', icon: '◎' },
     ],
   },
   {

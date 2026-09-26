@@ -1,36 +1,150 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { AppShell } from '../components/AppShell';
-import { DashboardPage } from '../pages/DashboardPage';
-import { ProductsPage } from '../pages/ProductsPage';
-import { ProductDetailPage } from '../pages/ProductDetailPage';
-import { CreateProductPage } from '../pages/CreateProductPage';
-import { UpdateProductPage } from '../pages/UpdateProductPage';
-import { ChangeProductSalePricePage } from '../pages/ChangeProductSalePricePage';
-import { ProductImagesPage } from '../pages/ProductImagesPage';
-import { BrandsPage } from '../pages/BrandsPage';
-import { CategoriesPage } from '../pages/CategoriesPage';
-import { LoginPage } from '../pages/LoginPage';
-import { BootstrapAdminPage } from '../pages/BootstrapAdminPage';
-import { DevAuthProbePage } from '../pages/DevAuthProbePage';
-import { InventoryPage } from '../pages/InventoryPage';
-import { SuppliersPage } from '../pages/SuppliersPage';
-import { PurchasesPage } from '../pages/PurchasesPage';
-import { PurchaseDetailPage } from '../pages/PurchaseDetailPage';
-import { OrdersPage } from '../pages/OrdersPage';
-import { SalesPage } from '../pages/SalesPage';
-import { FinancePage } from '../pages/FinancePage';
-import { OperationsPage } from '../pages/OperationsPage';
-import { CatalogsPage } from '../pages/CatalogsPage';
-import { CatalogPdfRenderPage } from '../pages/CatalogPdfRenderPage';
-import { CatalogInstitutionalContentPage } from '../pages/CatalogInstitutionalContentPage';
-import { PublicHubPage } from '../pages/PublicHubPage';
-import { CloudWorkspacePage } from '../pages/CloudWorkspacePage';
-import { AssistantPage } from '../pages/AssistantPage';
 
+
+
+
+
+const ProductsPage = lazy(async () => {
+  const module = await import('../pages/ProductsPage');
+  return { default: module.ProductsPage };
+});
+
+const ProductDetailPage = lazy(async () => {
+  const module = await import('../pages/ProductDetailPage');
+  return { default: module.ProductDetailPage };
+});
+
+const CreateProductPage = lazy(async () => {
+  const module = await import('../pages/CreateProductPage');
+  return { default: module.CreateProductPage };
+});
+
+const UpdateProductPage = lazy(async () => {
+  const module = await import('../pages/UpdateProductPage');
+  return { default: module.UpdateProductPage };
+});
+
+const ChangeProductSalePricePage = lazy(async () => {
+  const module = await import('../pages/ChangeProductSalePricePage');
+  return { default: module.ChangeProductSalePricePage };
+});
+
+const ProductImagesPage = lazy(async () => {
+  const module = await import('../pages/ProductImagesPage');
+  return { default: module.ProductImagesPage };
+});
+
+const BrandsPage = lazy(async () => {
+  const module = await import('../pages/BrandsPage');
+  return { default: module.BrandsPage };
+});
+
+const CategoriesPage = lazy(async () => {
+  const module = await import('../pages/CategoriesPage');
+  return { default: module.CategoriesPage };
+});
+
+const LoginPage = lazy(async () => {
+  const module = await import('../pages/LoginPage');
+  return { default: module.LoginPage };
+});
+
+const BootstrapAdminPage = lazy(async () => {
+  const module = await import('../pages/BootstrapAdminPage');
+  return { default: module.BootstrapAdminPage };
+});
+
+const DevAuthProbePage = lazy(async () => {
+  const module = await import('../pages/DevAuthProbePage');
+  return { default: module.DevAuthProbePage };
+});
+
+const InventoryPage = lazy(async () => {
+  const module = await import('../pages/InventoryPage');
+  return { default: module.InventoryPage };
+});
+
+const SuppliersPage = lazy(async () => {
+  const module = await import('../pages/SuppliersPage');
+  return { default: module.SuppliersPage };
+});
+
+const PurchasesPage = lazy(async () => {
+  const module = await import('../pages/PurchasesPage');
+  return { default: module.PurchasesPage };
+});
+
+const PurchaseDetailPage = lazy(async () => {
+  const module = await import('../pages/PurchaseDetailPage');
+  return { default: module.PurchaseDetailPage };
+});
+
+const OrdersPage = lazy(async () => {
+  const module = await import('../pages/OrdersPage');
+  return { default: module.OrdersPage };
+});
+
+const SalesPage = lazy(async () => {
+  const module = await import('../pages/SalesPage');
+  return { default: module.SalesPage };
+});
+
+const FinancePage = lazy(async () => {
+  const module = await import('../pages/FinancePage');
+  return { default: module.FinancePage };
+});
+
+const CatalogsPage = lazy(async () => {
+  const module = await import('../pages/CatalogsPage');
+  return { default: module.CatalogsPage };
+});
+
+const CatalogPdfRenderPage = lazy(async () => {
+  const module = await import('../pages/CatalogPdfRenderPage');
+  return { default: module.CatalogPdfRenderPage };
+});
+
+const CatalogInstitutionalContentPage = lazy(async () => {
+  const module = await import('../pages/CatalogInstitutionalContentPage');
+  return { default: module.CatalogInstitutionalContentPage };
+});
+
+const PublicHubPage = lazy(async () => {
+  const module = await import('../pages/PublicHubPage');
+  return { default: module.PublicHubPage };
+});
+
+const CloudWorkspacePage = lazy(async () => {
+  const module = await import('../pages/CloudWorkspacePage');
+  return { default: module.CloudWorkspacePage };
+});
+
+const AssistantPage = lazy(async () => {
+  const module = await import('../pages/AssistantPage');
+  return { default: module.AssistantPage };
+});
+
+const SocialContentPage = lazy(async () => {
+  const module = await import('../pages/SocialContentPage');
+  return { default: module.SocialContentPage };
+});
+
+const DashboardPage = lazy(async () => {
+  const module = await import('../pages/DashboardPage');
+  return { default: module.DashboardPage };
+});
+
+const OperationsPage = lazy(async () => {
+  const module = await import('../pages/OperationsPage');
+  return { default: module.OperationsPage };
+});
 export function App() {
   return (
-    <Routes>
+    <Suspense fallback={<div>Cargando…</div>}>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/bootstrap-admin" element={<BootstrapAdminPage />} />
       <Route element={<ProtectedRoute />}>
@@ -51,6 +165,7 @@ export function App() {
           <Route path="/catalogs" element={<CatalogsPage />} />
           <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
           <Route path="/content/public-hub" element={<PublicHubPage />} />
+          <Route path="/content/social" element={<SocialContentPage />} />
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />
@@ -62,6 +177,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
