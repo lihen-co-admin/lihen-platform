@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type {
   ContentSchedule,
   PreparedPublication,
-  PublicationAttempt,
 } from '../src';
 
 import {
@@ -41,22 +40,6 @@ function makePreparedPublication(
     creativeAssetIds: ['asset-1'],
     status: 'APPROVED',
     preparedAt: new Date('2026-09-24T20:30:00.000Z'),
-    ...overrides,
-  };
-}
-
-function makeAttempt(
-  overrides: Partial<PublicationAttempt> = {},
-): PublicationAttempt {
-  return {
-    id: 'attempt-1',
-    preparedPublicationId: 'prepared-1',
-    attemptNumber: 1,
-    status: 'PENDING',
-    startedAt: null,
-    completedAt: null,
-    externalPublicationRef: null,
-    failureCode: null,
     ...overrides,
   };
 }
@@ -138,21 +121,30 @@ describe('InMemoryMarketingSocialRepository', () => {
     ).resolves.toEqual([tiktok]);
   });
 
-  it('records attempts independently per PreparedPublication', async () => {
+  it('creates PENDING attempts independently per PreparedPublication', async () => {
     const repository =
       new InMemoryMarketingSocialRepository();
 
-    const instagramAttempt = makeAttempt();
+    const instagramAttempt =
+      await repository.createPendingPublicationAttempt(
+        {
+          id: 'attempt-1',
+          preparedPublicationId: 'prepared-1',
+        },
+        { operationKey: 'attempt-instagram' },
+      );
 
-    const tiktokAttempt = makeAttempt({
-      id: 'attempt-2',
-      preparedPublicationId: 'prepared-2',
-      status: 'FAILED',
-      failureCode: 'PROVIDER_FAILURE',
-    });
+    const tiktokAttempt =
+      await repository.createPendingPublicationAttempt(
+        {
+          id: 'attempt-2',
+          preparedPublicationId: 'prepared-2',
+        },
+        { operationKey: 'attempt-tiktok' },
+      );
 
-    await repository.savePublicationAttempt(instagramAttempt);
-    await repository.savePublicationAttempt(tiktokAttempt);
+    expect(instagramAttempt.status).toBe('PENDING');
+    expect(tiktokAttempt.status).toBe('PENDING');
 
     await expect(
       repository.listPublicationAttemptsByPreparedPublicationId(
@@ -167,24 +159,30 @@ describe('InMemoryMarketingSocialRepository', () => {
     ).resolves.toEqual([tiktokAttempt]);
   });
 
-  it('orders attempts by attemptNumber for one PreparedPublication', async () => {
+  it('allocates increasing attempt numbers for one PreparedPublication', async () => {
     const repository =
       new InMemoryMarketingSocialRepository();
 
-    const second = makeAttempt({
-      id: 'attempt-2',
-      attemptNumber: 2,
-      status: 'FAILED',
-      failureCode: 'PROVIDER_FAILURE',
-    });
+    const first =
+      await repository.createPendingPublicationAttempt(
+        {
+          id: 'attempt-1',
+          preparedPublicationId: 'prepared-1',
+        },
+        { operationKey: 'attempt-first' },
+      );
 
-    const first = makeAttempt({
-      id: 'attempt-1',
-      attemptNumber: 1,
-    });
+    const second =
+      await repository.createPendingPublicationAttempt(
+        {
+          id: 'attempt-2',
+          preparedPublicationId: 'prepared-1',
+        },
+        { operationKey: 'attempt-second' },
+      );
 
-    await repository.savePublicationAttempt(second);
-    await repository.savePublicationAttempt(first);
+    expect(first.attemptNumber).toBe(1);
+    expect(second.attemptNumber).toBe(2);
 
     await expect(
       repository.listPublicationAttemptsByPreparedPublicationId(

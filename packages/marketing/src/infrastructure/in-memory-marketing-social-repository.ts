@@ -1,6 +1,10 @@
 import type { ContentSchedule } from '../domain/content-schedule';
 import type { PreparedPublication } from '../domain/prepared-publication';
 import type { PublicationAttempt } from '../domain/publication-attempt';
+import {
+  MarketingSocialOperationKeyRequiredError,
+  MarketingSocialWriteOperationConflictError,
+} from '../domain/errors/marketing-social-errors';
 import type {
   MarketingSocialRepository,
   MarketingSocialWriteContext,
@@ -16,6 +20,15 @@ implements MarketingSocialRepository {
 
   private readonly publicationAttempts =
     new Map<string, PublicationAttempt>();
+
+  private readonly publicationAttemptOperations =
+    new Map<
+      string,
+      {
+        readonly id: string;
+        readonly preparedPublicationId: string;
+      }
+    >();
 
   public async saveContentSchedule(
     schedule: ContentSchedule,
@@ -68,11 +81,76 @@ implements MarketingSocialRepository {
       );
   }
 
-  public async savePublicationAttempt(
-    attempt: PublicationAttempt,
+  public async createPendingPublicationAttempt(
+    input: {
+      readonly id: string;
+      readonly preparedPublicationId: string;
+    },
+    context: MarketingSocialWriteContext,
   ): Promise<PublicationAttempt> {
-    this.publicationAttempts.set(attempt.id, attempt);
-    return attempt;
+    const operationKey = context.operationKey.trim();
+
+    if (operationKey.length === 0) {
+      throw new MarketingSocialOperationKeyRequiredError();
+    }
+
+    const existingOperation =
+      this.publicationAttemptOperations.get(operationKey);
+
+    if (existingOperation) {
+      if (
+        existingOperation.id !== input.id ||
+        existingOperation.preparedPublicationId !==
+          input.preparedPublicationId
+      ) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      const existingAttempt =
+        this.publicationAttempts.get(existingOperation.id);
+
+      if (!existingAttempt) {
+        throw new MarketingSocialWriteOperationConflictError();
+      }
+
+      return existingAttempt;
+    }
+
+    const existingAttempts =
+      await this.listPublicationAttemptsByPreparedPublicationId(
+        input.preparedPublicationId,
+      );
+
+    const persistedAttempt: PublicationAttempt = {
+      id: input.id,
+      preparedPublicationId: input.preparedPublicationId,
+      attemptNumber:
+        existingAttempts.reduce(
+          (maximum, existing) =>
+            Math.max(maximum, existing.attemptNumber),
+          0,
+        ) + 1,
+      status: 'PENDING',
+      startedAt: null,
+      completedAt: null,
+      externalPublicationRef: null,
+      failureCode: null,
+    };
+
+    this.publicationAttempts.set(
+      persistedAttempt.id,
+      persistedAttempt,
+    );
+
+    this.publicationAttemptOperations.set(
+      operationKey,
+      {
+        id: input.id,
+        preparedPublicationId: input.preparedPublicationId,
+      },
+    );
+
+    return persistedAttempt;
   }
 
   public async listPublicationAttemptsByPreparedPublicationId(
