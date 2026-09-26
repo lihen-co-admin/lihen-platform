@@ -15,7 +15,7 @@ describe('WAVE 9 / GAP-032 LIHEN Cloud Workspace UI architecture', () => {
   );
 
   it('reuses the existing Control Center shell and adds one workspace route', () => {
-    expect(app).toContain("import { CloudWorkspacePage } from '../pages/CloudWorkspacePage';");
+    expect(app).toContain("import('../pages/CloudWorkspacePage')");
     expect(app).toContain('<Route path="/cloud" element={<CloudWorkspacePage />} />');
     expect(shell).toContain("{ to: '/cloud', label: 'Workspace', icon: '☁' }");
   });

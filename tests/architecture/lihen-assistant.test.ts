@@ -32,7 +32,7 @@ describe('WAVE 10 / GAP-034 LIHEN Assistant architecture', () => {
   });
 
   it('adds one protected conversational route in the existing Control Center', () => {
-    expect(app).toContain("import { AssistantPage } from '../pages/AssistantPage';");
+    expect(app).toContain("import('../pages/AssistantPage')");
     expect(app).toContain('<Route path="/assistant" element={<AssistantPage />} />');
     expect(shell).toContain("{ to: '/assistant', label: 'Assistant', icon: '✧' }");
   });
