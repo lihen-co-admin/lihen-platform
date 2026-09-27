@@ -28,12 +28,6 @@ interface PreparedPublicationRow {
   readonly status: string;
 }
 
-interface PublicationAttemptRow {
-  readonly id: string;
-  readonly prepared_publication_id: string;
-  readonly status: string;
-}
-
 interface ProductImageRpcRow {
   readonly id: unknown;
   readonly product_id: unknown;
@@ -100,7 +94,11 @@ async function publishMetaImage(
   const caption = publicationCaption(publication);
 
   const post = async (path: string, body: Record<string, string>): Promise<MetaGraphResponse> => {
-    const url = new URL(`https://graph.facebook.com/${graphApiVersion}/${path}`);
+    const graphHost = publication.channel === 'FACEBOOK'
+      ? 'graph.facebook.com'
+      : 'graph.instagram.com';
+
+    const url = new URL(`https://${graphHost}/${graphApiVersion}/${path}`);
     const params = new URLSearchParams(body);
     params.set('access_token', accessToken);
     const response = await fetch(url, { method: 'POST', body: params });
@@ -124,10 +122,71 @@ async function publishMetaImage(
     if (!created.id) {
       return { outcome: 'FAILED', failureCode: created.error?.code ? `META_${created.error.code}` : 'META_CONTAINER_CREATE_FAILED' };
     }
-    const published = await post(`${instagramAccountId}/media_publish`, { creation_id: created.id });
+    const getContainerStatus = async (): Promise<string | null> => {
+      const url = new URL(
+        `https://graph.instagram.com/${graphApiVersion}/${created.id}`,
+      );
+      url.searchParams.set('fields', 'status_code');
+      url.searchParams.set('access_token', accessToken);
+
+      const response = await fetch(url);
+      const data = await response.json() as {
+        status_code?: string;
+        error?: { code?: number };
+      };
+
+      if (data.error?.code) {
+        return `META_${data.error.code}`;
+      }
+
+      return data.status_code ?? null;
+    };
+
+    let containerStatus: string | null = null;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      containerStatus = await getContainerStatus();
+
+      if (containerStatus === 'FINISHED') break;
+
+      if (
+        containerStatus === 'ERROR'
+        || containerStatus === 'EXPIRED'
+        || containerStatus?.startsWith('META_')
+      ) {
+        return {
+          outcome: 'FAILED',
+          failureCode: containerStatus === 'ERROR'
+            ? 'META_CONTAINER_PROCESSING_ERROR'
+            : containerStatus === 'EXPIRED'
+              ? 'META_CONTAINER_EXPIRED'
+              : containerStatus,
+        };
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    if (containerStatus !== 'FINISHED') {
+      return {
+        outcome: 'FAILED',
+        failureCode: 'META_CONTAINER_PROCESSING_TIMEOUT',
+      };
+    }
+
+    const published = await post(
+      `${instagramAccountId}/media_publish`,
+      { creation_id: created.id },
+    );
+
     return published.id
       ? { outcome: 'SUCCEEDED', externalPublicationRef: published.id }
-      : { outcome: 'FAILED', failureCode: published.error?.code ? `META_${published.error.code}` : 'META_MEDIA_PUBLISH_FAILED' };
+      : {
+          outcome: 'FAILED',
+          failureCode: published.error?.code
+            ? `META_${published.error.code}`
+            : 'META_MEDIA_PUBLISH_FAILED',
+        };
   }
 
   return { outcome: 'FAILED', failureCode: 'META_CHANNEL_UNSUPPORTED' };
@@ -389,33 +448,68 @@ Deno.serve(async (req: Request) => {
       const startOperationKey = requiredString(payload, 'startOperationKey').trim();
       const completionOperationKey = requiredString(payload, 'completionOperationKey').trim();
 
-      const { data: publicationData, error: publicationError } = await serviceSupabase
-        .from('marketing_prepared_publications')
-        .select('id,channel,copy,cta,hashtags,creative_asset_ids,status')
-        .eq('id', preparedPublicationId)
-        .maybeSingle();
-      if (publicationError || !publicationData) {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_PREPARED_PUBLICATION_NOT_FOUND', externalPublication: false }, 404);
-      }
-      const publication = publicationData as PreparedPublicationRow;
-      if (publication.status !== 'APPROVED') {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_NOT_APPROVED', externalPublication: false }, 409);
-      }
-      if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY'].includes(publication.channel)) {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED', externalPublication: false }, 409);
+      const { data: executionData, error: executionError } =
+        await serviceSupabase.rpc(
+          'get_marketing_publication_execution_server_controlled',
+          {
+            p_actor_id: user.id,
+            p_attempt_id: attemptId,
+            p_prepared_publication_id: preparedPublicationId,
+          },
+        );
+
+      if (executionError) {
+        throw new Error(
+          `LIHEN_MARKETING_SOCIAL_EXECUTION_READ_FAILED:${executionError.message ?? 'UNKNOWN'}`,
+        );
       }
 
-      const { data: attemptData, error: attemptError } = await serviceSupabase
-        .from('marketing_publication_attempts')
-        .select('id,prepared_publication_id,status')
-        .eq('id', attemptId)
-        .maybeSingle();
-      if (attemptError || !attemptData) {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_FOUND', externalPublication: false }, 404);
+      const executionRow =
+        Array.isArray(executionData) ? executionData[0] : null;
+
+      if (!executionRow) {
+        return json({
+          error: 'LIHEN_MARKETING_SOCIAL_EXECUTION_NOT_FOUND',
+          externalPublication: false,
+        }, 404);
       }
-      const attempt = attemptData as PublicationAttemptRow;
-      if (attempt.prepared_publication_id !== publication.id || attempt.status !== 'PENDING') {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING', externalPublication: false }, 409);
+
+      const publication: PreparedPublicationRow = {
+        id: String(executionRow.publication_id),
+        channel: String(executionRow.channel),
+        copy: String(executionRow.copy),
+        cta: executionRow.cta === null ? null : String(executionRow.cta),
+        hashtags: executionRow.hashtags ?? [],
+        creative_asset_ids:
+          (executionRow.creative_asset_ids ?? []).map(String),
+        status: String(executionRow.publication_status),
+      };
+
+      if (publication.status !== 'APPROVED') {
+        return json({
+          error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_NOT_APPROVED',
+          externalPublication: false,
+        }, 409);
+      }
+
+      if (
+        !['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY']
+          .includes(publication.channel)
+      ) {
+        return json({
+          error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED',
+          externalPublication: false,
+        }, 409);
+      }
+
+      if (
+        String(executionRow.prepared_publication_id) !== publication.id
+        || String(executionRow.attempt_status) !== 'PENDING'
+      ) {
+        return json({
+          error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING',
+          externalPublication: false,
+        }, 409);
       }
 
       const productImageId = publication.creative_asset_ids?.[0];

@@ -25,7 +25,7 @@ interface SocialEdgeFunctionClient {
 
 interface RuntimeResponse<T> {
   readonly data: T | null;
-  readonly externalPublication: false;
+  readonly externalPublication: boolean;
 }
 
 function dates(schedule: ContentSchedule) {
@@ -92,7 +92,11 @@ async function invoke<T>(
     );
   }
 
-  if (!data || !data.data || data.externalPublication !== false) {
+  if (
+    !data
+    || !data.data
+    || typeof data.externalPublication !== 'boolean'
+  ) {
     throw new Error(
       'LIHEN_MARKETING_SOCIAL_RUNTIME_INVALID_RESPONSE',
     );
@@ -154,26 +158,22 @@ export async function createControlledSocialDevCase(
   };
 }
 
-export async function verifySocialPublicationBlockedInDev(
+export async function executeControlledSocialPublicationInDev(
   client: SocialEdgeFunctionClient =
     getBrowserSupabaseClient(import.meta.env),
-): Promise<never> {
-  await invoke(
+): Promise<unknown> {
+  return invoke(
     client,
     'EXECUTE_PUBLICATION_ATTEMPT',
     {
-      attemptId: '622102d8-93d4-43a0-9ecb-4a6180e55fb9',
+      attemptId: '5cdfdfb5-f235-4f81-a08a-19908883f2de',
       preparedPublicationId:
-        'dbb8e29c-dac5-4a67-904e-0eebdde45d82',
-      productId: '00000000-0000-0000-0000-000000000000',
+        '7d949f5c-48b3-4454-b5eb-e7c28a9c5b13',
+      productId: '50355067-02bd-4eb7-bed6-28f68bd4b8ec',
       startOperationKey:
-        'social-dev:block-smoke:start:622102d8',
+        'social-dev:first-real-instagram:start:5cdfdfb5',
       completionOperationKey:
-        'social-dev:block-smoke:complete:622102d8',
+        'social-dev:first-real-instagram:complete:5cdfdfb5',
     },
-  );
-
-  throw new Error(
-    'LIHEN_MARKETING_SOCIAL_BLOCK_SMOKE_UNEXPECTED_SUCCESS',
   );
 }
