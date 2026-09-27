@@ -3,10 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { AppShell } from '../components/AppShell';
 
-
-
-
-
 const ProductsPage = lazy(async () => {
   const module = await import('../pages/ProductsPage');
   return { default: module.ProductsPage };
@@ -132,6 +128,11 @@ const SocialContentPage = lazy(async () => {
   return { default: module.SocialContentPage };
 });
 
+const WhatsAppPreflightPage = lazy(async () => {
+  const module = await import('../pages/WhatsAppPreflightPage');
+  return { default: module.WhatsAppPreflightPage };
+});
+
 const DashboardPage = lazy(async () => {
   const module = await import('../pages/DashboardPage');
   return { default: module.DashboardPage };
@@ -145,38 +146,40 @@ export function App() {
   return (
     <Suspense fallback={<div>Cargando…</div>}>
       <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/bootstrap-admin" element={<BootstrapAdminPage />} />
-      <Route element={<ProtectedRoute />}>
-        <Route path="/catalogs/:id/render" element={<CatalogPdfRenderPage />} />
-        <Route element={<AppShell />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/suppliers" element={<SuppliersPage />} />
-          <Route path="/purchases" element={<PurchasesPage />} />
-          <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/sales" element={<SalesPage />} />
-          <Route path="/finance" element={<FinancePage />} />
-          <Route path="/operations" element={<OperationsPage />} />
-          <Route path="/cloud" element={<CloudWorkspacePage />} />
-          <Route path="/assistant" element={<AssistantPage />} />
-          <Route path="/catalogs" element={<CatalogsPage />} />
-          <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
-          <Route path="/content/public-hub" element={<PublicHubPage />} />
-          <Route path="/content/social" element={<SocialContentPage />} />
-          <Route path="/brands" element={<BrandsPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />
-          <Route path="/products/new" element={<CreateProductPage />} />
-          <Route path="/products/:id/edit" element={<UpdateProductPage />} />
-          <Route path="/products/:id/price" element={<ChangeProductSalePricePage />} />
-          <Route path="/products/:id/images" element={<ProductImagesPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/bootstrap-admin" element={<BootstrapAdminPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/catalogs/:id/render" element={<CatalogPdfRenderPage />} />
+          <Route element={<AppShell />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/suppliers" element={<SuppliersPage />} />
+            <Route path="/purchases" element={<PurchasesPage />} />
+            <Route path="/purchases/:id" element={<PurchaseDetailPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/sales" element={<SalesPage />} />
+            <Route path="/finance" element={<FinancePage />} />
+            <Route path="/operations" element={<OperationsPage />} />
+            <Route path="/cloud" element={<CloudWorkspacePage />} />
+            <Route path="/assistant" element={<AssistantPage />} />
+            <Route path="/catalogs" element={<CatalogsPage />} />
+            <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
+            <Route path="/content/public-hub" element={<PublicHubPage />} />
+            <Route path="/content/social" element={<SocialContentPage />} />
+            <Route path="/brands" element={<BrandsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />
+            <Route path="/dev-whatsapp-preflight" element={<WhatsAppPreflightPage />} />
+
+            <Route path="/products/new" element={<CreateProductPage />} />
+            <Route path="/products/:id/edit" element={<UpdateProductPage />} />
+            <Route path="/products/:id/price" element={<ChangeProductSalePricePage />} />
+            <Route path="/products/:id/images" element={<ProductImagesPage />} />
+            <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
         </Route>
-      </Route>
       </Routes>
     </Suspense>
   );

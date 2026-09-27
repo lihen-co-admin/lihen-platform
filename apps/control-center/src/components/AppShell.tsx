@@ -62,7 +62,9 @@ export function AppShell() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-block">
-          <div className="brand-mark"><img src={logo} alt="" /></div>
+          <div className="brand-mark">
+            <img src={logo} alt="" />
+          </div>
           <div>
             <strong>LIHEN</strong>
             <span>Control Center · DEV</span>
@@ -75,7 +77,9 @@ export function AppShell() {
               <span className="nav-group__label">{group.label}</span>
               {group.items.map((item) => (
                 <NavLink key={item.to} to={item.to} end={item.end ?? false}>
-                  <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+                  <span className="nav-icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
                 </NavLink>
               ))}
@@ -86,8 +90,16 @@ export function AppShell() {
             <div className="nav-group nav-group--dev">
               <span className="nav-group__label">Desarrollo</span>
               <NavLink to="/dev-auth-probe">
-                <span className="nav-icon" aria-hidden="true">⚙</span>
+                <span className="nav-icon" aria-hidden="true">
+                  ⚙
+                </span>
                 <span>Auth + RLS Probe</span>
+              </NavLink>
+              <NavLink to="/dev-whatsapp-preflight">
+                <span className="nav-icon" aria-hidden="true">
+                  ◇
+                </span>
+                <span>WhatsApp Preflight</span>
               </NavLink>
             </div>
           ) : null}
@@ -99,11 +111,15 @@ export function AppShell() {
           <div className="topbar-identity">
             <span className="topbar-kicker">LIHEN CONTROL CENTER</span>
             <strong>Administración central</strong>
-            <small>{auth.user?.email ?? 'Sesión autenticada'} · {auth.profile?.roleCode ?? 'sin rol'}</small>
+            <small>
+              {auth.user?.email ?? 'Sesión autenticada'} · {auth.profile?.roleCode ?? 'sin rol'}
+            </small>
           </div>
           <div className="topbar-actions">
             <span className="environment-pill">DEV seguro</span>
-            <button type="button" className="button-ghost" onClick={() => void auth.signOut()}>Cerrar sesión</button>
+            <button type="button" className="button-ghost" onClick={() => void auth.signOut()}>
+              Cerrar sesión
+            </button>
           </div>
         </header>
 
