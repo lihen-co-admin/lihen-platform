@@ -11,7 +11,7 @@ import {
 } from '../composition/social-publication-e2e';
 import {
   createControlledSocialDevCase,
-  verifySocialPublicationBlockedInDev,
+  executeControlledSocialPublicationInDev,
 } from '../composition/social-dev-runtime';
 import {
   isSimulationAttempt,
@@ -135,6 +135,14 @@ export function SocialContentPage() {
         campaignContentId: crypto.randomUUID(),
         channelVariantId: nextSchedule.channelVariantId,
         scheduleId: nextSchedule.id,
+        channel: 'INSTAGRAM_FEED' as const,
+        copy:
+          'Laura Mallatex Sublimada ✨ Una propuesta con estilo para destacar tu esencia.',
+        callToAction: 'Conoce más en LIHEN.CO',
+        hashtags: ['LIHENCO', 'Style', 'Moda'],
+        creativeAssetIds: [
+          'df5df9fb-d00f-5906-afc6-4d6c17916898',
+        ],
       };
 
       const result = await createControlledSocialDevCase({
@@ -157,13 +165,12 @@ export function SocialContentPage() {
     }
   }
 
-  async function runBlockedPublicationSmoke() {
+  async function runControlledRealPublication() {
     setBusy(true);
     setError(null);
 
     try {
-      await verifySocialPublicationBlockedInDev();
-      setError('ERROR: la publicación no fue bloqueada.');
+      await executeControlledSocialPublicationInDev();
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : String(cause);
@@ -351,9 +358,9 @@ export function SocialContentPage() {
           <button
             type="button"
             disabled={busy}
-            onClick={() => void runBlockedPublicationSmoke()}
+            onClick={() => void runControlledRealPublication()}
           >
-            Probar bloqueo de publicación DEV
+            PUBLICAR PRUEBA REAL EN INSTAGRAM
           </button>
         </div>
 
