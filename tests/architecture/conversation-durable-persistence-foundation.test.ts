@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const migrationPath = resolve(
   process.cwd(),
-  'database/migrations/20260927002000_conversation_durable_persistence_foundation.sql',
+  'database/migrations/20260927200000_conversation_durable_persistence_foundation.sql',
 );
 
 const sql = readFileSync(migrationPath, 'utf8');
