@@ -93,7 +93,9 @@ async function publishMetaImage(
   publication: PreparedPublicationRow,
   publicUrl: string,
 ): Promise<{ outcome: 'SUCCEEDED'; externalPublicationRef: string } | { outcome: 'FAILED'; failureCode: string }> {
-  const accessToken = requiredEnv('META_ACCESS_TOKEN');
+  const accessToken = publication.channel === 'FACEBOOK'
+    ? requiredEnv('META_FACEBOOK_ACCESS_TOKEN')
+    : requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
   const graphApiVersion = requiredEnv('META_GRAPH_API_VERSION');
   const caption = publicationCaption(publication);
 
@@ -430,10 +432,14 @@ Deno.serve(async (req: Request) => {
       );
 
       // All provider/config preflight is intentionally completed before START.
-      requiredEnv('META_ACCESS_TOKEN');
       requiredEnv('META_GRAPH_API_VERSION');
-      if (publication.channel === 'FACEBOOK') requiredEnv('META_FACEBOOK_PAGE_ID');
-      else requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
+      if (publication.channel === 'FACEBOOK') {
+        requiredEnv('META_FACEBOOK_ACCESS_TOKEN');
+        requiredEnv('META_FACEBOOK_PAGE_ID');
+      } else {
+        requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
+        requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
+      }
 
       const started = await serviceSupabase.rpc(
         'start_marketing_publication_attempt_server_controlled',
