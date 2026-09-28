@@ -1,13 +1,18 @@
 import { createClient } from 'supabase';
+import {
+  assessOperationalSnapshot,
+  requireOperationalConfirmation,
+  type OperationalSnapshot,
+} from './operational-policy.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, apikey, content-type, x-client-info',
+  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 type Action =
+  | 'ASSESS_PUBLICATION_OPERATION'
   | 'READ_EDITORIAL_WORKSPACE'
   | 'SAVE_CONTENT_SCHEDULE'
   | 'SAVE_PREPARED_PUBLICATION'
@@ -55,14 +60,19 @@ function publicationCaption(publication: PreparedPublicationRow): string {
   return [
     publication.copy.trim(),
     publication.cta?.trim() ?? '',
-    (publication.hashtags ?? [])
-      .map((tag) => tag.startsWith('#') ? tag : `#${tag}`)
-      .join(' '),
-  ].filter(Boolean).join('\n\n');
+    (publication.hashtags ?? []).map((tag) => (tag.startsWith('#') ? tag : `#${tag}`)).join(' '),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 async function resolveAuthorizedProductImageUrl(
-  client: { rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }> },
+  client: {
+    rpc: (
+      name: string,
+      args: Record<string, unknown>,
+    ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+  },
   productId: string,
   productImageId: string,
 ): Promise<string> {
@@ -71,11 +81,12 @@ async function resolveAuthorizedProductImageUrl(
     throw new Error(`LIHEN_PRODUCT_IMAGE_RESOLUTION_FAILED:${result.error.message ?? 'UNKNOWN'}`);
   }
 
-  const rows = Array.isArray(result.data) ? result.data as ProductImageRpcRow[] : [];
-  const row = rows.find((candidate) =>
-    String(candidate.id) === productImageId
-    && String(candidate.product_id) === productId
-    && String(candidate.status) === 'ACTIVE'
+  const rows = Array.isArray(result.data) ? (result.data as ProductImageRpcRow[]) : [];
+  const row = rows.find(
+    (candidate) =>
+      String(candidate.id) === productImageId &&
+      String(candidate.product_id) === productId &&
+      String(candidate.status) === 'ACTIVE',
   );
   if (!row) throw new Error('LIHEN_PRODUCT_IMAGE_NOT_AUTHORIZED_OR_NOT_FOUND');
 
@@ -87,23 +98,26 @@ async function resolveAuthorizedProductImageUrl(
 async function publishMetaImage(
   publication: PreparedPublicationRow,
   publicUrl: string,
-): Promise<{ outcome: 'SUCCEEDED'; externalPublicationRef: string } | { outcome: 'FAILED'; failureCode: string }> {
-  const accessToken = publication.channel === 'FACEBOOK'
-    ? requiredEnv('META_FACEBOOK_ACCESS_TOKEN')
-    : requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
+): Promise<
+  | { outcome: 'SUCCEEDED'; externalPublicationRef: string }
+  | { outcome: 'FAILED'; failureCode: string }
+> {
+  const accessToken =
+    publication.channel === 'FACEBOOK'
+      ? requiredEnv('META_FACEBOOK_ACCESS_TOKEN')
+      : requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
   const graphApiVersion = requiredEnv('META_GRAPH_API_VERSION');
   const caption = publicationCaption(publication);
 
   const post = async (path: string, body: Record<string, string>): Promise<MetaGraphResponse> => {
-    const graphHost = publication.channel === 'FACEBOOK'
-      ? 'graph.facebook.com'
-      : 'graph.instagram.com';
+    const graphHost =
+      publication.channel === 'FACEBOOK' ? 'graph.facebook.com' : 'graph.instagram.com';
 
     const url = new URL(`https://${graphHost}/${graphApiVersion}/${path}`);
     const params = new URLSearchParams(body);
     params.set('access_token', accessToken);
     const response = await fetch(url, { method: 'POST', body: params });
-    return await response.json() as MetaGraphResponse;
+    return (await response.json()) as MetaGraphResponse;
   };
 
   if (publication.channel === 'FACEBOOK') {
@@ -111,27 +125,34 @@ async function publishMetaImage(
     const result = await post(`${pageId}/photos`, { url: publicUrl, caption });
     return result.id
       ? { outcome: 'SUCCEEDED', externalPublicationRef: result.id }
-      : { outcome: 'FAILED', failureCode: result.error?.code ? `META_${result.error.code}` : 'META_PUBLICATION_FAILED' };
+      : {
+          outcome: 'FAILED',
+          failureCode: result.error?.code ? `META_${result.error.code}` : 'META_PUBLICATION_FAILED',
+        };
   }
 
   if (publication.channel === 'INSTAGRAM_FEED' || publication.channel === 'INSTAGRAM_STORY') {
     const instagramAccountId = requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
-    const container = publication.channel === 'INSTAGRAM_STORY'
-      ? { media_type: 'STORIES', image_url: publicUrl }
-      : { image_url: publicUrl, caption };
+    const container =
+      publication.channel === 'INSTAGRAM_STORY'
+        ? { media_type: 'STORIES', image_url: publicUrl }
+        : { image_url: publicUrl, caption };
     const created = await post(`${instagramAccountId}/media`, container);
     if (!created.id) {
-      return { outcome: 'FAILED', failureCode: created.error?.code ? `META_${created.error.code}` : 'META_CONTAINER_CREATE_FAILED' };
+      return {
+        outcome: 'FAILED',
+        failureCode: created.error?.code
+          ? `META_${created.error.code}`
+          : 'META_CONTAINER_CREATE_FAILED',
+      };
     }
     const getContainerStatus = async (): Promise<string | null> => {
-      const url = new URL(
-        `https://graph.instagram.com/${graphApiVersion}/${created.id}`,
-      );
+      const url = new URL(`https://graph.instagram.com/${graphApiVersion}/${created.id}`);
       url.searchParams.set('fields', 'status_code');
       url.searchParams.set('access_token', accessToken);
 
       const response = await fetch(url);
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         status_code?: string;
         error?: { code?: number };
       };
@@ -151,17 +172,18 @@ async function publishMetaImage(
       if (containerStatus === 'FINISHED') break;
 
       if (
-        containerStatus === 'ERROR'
-        || containerStatus === 'EXPIRED'
-        || containerStatus?.startsWith('META_')
+        containerStatus === 'ERROR' ||
+        containerStatus === 'EXPIRED' ||
+        containerStatus?.startsWith('META_')
       ) {
         return {
           outcome: 'FAILED',
-          failureCode: containerStatus === 'ERROR'
-            ? 'META_CONTAINER_PROCESSING_ERROR'
-            : containerStatus === 'EXPIRED'
-              ? 'META_CONTAINER_EXPIRED'
-              : containerStatus,
+          failureCode:
+            containerStatus === 'ERROR'
+              ? 'META_CONTAINER_PROCESSING_ERROR'
+              : containerStatus === 'EXPIRED'
+                ? 'META_CONTAINER_EXPIRED'
+                : containerStatus,
         };
       }
 
@@ -175,10 +197,9 @@ async function publishMetaImage(
       };
     }
 
-    const published = await post(
-      `${instagramAccountId}/media_publish`,
-      { creation_id: created.id },
-    );
+    const published = await post(`${instagramAccountId}/media_publish`, {
+      creation_id: created.id,
+    });
 
     return published.id
       ? { outcome: 'SUCCEEDED', externalPublicationRef: published.id }
@@ -217,10 +238,7 @@ function publishableKey(): string {
   throw new Error('SUPABASE_PUBLISHABLE_KEY_NOT_CONFIGURED');
 }
 
-function requiredString(
-  payload: Record<string, unknown>,
-  key: string,
-): string {
+function requiredString(payload: Record<string, unknown>, key: string): string {
   const value = payload[key];
 
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -230,10 +248,7 @@ function requiredString(
   return value;
 }
 
-function nullableString(
-  payload: Record<string, unknown>,
-  key: string,
-): string | null {
+function nullableString(payload: Record<string, unknown>, key: string): string | null {
   const value = payload[key];
 
   if (value === null || value === undefined || value === '') {
@@ -247,18 +262,12 @@ function nullableString(
   return value;
 }
 
-function stringArray(
-  payload: Record<string, unknown>,
-  key: string,
-): string[] {
+function stringArray(payload: Record<string, unknown>, key: string): string[] {
   const value = payload[key];
 
   if (value === undefined || value === null) return [];
 
-  if (
-    !Array.isArray(value)
-    || value.some((item) => typeof item !== 'string')
-  ) {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
     throw new Error(`LIHEN_MARKETING_SOCIAL_PAYLOAD_${key.toUpperCase()}_INVALID`);
   }
 
@@ -283,37 +292,28 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
 
-    const userSupabase = createClient(
-      supabaseUrl,
-      publishableKey(),
-      {
-        global: {
-          headers: { Authorization: authorization },
-        },
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
+    const userSupabase = createClient(supabaseUrl, publishableKey(), {
+      global: {
+        headers: { Authorization: authorization },
       },
-    );
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
-    const serviceRoleKey =
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!serviceRoleKey) {
       throw new Error('SUPABASE_SERVICE_ROLE_KEY_NOT_CONFIGURED');
     }
 
-    const serviceSupabase = createClient(
-      supabaseUrl,
-      serviceRoleKey,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
+    const serviceSupabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
-    );
+    });
 
     const token = authorization.slice('Bearer '.length);
 
@@ -326,50 +326,154 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'LIHEN_AUTH_INVALID' }, 401);
     }
 
-    const { data: profile, error: profileError } =
-      await userSupabase
-        .from('profiles')
-        .select('id,role_code,authorization_status')
-        .eq('id', user.id)
-        .maybeSingle();
+    const { data: profile, error: profileError } = await userSupabase
+      .from('profiles')
+      .select('id,role_code,authorization_status')
+      .eq('id', user.id)
+      .maybeSingle();
 
     if (profileError) {
-      console.error(
-        'MARKETING_SOCIAL_PROFILE_LOOKUP_FAILED',
-        profileError,
-      );
-      return json(
-        { error: 'LIHEN_AUTHORIZATION_LOOKUP_FAILED' },
-        500,
-      );
+      console.error('MARKETING_SOCIAL_PROFILE_LOOKUP_FAILED', profileError);
+      return json({ error: 'LIHEN_AUTHORIZATION_LOOKUP_FAILED' }, 500);
     }
 
     if (
-      !profile
-      || profile.authorization_status !== 'ACTIVE'
-      || !['OWNER', 'ADMIN'].includes(profile.role_code)
+      !profile ||
+      profile.authorization_status !== 'ACTIVE' ||
+      !['OWNER', 'ADMIN'].includes(profile.role_code)
     ) {
-      return json(
-        { error: 'LIHEN_MARKETING_SOCIAL_FORBIDDEN' },
-        403,
-      );
+      return json({ error: 'LIHEN_MARKETING_SOCIAL_FORBIDDEN' }, 403);
     }
 
-    const body = await req.json() as RuntimeRequest;
+    const body = (await req.json()) as RuntimeRequest;
     const action = body.action;
     const payload = body.payload;
 
     if (!action || !payload || typeof payload !== 'object') {
+      return json({ error: 'LIHEN_MARKETING_SOCIAL_REQUEST_INVALID' }, 400);
+    }
+
+    const operational = [
+      'ASSESS_PUBLICATION_OPERATION',
+      'CREATE_PUBLICATION_ATTEMPT',
+      'EXECUTE_PUBLICATION_ATTEMPT',
+    ].includes(action);
+    if (operational && Deno.env.get('MARKETING_SOCIAL_ENVIRONMENT') !== 'DEV') {
       return json(
-        { error: 'LIHEN_MARKETING_SOCIAL_REQUEST_INVALID' },
-        400,
+        { error: 'LIHEN_MARKETING_SOCIAL_DEV_REQUIRED', externalPublication: false },
+        409,
       );
     }
+    const readOperationalState = async () => {
+      const publicationId = requiredString(payload, 'preparedPublicationId');
+      const publicationResult = await serviceSupabase
+        .from('marketing_prepared_publications')
+        .select(
+          'id,campaign_id,campaign_content_id,channel_variant_id,schedule_id,channel,copy,cta,hashtags,creative_asset_ids,status,prepared_at',
+        )
+        .eq('id', publicationId)
+        .single();
+      if (publicationResult.error || !publicationResult.data)
+        throw new Error('LIHEN_MARKETING_SOCIAL_PUBLICATION_READ_FAILED');
+      const publication = publicationResult.data;
+      const scheduleResult = publication.schedule_id
+        ? await serviceSupabase
+            .from('marketing_content_schedules')
+            .select('id,channel_variant_id,scheduled_for,timezone,status,created_at,updated_at')
+            .eq('id', publication.schedule_id)
+            .single()
+        : { data: null, error: null };
+      // Scope reconciliation to this publication, independently of workspace limits.
+      const attemptsResult = await serviceSupabase
+        .from('marketing_publication_attempts')
+        .select(
+          'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code',
+        )
+        .eq('prepared_publication_id', publicationId)
+        .order('attempt_number', { ascending: false })
+        .limit(1000);
+      if (scheduleResult.error || attemptsResult.error)
+        throw new Error('LIHEN_MARKETING_SOCIAL_OPERATION_READ_FAILED');
+      if (attemptsResult.data?.length === 1000)
+        throw new Error('LIHEN_MARKETING_SOCIAL_ATTEMPT_HISTORY_TRUNCATED');
+      const state = {
+        publication,
+        schedule: scheduleResult.data,
+        attempts: attemptsResult.data ?? [],
+      } as OperationalSnapshot;
+      return state;
+    };
+    const assess = async () => {
+      const state = await readOperationalState();
+      const publication = state.publication;
+      const publicationId = publication.id;
+      const policy = assessOperationalSnapshot(state, Date.now());
+      const blockers = [...policy.blockers];
+      let publicUrl = '';
+      try {
+        publicUrl = await resolveAuthorizedProductImageUrl(
+          userSupabase,
+          requiredString(payload, 'productId'),
+          publication.creative_asset_ids?.[0] ?? '',
+        );
+      } catch {
+        blockers.push('PRODUCT_MEDIA_NOT_AUTHORIZED');
+      }
+      if (policy.nextAction === 'EXECUTE_PUBLICATION_ATTEMPT') {
+        if (!metaPublicationEnabled()) blockers.push('META_PUBLICATION_DISABLED');
+        const settings =
+          publication.channel === 'FACEBOOK'
+            ? ['META_GRAPH_API_VERSION', 'META_FACEBOOK_ACCESS_TOKEN', 'META_FACEBOOK_PAGE_ID']
+            : [
+                'META_GRAPH_API_VERSION',
+                'META_INSTAGRAM_ACCESS_TOKEN',
+                'META_INSTAGRAM_ACCOUNT_ID',
+              ];
+        if (settings.some((name) => !Deno.env.get(name)?.trim()))
+          blockers.push('PROVIDER_NOT_CONFIGURED');
+      }
+      const bytes = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(
+          JSON.stringify({ state, productId: payload.productId, publicUrl }),
+        ),
+      );
+      const snapshot = Array.from(new Uint8Array(bytes), (byte) =>
+        byte.toString(16).padStart(2, '0'),
+      ).join('');
+      return {
+        snapshot,
+        blockers,
+        nextAction: blockers.length ? null : policy.nextAction,
+        attemptId: policy.attemptId,
+        preparedPublicationId: publicationId,
+        productId: payload.productId,
+        channel: publication.channel,
+        copy: publication.copy,
+        callToAction: publication.cta ?? '',
+        hashtags: publication.hashtags ?? [],
+        creativeAssetIds: publication.creative_asset_ids ?? [],
+        publication,
+        assessedAt: new Date().toISOString(),
+        executionAllowed: false,
+      };
+    };
 
     let data: unknown;
     let error: { message?: string } | null = null;
 
     if (action === 'READ_EDITORIAL_WORKSPACE') {
+      if (payload.preparedPublicationId) {
+        const state = await readOperationalState();
+        return json({
+          data: {
+            publications: [state.publication],
+            schedules: state.schedule ? [state.schedule] : [],
+            attempts: state.attempts,
+          },
+          externalPublication: false,
+        });
+      }
       // Controlled, read-only workspace view. The request has already passed
       // bearer-token validation and the active OWNER/ADMIN profile check above.
       // Keep the tables private under RLS; only return the three existing
@@ -377,9 +481,7 @@ Deno.serve(async (req: Request) => {
       const [schedules, publications, attempts] = await Promise.all([
         serviceSupabase
           .from('marketing_content_schedules')
-          .select(
-            'id,channel_variant_id,scheduled_for,timezone,status,created_at,updated_at',
-          )
+          .select('id,channel_variant_id,scheduled_for,timezone,status,created_at,updated_at')
           .order('updated_at', { ascending: false })
           .limit(1000),
         serviceSupabase
@@ -399,7 +501,9 @@ Deno.serve(async (req: Request) => {
       ]);
       const failed = schedules.error ?? publications.error ?? attempts.error;
       if (failed) {
-        throw new Error(`LIHEN_MARKETING_SOCIAL_EDITORIAL_READ_FAILED:${failed.message ?? 'UNKNOWN'}`);
+        throw new Error(
+          `LIHEN_MARKETING_SOCIAL_EDITORIAL_READ_FAILED:${failed.message ?? 'UNKNOWN'}`,
+        );
       }
       data = {
         schedules: schedules.data ?? [],
@@ -411,13 +515,10 @@ Deno.serve(async (req: Request) => {
         'save_marketing_content_schedule_server_controlled',
         {
           p_actor_id: user.id,
-          p_operation_key:
-            requiredString(payload, 'operationKey').trim(),
+          p_operation_key: requiredString(payload, 'operationKey').trim(),
           p_id: requiredString(payload, 'id'),
-          p_channel_variant_id:
-            requiredString(payload, 'channelVariantId'),
-          p_scheduled_for:
-            requiredString(payload, 'scheduledFor'),
+          p_channel_variant_id: requiredString(payload, 'channelVariantId'),
+          p_scheduled_for: requiredString(payload, 'scheduledFor'),
           p_timezone: requiredString(payload, 'timezone'),
           p_status: requiredString(payload, 'status'),
           p_created_at: requiredString(payload, 'createdAt'),
@@ -432,69 +533,73 @@ Deno.serve(async (req: Request) => {
         'save_marketing_prepared_publication_server_controlled',
         {
           p_actor_id: user.id,
-          p_operation_key:
-            requiredString(payload, 'operationKey').trim(),
+          p_operation_key: requiredString(payload, 'operationKey').trim(),
           p_id: requiredString(payload, 'id'),
-          p_campaign_id:
-            requiredString(payload, 'campaignId'),
-          p_campaign_content_id:
-            requiredString(payload, 'campaignContentId'),
-          p_channel_variant_id:
-            requiredString(payload, 'channelVariantId'),
-          p_schedule_id:
-            nullableString(payload, 'scheduleId'),
+          p_campaign_id: requiredString(payload, 'campaignId'),
+          p_campaign_content_id: requiredString(payload, 'campaignContentId'),
+          p_channel_variant_id: requiredString(payload, 'channelVariantId'),
+          p_schedule_id: nullableString(payload, 'scheduleId'),
           p_channel: requiredString(payload, 'channel'),
           p_copy: requiredString(payload, 'copy'),
           p_cta: nullableString(payload, 'callToAction'),
           p_hashtags: stringArray(payload, 'hashtags'),
-          p_creative_asset_ids:
-            stringArray(payload, 'creativeAssetIds'),
+          p_creative_asset_ids: stringArray(payload, 'creativeAssetIds'),
           p_status: requiredString(payload, 'status'),
-          p_prepared_at:
-            requiredString(payload, 'preparedAt'),
+          p_prepared_at: requiredString(payload, 'preparedAt'),
         },
       );
 
       data = result.data;
       error = result.error;
+    } else if (action === 'ASSESS_PUBLICATION_OPERATION') {
+      data = await assess();
     } else if (action === 'CREATE_PUBLICATION_ATTEMPT') {
+      const assessment = await assess();
+      requireOperationalConfirmation(payload, assessment, action);
       const result = await serviceSupabase.rpc(
         'create_marketing_publication_attempt_server_controlled',
         {
           p_actor_id: user.id,
-          p_operation_key:
-            requiredString(payload, 'operationKey').trim(),
-          p_id: requiredString(payload, 'id'),
-          p_prepared_publication_id:
-            requiredString(payload, 'preparedPublicationId'),
+          p_operation_key: `operational:first:${assessment.preparedPublicationId}`,
+          // One identity per publication makes concurrent CREATE idempotent.
+          p_id: assessment.preparedPublicationId,
+          p_prepared_publication_id: requiredString(payload, 'preparedPublicationId'),
         },
       );
 
       data = result.data;
       error = result.error;
     } else if (action === 'EXECUTE_PUBLICATION_ATTEMPT') {
+      const assessment = await assess();
+      requireOperationalConfirmation(payload, assessment, action);
+      if (payload.attemptId !== assessment.attemptId)
+        throw new Error('LIHEN_MARKETING_SOCIAL_ATTEMPT_MISMATCH');
       if (!metaPublicationEnabled()) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_META_PUBLICATION_DISABLED',
-          externalPublication: false,
-        }, 409);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_META_PUBLICATION_DISABLED',
+            externalPublication: false,
+          },
+          409,
+        );
       }
 
       const attemptId = requiredString(payload, 'attemptId');
       const preparedPublicationId = requiredString(payload, 'preparedPublicationId');
       const productId = requiredString(payload, 'productId');
-      const startOperationKey = requiredString(payload, 'startOperationKey').trim();
-      const completionOperationKey = requiredString(payload, 'completionOperationKey').trim();
+      // Fresh server keys prevent replay of an idempotent START into another provider call.
+      const invocationId = crypto.randomUUID();
+      const startOperationKey = `operational:start:${invocationId}`;
+      const completionOperationKey = `operational:complete:${invocationId}`;
 
-      const { data: executionData, error: executionError } =
-        await serviceSupabase.rpc(
-          'get_marketing_publication_execution_server_controlled',
-          {
-            p_actor_id: user.id,
-            p_attempt_id: attemptId,
-            p_prepared_publication_id: preparedPublicationId,
-          },
-        );
+      const { data: executionData, error: executionError } = await serviceSupabase.rpc(
+        'get_marketing_publication_execution_server_controlled',
+        {
+          p_actor_id: user.id,
+          p_attempt_id: attemptId,
+          p_prepared_publication_id: preparedPublicationId,
+        },
+      );
 
       if (executionError) {
         throw new Error(
@@ -502,57 +607,67 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      const executionRow =
-        Array.isArray(executionData) ? executionData[0] : null;
+      const executionRow = Array.isArray(executionData) ? executionData[0] : null;
 
       if (!executionRow) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_EXECUTION_NOT_FOUND',
-          externalPublication: false,
-        }, 404);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_EXECUTION_NOT_FOUND',
+            externalPublication: false,
+          },
+          404,
+        );
       }
 
       const publication: PreparedPublicationRow = {
         id: String(executionRow.publication_id),
-        channel: String(executionRow.channel),
-        copy: String(executionRow.copy),
-        cta: executionRow.cta === null ? null : String(executionRow.cta),
-        hashtags: executionRow.hashtags ?? [],
-        creative_asset_ids:
-          (executionRow.creative_asset_ids ?? []).map(String),
+        channel: assessment.publication.channel,
+        copy: assessment.publication.copy,
+        cta: assessment.publication.cta,
+        hashtags: assessment.publication.hashtags ?? [],
+        creative_asset_ids: assessment.publication.creative_asset_ids ?? [],
         status: String(executionRow.publication_status),
       };
 
       if (publication.status !== 'APPROVED') {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_NOT_APPROVED',
-          externalPublication: false,
-        }, 409);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_NOT_APPROVED',
+            externalPublication: false,
+          },
+          409,
+        );
+      }
+
+      if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY'].includes(publication.channel)) {
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED',
+            externalPublication: false,
+          },
+          409,
+        );
       }
 
       if (
-        !['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY']
-          .includes(publication.channel)
+        String(executionRow.prepared_publication_id) !== publication.id ||
+        String(executionRow.attempt_status) !== 'PENDING'
       ) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED',
-          externalPublication: false,
-        }, 409);
-      }
-
-      if (
-        String(executionRow.prepared_publication_id) !== publication.id
-        || String(executionRow.attempt_status) !== 'PENDING'
-      ) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING',
-          externalPublication: false,
-        }, 409);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_PUBLICATION_ATTEMPT_NOT_PENDING',
+            externalPublication: false,
+          },
+          409,
+        );
       }
 
       const productImageId = publication.creative_asset_ids?.[0];
       if (!productImageId) {
-        return json({ error: 'LIHEN_MARKETING_SOCIAL_PRODUCT_IMAGE_REQUIRED', externalPublication: false }, 409);
+        return json(
+          { error: 'LIHEN_MARKETING_SOCIAL_PRODUCT_IMAGE_REQUIRED', externalPublication: false },
+          409,
+        );
       }
 
       // Resolve the persisted creative asset through the existing authorized product-image boundary.
@@ -573,6 +688,8 @@ Deno.serve(async (req: Request) => {
         requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
       }
 
+      // Revalidate after media/config resolution; publish only the explicitly confirmed content.
+      requireOperationalConfirmation(payload, await assess(), action);
       const started = await serviceSupabase.rpc(
         'start_marketing_publication_attempt_server_controlled',
         {
@@ -582,11 +699,14 @@ Deno.serve(async (req: Request) => {
         },
       );
       if (started.error) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_SERVER_START_FAILED',
-          detail: started.error.message ?? null,
-          externalPublication: false,
-        }, 409);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_SERVER_START_FAILED',
+            detail: started.error.message ?? null,
+            externalPublication: false,
+          },
+          409,
+        );
       }
 
       let providerResult: Awaited<ReturnType<typeof publishMetaImage>>;
@@ -604,37 +724,35 @@ Deno.serve(async (req: Request) => {
           p_operation_key: completionOperationKey,
           p_attempt_id: attemptId,
           p_outcome: providerResult.outcome,
-          p_result_value: providerResult.outcome === 'SUCCEEDED'
-            ? providerResult.externalPublicationRef
-            : providerResult.failureCode,
+          p_result_value:
+            providerResult.outcome === 'SUCCEEDED'
+              ? providerResult.externalPublicationRef
+              : providerResult.failureCode,
         },
       );
       if (completed.error) {
-        return json({
-          error: 'LIHEN_MARKETING_SOCIAL_SERVER_COMPLETE_FAILED',
-          detail: completed.error.message ?? null,
-          externalPublication: providerResult.outcome === 'SUCCEEDED',
-        }, 409);
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_SERVER_COMPLETE_FAILED',
+            detail: completed.error.message ?? null,
+            externalPublication: providerResult.outcome === 'SUCCEEDED',
+          },
+          409,
+        );
       }
 
       data = completed.data;
       error = null;
       return json({
-        data: Array.isArray(data) ? data[0] ?? null : data,
+        data: Array.isArray(data) ? (data[0] ?? null) : data,
         externalPublication: providerResult.outcome === 'SUCCEEDED',
       });
     } else {
-      return json(
-        { error: 'LIHEN_MARKETING_SOCIAL_ACTION_NOT_ALLOWED' },
-        400,
-      );
+      return json({ error: 'LIHEN_MARKETING_SOCIAL_ACTION_NOT_ALLOWED' }, 400);
     }
 
     if (error) {
-      console.error(
-        'MARKETING_SOCIAL_SERVER_WRITE_FAILED',
-        error,
-      );
+      console.error('MARKETING_SOCIAL_SERVER_WRITE_FAILED', error);
 
       return json(
         {
@@ -647,7 +765,7 @@ Deno.serve(async (req: Request) => {
     }
 
     return json({
-      data: Array.isArray(data) ? data[0] ?? null : data,
+      data: Array.isArray(data) ? (data[0] ?? null) : data,
       externalPublication: false,
     });
   } catch (error) {
@@ -655,10 +773,7 @@ Deno.serve(async (req: Request) => {
 
     return json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : 'LIHEN_MARKETING_SOCIAL_RUNTIME_FAILED',
+        error: error instanceof Error ? error.message : 'LIHEN_MARKETING_SOCIAL_RUNTIME_FAILED',
         externalPublication: false,
       },
       400,

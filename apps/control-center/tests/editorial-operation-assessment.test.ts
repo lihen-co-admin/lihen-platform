@@ -192,7 +192,7 @@ describe('editorial operational assessment', () => {
     );
     for (const text of [
       'Requisitos editoriales observables cumplidos',
-      'Ejecución bloqueada',
+      'Requiere evaluación del servidor',
       'estado actual del servidor no',
       'contenido generado no es oficial',
       item.publication.id,
