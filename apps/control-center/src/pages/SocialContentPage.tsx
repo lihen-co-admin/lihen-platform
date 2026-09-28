@@ -25,6 +25,7 @@ import { EditorialComposer } from '../components/EditorialComposer';
 import { EditorialPlanner } from '../components/EditorialPlanner';
 import { EditorialVariantComparison } from '../components/EditorialVariantComparison';
 import { EditorialOperationAssessment } from '../components/EditorialOperationAssessment';
+import { EditorialOperationalActions } from '../components/EditorialOperationalActions';
 import '../styles/editorial.css';
 
 const initialGoals: EditorialGoals = {
@@ -60,7 +61,7 @@ export function SocialContentPage() {
   const [channelFilter, setChannelFilter] = useState('');
 
   const refresh = useCallback(
-    async (quiet = false) => {
+    async (quiet = false, publicationId?: string) => {
       if (!canOperate) {
         setItems([]);
         setProducts([]);
@@ -74,8 +75,14 @@ export function SocialContentPage() {
       else setLoading(true);
       setError('');
       try {
-        const remoteItems = await readEditorialWorkspace();
-        setItems(remoteItems);
+        const remoteItems = await readEditorialWorkspace(undefined, publicationId);
+        const updateItems = (next: EditorialItem[]) =>
+          setItems((previous) =>
+            publicationId
+              ? [...previous.filter((item) => item.publication.id !== publicationId), ...next]
+              : next,
+          );
+        updateItems(remoteItems);
         setNotice('Biblioteca editorial leída desde DEV.');
         try {
           const catalog = await productsComposition.getProducts.execute(createGetProductsQuery());
@@ -86,7 +93,7 @@ export function SocialContentPage() {
               catalog,
               async (productId) => productsComposition.getProductImages.execute({ productId }),
             );
-            setItems(linked);
+            updateItems(linked);
           }
         } catch (cause) {
           setProducts([]);
@@ -193,6 +200,7 @@ export function SocialContentPage() {
   const plan = useMemo(() => planEditorial(items, goals, now), [items, goals, now]);
   const current = items.find((item) => item.publication.id === selected);
   function open(id: string) {
+    if (busy) return;
     setSelected(id);
     setDate('');
     window.setTimeout(
@@ -231,7 +239,7 @@ export function SocialContentPage() {
           <button
             type="button"
             className="button-ghost"
-            disabled={!canOperate || loading || refreshing}
+            disabled={!canOperate || loading || refreshing || busy}
             onClick={() => void refresh(true)}
           >
             {refreshing ? 'Actualizando…' : 'Actualizar desde DEV'}
@@ -265,7 +273,7 @@ export function SocialContentPage() {
       )}
       {busy && (
         <div role="status" className="info-state">
-          Guardando estado editorial en DEV… No se está publicando.
+          Operación en curso en DEV. Espera su resultado antes de decidir otra acción.
         </div>
       )}
       {error && (
@@ -339,7 +347,7 @@ export function SocialContentPage() {
             <span className="editorial-chip">{channelCapability(channel.id).status}</span>
             <p>
               {channel.runtime
-                ? 'Preparación con imágenes de catálogo; publicación externa bloqueada en este workspace.'
+                ? 'Operación gobernada con imágenes de catálogo: requiere evaluación del servidor y confirmación explícita. Bloqueada si el servidor no la habilita.'
                 : 'Preparación editorial disponible. Reel requiere video; video y publicación TikTok no están integrados.'}
             </p>
           </article>
@@ -451,6 +459,13 @@ export function SocialContentPage() {
           <p>Media: {current.publication.creativeAssetIds.length} referencia(s) durables.</p>
           <EditorialVariantComparison items={items} current={current} onOpen={open} />
           <EditorialOperationAssessment item={current} now={now} />
+          <EditorialOperationalActions
+            key={current.publication.id}
+            item={current}
+            disabled={!canOperate || busy || loading || refreshing}
+            onRefresh={() => refresh(true, current.publication.id)}
+            onBusyChange={setBusy}
+          />
           {current.productId && (
             <Link to={`/products/${current.productId}`}>Ver producto asociado</Link>
           )}
@@ -520,6 +535,9 @@ export function SocialContentPage() {
                     {attempt.status} ·{' '}
                     {attempt.completedAt?.toLocaleString('es-CO') ?? 'sin completar'}
                     {attempt.failureCode ? ` · ${attempt.failureCode}` : ''}
+                    {attempt.externalPublicationRef
+                      ? ` · Referencia reportada: ${attempt.externalPublicationRef}`
+                      : ''}
                   </li>
                 ))}
               </ol>

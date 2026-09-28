@@ -91,7 +91,7 @@ export function assessEditorialOperation(item: EditorialItem, now: Date) {
       attempt.preparedPublicationId !== publication.id
         ? 'Asociación inconsistente: actualizar desde DEV antes de decidir.'
         : attempt.status === 'PENDING'
-          ? 'Intento pendiente; no crear otro ni ejecutar desde este workspace.'
+          ? 'Intento pendiente; no crear otro. Requiere evaluación del servidor y aprobación explícita para ejecutar.'
           : attempt.status === 'IN_PROGRESS'
             ? 'Resultado incierto: requiere seguimiento del runtime; no reintentar.'
             : attempt.status === 'SUCCEEDED'

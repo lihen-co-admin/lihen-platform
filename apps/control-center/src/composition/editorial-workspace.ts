@@ -145,7 +145,7 @@ function toEditorialItems(rows: EditorialWorkspaceRows): EditorialItem[] {
   });
 }
 
-async function runtimeErrorMessage(error: { readonly message?: string }): Promise<string> {
+export async function runtimeErrorMessage(error: { readonly message?: string }): Promise<string> {
   const context = (error as { readonly context?: { json?: () => Promise<unknown> } }).context;
   if (context?.json) {
     try {
@@ -161,10 +161,16 @@ async function runtimeErrorMessage(error: { readonly message?: string }): Promis
 
 export async function readEditorialWorkspace(
   client: EditorialEdgeClient = getBrowserSupabaseClient(import.meta.env),
+  preparedPublicationId?: string,
 ): Promise<EditorialItem[]> {
   const { data, error } = await client.functions.invoke<EditorialWorkspaceRows>(
     'marketing-social-runtime',
-    { body: { action: 'READ_EDITORIAL_WORKSPACE', payload: {} } },
+    {
+      body: {
+        action: 'READ_EDITORIAL_WORKSPACE',
+        payload: preparedPublicationId ? { preparedPublicationId } : {},
+      },
+    },
   );
   if (error || !data || data.externalPublication !== false) {
     throw new Error(
@@ -432,9 +438,6 @@ export async function resolveProductAssociationsFromMedia(
   }
   return items.map((item) => ({
     ...item,
-    productId:
-      item.publication.creativeAssetIds
-        .map((id) => resolved.get(id))
-        .find((id): id is string => Boolean(id)) ?? '',
+    productId: resolved.get(item.publication.creativeAssetIds[0] ?? '') ?? '',
   }));
 }

@@ -54,7 +54,11 @@ export function dayKey(date: Date, timezone = 'America/Bogota'): string {
 export function editorialStatus(item: EditorialItem): string {
   const attempt = [...item.attempts].sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
   if (attempt?.status === 'SUCCEEDED')
-    return attempt.externalPublicationRef?.startsWith('local-') ? 'Simulación' : 'Publicado';
+    return !attempt.externalPublicationRef || attempt.externalPublicationRef.startsWith('local-')
+      ? 'Sin evidencia externa'
+      : 'Publicado';
+  if (attempt?.status === 'PENDING') return 'Intento pendiente de acción explícita';
+  if (attempt?.status === 'CANCELLED') return 'Intento cancelado';
   if (attempt?.status === 'FAILED') return 'Fallido';
   if (attempt?.status === 'IN_PROGRESS') return 'Resultado pendiente de reconciliación';
   if (item.publication.status === 'CANCELLED') return 'Cancelado';

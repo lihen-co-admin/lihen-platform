@@ -14,8 +14,8 @@ export function EditorialOperationAssessment({
       <h3>Siguiente paso operativo</h3>
       <p>
         {assessment.observedRequirementsMet
-          ? 'Requisitos editoriales observables cumplidos. Ejecución bloqueada en este workspace.'
-          : 'Hay requisitos pendientes o intentos que requieren revisión. Ejecución bloqueada.'}
+          ? 'Requisitos editoriales observables cumplidos. Requiere evaluación del servidor y acción explícita.'
+          : 'Hay requisitos pendientes o intentos que requieren revisión. Este diagnóstico no habilita ejecución.'}
       </p>
       <ul>
         {assessment.checks.map((check) => (
