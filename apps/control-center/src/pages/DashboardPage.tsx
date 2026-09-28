@@ -114,6 +114,7 @@ export function DashboardPage() {
         status={<span className="status-badge status-badge--success">DEV · lectura segura</span>}
         actions={(
           <>
+            <Link className="button-link" to="/content/social">Contenido y calendario · Hoy en LIHEN</Link>
             <Link className="button-link" to="/products">Gestionar productos</Link>
             <Link className="button-link button-link--secondary" to="/operations">Revisar integridad</Link>
           </>

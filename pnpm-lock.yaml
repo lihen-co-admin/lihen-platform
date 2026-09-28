@@ -38,6 +38,9 @@ importers:
       '@lihen/catalog':
         specifier: workspace:*
         version: link:../../packages/catalog
+      '@lihen/conversation':
+        specifier: workspace:*
+        version: link:../../packages/conversation
       '@lihen/core':
         specifier: workspace:*
         version: link:../../packages/core

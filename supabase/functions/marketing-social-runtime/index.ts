@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 type Action =
+  | 'READ_EDITORIAL_WORKSPACE'
   | 'SAVE_CONTENT_SCHEDULE'
   | 'SAVE_PREPARED_PUBLICATION'
   | 'CREATE_PUBLICATION_ATTEMPT'
@@ -368,7 +369,44 @@ Deno.serve(async (req: Request) => {
     let data: unknown;
     let error: { message?: string } | null = null;
 
-    if (action === 'SAVE_CONTENT_SCHEDULE') {
+    if (action === 'READ_EDITORIAL_WORKSPACE') {
+      // Controlled, read-only workspace view. The request has already passed
+      // bearer-token validation and the active OWNER/ADMIN profile check above.
+      // Keep the tables private under RLS; only return the three existing
+      // editorial contracts needed by the authenticated Control Center.
+      const [schedules, publications, attempts] = await Promise.all([
+        serviceSupabase
+          .from('marketing_content_schedules')
+          .select(
+            'id,channel_variant_id,scheduled_for,timezone,status,created_at,updated_at',
+          )
+          .order('updated_at', { ascending: false })
+          .limit(1000),
+        serviceSupabase
+          .from('marketing_prepared_publications')
+          .select(
+            'id,campaign_id,campaign_content_id,channel_variant_id,schedule_id,channel,copy,cta,hashtags,creative_asset_ids,status,prepared_at',
+          )
+          .order('prepared_at', { ascending: false })
+          .limit(1000),
+        serviceSupabase
+          .from('marketing_publication_attempts')
+          .select(
+            'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code',
+          )
+          .order('attempt_number', { ascending: false })
+          .limit(2000),
+      ]);
+      const failed = schedules.error ?? publications.error ?? attempts.error;
+      if (failed) {
+        throw new Error(`LIHEN_MARKETING_SOCIAL_EDITORIAL_READ_FAILED:${failed.message ?? 'UNKNOWN'}`);
+      }
+      data = {
+        schedules: schedules.data ?? [],
+        publications: publications.data ?? [],
+        attempts: attempts.data ?? [],
+      };
+    } else if (action === 'SAVE_CONTENT_SCHEDULE') {
       const result = await serviceSupabase.rpc(
         'save_marketing_content_schedule_server_controlled',
         {
