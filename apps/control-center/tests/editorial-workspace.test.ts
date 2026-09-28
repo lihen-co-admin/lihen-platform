@@ -54,6 +54,78 @@ describe('editorial workspace governance', () => {
     expect(item.publication.scheduleId).toBeNull();
     expect(planEditorial([item], goals, now).unscheduled).toHaveLength(1);
   });
+  it('creates channel variants with independent copy, CTA, hashtags and media on shared content', () => {
+    let sequence = 0;
+    const variants = createEditorialDraft(
+      {
+        copy: 'Shared starting copy',
+        callToAction: 'Shared CTA',
+        hashtags: '#Shared',
+        creativeAssetIds: ['shared-image'],
+        channels: ['INSTAGRAM_FEED', 'FACEBOOK'],
+        channelVariants: {
+          INSTAGRAM_FEED: {
+            copy: 'Instagram story',
+            callToAction: 'Guárdalo',
+            hashtags: '#Instagram #LIHENCO',
+            creativeAssetIds: ['instagram-image'],
+          },
+          FACEBOOK: {
+            copy: 'Facebook post',
+            callToAction: 'Conoce la colección',
+            hashtags: '#Facebook',
+            creativeAssetIds: ['facebook-image'],
+          },
+        },
+        productId: 'product-1',
+        campaignName: 'Cuidado diario',
+        date: '',
+      },
+      now,
+      () => `variant-${++sequence}`,
+    );
+    expect(variants).toHaveLength(2);
+    expect(variants[0]?.publication.copy).toBe('Instagram story');
+    expect(variants[0]?.publication.callToAction).toBe('Guárdalo');
+    expect(variants[0]?.publication.hashtags).toEqual(['Instagram', 'LIHENCO']);
+    expect(variants[0]?.publication.creativeAssetIds).toEqual(['instagram-image']);
+    expect(variants[1]?.publication.copy).toBe('Facebook post');
+    expect(variants[1]?.publication.creativeAssetIds).toEqual(['facebook-image']);
+    expect(variants[0]?.publication.campaignContentId).toBe(
+      variants[1]?.publication.campaignContentId,
+    );
+    expect(variants[0]?.publication.channelVariantId).not.toBe(
+      variants[1]?.publication.channelVariantId,
+    );
+    expect(variants.every((item) => item.publication.status === 'PREPARED')).toBe(true);
+    expect(variants.every((item) => item.attempts.length === 0)).toBe(true);
+  });
+  it('requires copy on every selected channel variant before saving', () => {
+    expect(() =>
+      createEditorialDraft(
+        {
+          copy: '',
+          callToAction: '',
+          hashtags: '',
+          creativeAssetIds: [],
+          channels: ['INSTAGRAM_FEED', 'FACEBOOK'],
+          channelVariants: {
+            INSTAGRAM_FEED: {
+              copy: 'Instagram draft',
+              callToAction: '',
+              hashtags: '',
+              creativeAssetIds: [],
+            },
+          },
+          productId: '',
+          campaignName: '',
+          date: '',
+        },
+        now,
+        () => 'unused',
+      ),
+    ).toThrow('cada variante');
+  });
   it('requires human review before approval and a separate programming decision', async () => {
     const item = draft();
     await expect(reviewEditorial(item, 'APPROVE', now)).rejects.toThrow();

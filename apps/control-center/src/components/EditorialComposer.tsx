@@ -4,7 +4,7 @@ import type { ProductImageDTO, ProductListItemDTO } from '@lihen/products';
 import type { InventoryBalance } from '@lihen/inventory';
 import { productsComposition } from '../composition/products';
 import { inventoryComposition } from '../composition/inventory';
-import type { EditorialDraft } from '../composition/editorial-workspace';
+import type { EditorialChannelDraft, EditorialDraft } from '../composition/editorial-workspace';
 import { editorialChannels, type EditorialItem } from '../domain/editorial-planning';
 
 export function EditorialComposer({
@@ -33,7 +33,20 @@ export function EditorialComposer({
     date: item?.schedule
       ? new Date(item.schedule.scheduledFor.getTime() - 5 * 3600000).toISOString().slice(0, 16)
       : '',
+    channelVariants: item
+      ? {
+          [item.publication.channel as EditorialDraft['channels'][number]]: {
+            copy: item.publication.copy,
+            callToAction: item.publication.callToAction,
+            hashtags: item.publication.hashtags.map((tag) => `#${tag}`).join(' '),
+            creativeAssetIds: [...item.publication.creativeAssetIds],
+          },
+        }
+      : {},
   }));
+  const [variantChannel, setVariantChannel] = useState<EditorialDraft['channels'][number]>(
+    (item?.publication.channel as EditorialDraft['channels'][number]) ?? 'INSTAGRAM_FEED',
+  );
   const [images, setImages] = useState<readonly ProductImageDTO[]>([]);
   const [balances, setBalances] = useState<readonly InventoryBalance[]>([]);
   const [mediaNotice, setMediaNotice] = useState('');
@@ -60,6 +73,24 @@ export function EditorialComposer({
   }, [draft.productId]);
   const product = products.find((entry) => entry.id === draft.productId);
   const balance = balances.find((entry) => entry.productId === draft.productId);
+  const activeVariant = draft.channelVariants?.[variantChannel] ?? {
+    copy: draft.copy,
+    callToAction: draft.callToAction,
+    hashtags: draft.hashtags,
+    creativeAssetIds: draft.creativeAssetIds,
+  };
+  function updateVariant(update: Partial<EditorialChannelDraft>) {
+    setDraft((current) => ({
+      ...current,
+      channelVariants: {
+        ...current.channelVariants,
+        [variantChannel]: {
+          ...(current.channelVariants?.[variantChannel] ?? activeVariant),
+          ...update,
+        },
+      },
+    }));
+  }
   function submit(event: FormEvent) {
     event.preventDefault();
     onSave(draft);
@@ -88,7 +119,17 @@ export function EditorialComposer({
               onChange={(event) => {
                 setImages([]);
                 setBalances([]);
-                setDraft({ ...draft, productId: event.target.value, creativeAssetIds: [] });
+                setDraft({
+                  ...draft,
+                  productId: event.target.value,
+                  creativeAssetIds: [],
+                  channelVariants: Object.fromEntries(
+                    Object.entries(draft.channelVariants ?? {}).map(([channel, variant]) => [
+                      channel,
+                      { ...variant, creativeAssetIds: [] },
+                    ]),
+                  ),
+                });
               }}
             >
               <option value="">Sin producto asociado</option>
@@ -142,12 +183,13 @@ export function EditorialComposer({
           </div>
         )}
         <label>
-          Copy / caption
+          Copy / caption ·{' '}
+          {editorialChannels.find((channel) => channel.id === variantChannel)?.label}
           <textarea
             required
             rows={5}
-            value={draft.copy}
-            onChange={(event) => setDraft({ ...draft, copy: event.target.value })}
+            value={activeVariant.copy}
+            onChange={(event) => updateVariant({ copy: event.target.value })}
             placeholder="Cuenta qué hace especial a esta propuesta…"
           />
         </label>
@@ -155,16 +197,16 @@ export function EditorialComposer({
           <label>
             CTA
             <input
-              value={draft.callToAction}
-              onChange={(event) => setDraft({ ...draft, callToAction: event.target.value })}
+              value={activeVariant.callToAction}
+              onChange={(event) => updateVariant({ callToAction: event.target.value })}
               placeholder="Conoce más en LIHEN.CO"
             />
           </label>
           <label>
             Hashtags
             <input
-              value={draft.hashtags}
-              onChange={(event) => setDraft({ ...draft, hashtags: event.target.value })}
+              value={activeVariant.hashtags}
+              onChange={(event) => updateVariant({ hashtags: event.target.value })}
               placeholder="#LIHENCO #BeautyCare"
             />
           </label>
@@ -178,19 +220,53 @@ export function EditorialComposer({
                   type="checkbox"
                   checked={draft.channels.includes(channel.id)}
                   disabled={Boolean(item)}
-                  onChange={(event) =>
-                    setDraft({
-                      ...draft,
-                      channels: event.target.checked
-                        ? [...draft.channels, channel.id]
-                        : draft.channels.filter((id) => id !== channel.id),
-                    })
-                  }
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      const starter = activeVariant;
+                      setDraft({
+                        ...draft,
+                        channels: [...draft.channels, channel.id],
+                        channelVariants: {
+                          ...draft.channelVariants,
+                          [channel.id]: {
+                            ...starter,
+                            creativeAssetIds: [...starter.creativeAssetIds],
+                          },
+                        },
+                      });
+                      setVariantChannel(channel.id);
+                    } else {
+                      const remaining = draft.channels.filter((id) => id !== channel.id);
+                      const channelVariants = { ...draft.channelVariants };
+                      delete channelVariants[channel.id];
+                      setDraft({ ...draft, channels: remaining, channelVariants });
+                      if (variantChannel === channel.id && remaining[0])
+                        setVariantChannel(remaining[0]);
+                    }
+                  }}
                 />
                 {channel.label}
               </label>
             ))}
           </div>
+          {draft.channels.length > 0 && (
+            <div className="editorial-variant-tabs" aria-label="Editar variante por canal">
+              {draft.channels.map((channelId) => {
+                const channel = editorialChannels.find((entry) => entry.id === channelId);
+                return (
+                  <button
+                    type="button"
+                    key={channelId}
+                    aria-pressed={variantChannel === channelId}
+                    className={variantChannel === channelId ? 'is-selected' : ''}
+                    onClick={() => setVariantChannel(channelId)}
+                  >
+                    {channel?.label ?? channelId}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <p>
             WhatsApp se prepara en <Link to="/conversations">Conversation</Link>; SEND bloqueado.
           </p>
@@ -208,13 +284,12 @@ export function EditorialComposer({
                 <img src={image.publicUrl} alt={image.altText ?? 'Imagen del producto'} />
                 <input
                   type="checkbox"
-                  checked={draft.creativeAssetIds.includes(image.id)}
+                  checked={activeVariant.creativeAssetIds.includes(image.id)}
                   onChange={(event) =>
-                    setDraft({
-                      ...draft,
+                    updateVariant({
                       creativeAssetIds: event.target.checked
-                        ? [...draft.creativeAssetIds, image.id]
-                        : draft.creativeAssetIds.filter((id) => id !== image.id),
+                        ? [...activeVariant.creativeAssetIds, image.id]
+                        : activeVariant.creativeAssetIds.filter((id) => id !== image.id),
                     })
                   }
                 />
