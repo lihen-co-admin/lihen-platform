@@ -41,6 +41,19 @@ interface ProductImageRpcRow {
   readonly status: unknown;
 }
 
+interface EditorialVideoRpcRow {
+  readonly id: unknown;
+  readonly product_id: unknown;
+  readonly public_url: unknown;
+  readonly mime_type: unknown;
+  readonly status: unknown;
+}
+
+interface AuthorizedMedia {
+  readonly publicUrl: string;
+  readonly mediaType: 'IMAGE' | 'VIDEO';
+}
+
 interface MetaGraphResponse {
   readonly id?: string;
   readonly error?: { readonly code?: number; readonly message?: string };
@@ -95,9 +108,47 @@ async function resolveAuthorizedProductImageUrl(
   return publicUrl;
 }
 
-async function publishMetaImage(
+async function resolveAuthorizedPublicationMedia(
+  client: {
+    rpc: (
+      name: string,
+      args: Record<string, unknown>,
+    ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+  },
   publication: PreparedPublicationRow,
-  publicUrl: string,
+  productId: string,
+): Promise<AuthorizedMedia> {
+  const assetId = publication.creative_asset_ids?.[0]?.trim();
+  if (!assetId) throw new Error('LIHEN_MARKETING_SOCIAL_MEDIA_REQUIRED');
+
+  if (publication.channel !== 'INSTAGRAM_REEL') {
+    return {
+      publicUrl: await resolveAuthorizedProductImageUrl(client, productId, assetId),
+      mediaType: 'IMAGE',
+    };
+  }
+
+  const result = await client.rpc('get_marketing_editorial_video_assets', { p_product_id: productId });
+  if (result.error)
+    throw new Error(`LIHEN_EDITORIAL_VIDEO_RESOLUTION_FAILED:${result.error.message ?? 'UNKNOWN'}`);
+  const rows = Array.isArray(result.data) ? (result.data as EditorialVideoRpcRow[]) : [];
+  const row = rows.find(
+    (candidate) =>
+      String(candidate.id) === assetId &&
+      String(candidate.product_id) === productId &&
+      String(candidate.status) === 'ACTIVE',
+  );
+  if (!row) throw new Error('LIHEN_EDITORIAL_VIDEO_NOT_AUTHORIZED_OR_NOT_FOUND');
+  if (!String(row.mime_type ?? '').startsWith('video/'))
+    throw new Error('LIHEN_EDITORIAL_REEL_VIDEO_REQUIRED');
+  const publicUrl = String(row.public_url ?? '').trim();
+  if (!publicUrl) throw new Error('LIHEN_EDITORIAL_VIDEO_SOURCE_UNAVAILABLE');
+  return { publicUrl, mediaType: 'VIDEO' };
+}
+
+async function publishMetaMedia(
+  publication: PreparedPublicationRow,
+  media: AuthorizedMedia,
 ): Promise<
   | { outcome: 'SUCCEEDED'; externalPublicationRef: string }
   | { outcome: 'FAILED'; failureCode: string }
@@ -107,6 +158,7 @@ async function publishMetaImage(
       ? requiredEnv('META_FACEBOOK_ACCESS_TOKEN')
       : requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
   const graphApiVersion = requiredEnv('META_GRAPH_API_VERSION');
+  const publicUrl = media.publicUrl;
   const caption = publicationCaption(publication);
 
   const post = async (path: string, body: Record<string, string>): Promise<MetaGraphResponse> => {
@@ -131,12 +183,17 @@ async function publishMetaImage(
         };
   }
 
-  if (publication.channel === 'INSTAGRAM_FEED' || publication.channel === 'INSTAGRAM_STORY') {
+  if (['INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(publication.channel)) {
     const instagramAccountId = requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
     const container =
-      publication.channel === 'INSTAGRAM_STORY'
-        ? { media_type: 'STORIES', image_url: publicUrl }
-        : { image_url: publicUrl, caption };
+      publication.channel === 'INSTAGRAM_REEL'
+        ? media.mediaType === 'VIDEO'
+          ? { media_type: 'REELS', video_url: publicUrl, caption }
+          : null
+        : publication.channel === 'INSTAGRAM_STORY'
+          ? { media_type: 'STORIES', image_url: publicUrl }
+          : { image_url: publicUrl, caption };
+    if (!container) return { outcome: 'FAILED', failureCode: 'META_REEL_VIDEO_REQUIRED' };
     const created = await post(`${instagramAccountId}/media`, container);
     if (!created.id) {
       return {
@@ -409,15 +466,19 @@ Deno.serve(async (req: Request) => {
       const publicationId = publication.id;
       const policy = assessOperationalSnapshot(state, Date.now());
       const blockers = [...policy.blockers];
-      let publicUrl = '';
+      let media: AuthorizedMedia | null = null;
       try {
-        publicUrl = await resolveAuthorizedProductImageUrl(
+        media = await resolveAuthorizedPublicationMedia(
           userSupabase,
+          publication,
           requiredString(payload, 'productId'),
-          publication.creative_asset_ids?.[0] ?? '',
         );
       } catch {
-        blockers.push('PRODUCT_MEDIA_NOT_AUTHORIZED');
+        blockers.push(
+          publication.channel === 'INSTAGRAM_REEL'
+            ? 'REEL_VIDEO_NOT_AUTHORIZED'
+            : 'PRODUCT_MEDIA_NOT_AUTHORIZED',
+        );
       }
       if (policy.nextAction === 'EXECUTE_PUBLICATION_ATTEMPT') {
         if (!metaPublicationEnabled()) blockers.push('META_PUBLICATION_DISABLED');
@@ -435,7 +496,7 @@ Deno.serve(async (req: Request) => {
       const bytes = await crypto.subtle.digest(
         'SHA-256',
         new TextEncoder().encode(
-          JSON.stringify({ state, productId: payload.productId, publicUrl }),
+          JSON.stringify({ state, productId: payload.productId, media }),
         ),
       );
       const snapshot = Array.from(new Uint8Array(bytes), (byte) =>
@@ -639,7 +700,7 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY'].includes(publication.channel)) {
+      if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(publication.channel)) {
         return json(
           {
             error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED',
@@ -662,21 +723,15 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      const productImageId = publication.creative_asset_ids?.[0];
-      if (!productImageId) {
+      if (!publication.creative_asset_ids?.[0]) {
         return json(
-          { error: 'LIHEN_MARKETING_SOCIAL_PRODUCT_IMAGE_REQUIRED', externalPublication: false },
+          { error: 'LIHEN_MARKETING_SOCIAL_MEDIA_REQUIRED', externalPublication: false },
           409,
         );
       }
 
-      // Resolve the persisted creative asset through the existing authorized product-image boundary.
-      // No arbitrary browser-provided media URL is accepted.
-      const publicUrl = await resolveAuthorizedProductImageUrl(
-        userSupabase,
-        productId,
-        productImageId,
-      );
+      // Resolve only persisted, authorized media. Browser-provided media URLs are never accepted.
+      const media = await resolveAuthorizedPublicationMedia(userSupabase, publication, productId);
 
       // All provider/config preflight is intentionally completed before START.
       requiredEnv('META_GRAPH_API_VERSION');
@@ -709,9 +764,9 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      let providerResult: Awaited<ReturnType<typeof publishMetaImage>>;
+      let providerResult: Awaited<ReturnType<typeof publishMetaMedia>>;
       try {
-        providerResult = await publishMetaImage(publication, publicUrl);
+        providerResult = await publishMetaMedia(publication, media);
       } catch (providerError) {
         console.error('MARKETING_SOCIAL_META_PROVIDER_FAILED', providerError);
         providerResult = { outcome: 'FAILED', failureCode: 'META_PROVIDER_EXCEPTION' };

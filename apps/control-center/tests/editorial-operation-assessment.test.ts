@@ -82,7 +82,7 @@ describe('editorial operational assessment', () => {
     expect(JSON.stringify(programmed)).toBe(before);
   });
 
-  it.each(['TIKTOK', 'INSTAGRAM_REEL', 'WHATSAPP_DIRECT'] as const)(
+  it.each(['TIKTOK', 'WHATSAPP_DIRECT'] as const)(
     'keeps %s unavailable even when approved and due',
     async (channel) => {
       const item = await scheduled();
@@ -96,7 +96,7 @@ describe('editorial operational assessment', () => {
     },
   );
 
-  it.each(['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY'] as const)(
+  it.each(['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'] as const)(
     'recognizes %s without claiming activation',
     (channel) => {
       const item = draft();
@@ -105,7 +105,7 @@ describe('editorial operational assessment', () => {
         now,
       );
       expect(assessment.checks[0]?.observed).toBe(true);
-      expect(assessment.checks[0]?.message).toContain('activación no verificada');
+      expect(assessment.checks[0]?.message).toContain('activación externa no verificada');
       expect(assessment.executionAllowed).toBe(false);
     },
   );

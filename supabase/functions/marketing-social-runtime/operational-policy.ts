@@ -25,7 +25,7 @@ export interface OperationalSnapshot {
 export function assessOperationalSnapshot(snapshot: OperationalSnapshot, now: number) {
   const { publication: publication, schedule, attempts } = snapshot;
   const blockers: string[] = [];
-  if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY'].includes(publication.channel))
+  if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(publication.channel))
     blockers.push('CHANNEL_UNAVAILABLE');
   if (publication.status !== 'APPROVED') blockers.push('PUBLICATION_NOT_APPROVED');
   if (
