@@ -132,6 +132,24 @@
   align-items: center;
   gap: 0.6rem;
 }
+.editorial-variant-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+.editorial-variant-tabs button {
+  border: 1px solid #dacbd7;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--editorial-ink);
+  padding: 0.5rem 0.8rem;
+}
+.editorial-variant-tabs button.is-selected {
+  border-color: #946594;
+  background: var(--editorial-lilac);
+  font-weight: 700;
+}
 .editorial-checkbox input,
 .editorial-media input {
   width: auto;

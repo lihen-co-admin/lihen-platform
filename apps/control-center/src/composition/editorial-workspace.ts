@@ -22,9 +22,17 @@ export interface EditorialDraft {
   hashtags: string;
   creativeAssetIds: string[];
   channels: EditorialChannel[];
+  channelVariants?: Partial<Record<EditorialChannel, EditorialChannelDraft>>;
   productId: string;
   campaignName: string;
   date: string;
+}
+
+export interface EditorialChannelDraft {
+  copy: string;
+  callToAction: string;
+  hashtags: string;
+  creativeAssetIds: string[];
 }
 
 interface EditorialWorkspaceRows {
@@ -172,11 +180,15 @@ export function createEditorialDraft(
   now: Date,
   id: () => string,
 ): EditorialItem[] {
-  if (!input.copy.trim() || !input.channels.length)
-    throw new Error('Escribe un copy y selecciona al menos un canal.');
+  if (!input.channels.length) throw new Error('Selecciona al menos un canal.');
+  if (
+    input.channels.some((channel) => !(input.channelVariants?.[channel]?.copy ?? input.copy).trim())
+  )
+    throw new Error('Escribe un copy para cada variante de canal seleccionada.');
   const campaignId = id();
   const campaignContentId = id();
   return input.channels.map((channel) => {
+    const variant = input.channelVariants?.[channel] ?? input;
     const channelVariantId = id();
     const schedule: ContentSchedule | null = input.date
       ? {
@@ -196,13 +208,13 @@ export function createEditorialDraft(
       channelVariantId,
       scheduleId: schedule?.id ?? null,
       channel,
-      copy: input.copy.trim(),
-      callToAction: input.callToAction.trim(),
-      hashtags: input.hashtags
+      copy: variant.copy.trim(),
+      callToAction: variant.callToAction.trim(),
+      hashtags: variant.hashtags
         .split(/[\s,]+/)
         .map((tag) => tag.replace(/^#/, ''))
         .filter(Boolean),
-      creativeAssetIds: input.creativeAssetIds,
+      creativeAssetIds: [...variant.creativeAssetIds],
       status: 'PREPARED',
       preparedAt: now,
     };
