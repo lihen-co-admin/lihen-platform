@@ -3,7 +3,7 @@ import type { ContentSchedule, PreparedPublication, PublicationAttempt } from '@
 export const editorialChannels = [
   { id: 'INSTAGRAM_FEED', label: 'Instagram Feed', runtime: true },
   { id: 'INSTAGRAM_STORY', label: 'Instagram Story', runtime: true },
-  { id: 'INSTAGRAM_REEL', label: 'Instagram Reel', runtime: false },
+  { id: 'INSTAGRAM_REEL', label: 'Instagram Reel', runtime: true },
   { id: 'FACEBOOK', label: 'Facebook', runtime: true },
   { id: 'TIKTOK', label: 'TikTok', runtime: false },
 ] as const;

@@ -16,7 +16,7 @@ export function assessEditorialOperation(item: EditorialItem, now: Date) {
       code: 'CHANNEL',
       observed: channelCapability(publication.channel).runtimeSupported,
       message: channelCapability(publication.channel).runtimeSupported
-        ? 'Canal contemplado por el runtime de imágenes; activación no verificada.'
+        ? 'Canal contemplado por el runtime gobernado; activación externa no verificada.'
         : 'Integración de publicación no disponible para este canal.',
     },
     {
@@ -73,7 +73,9 @@ export function assessEditorialOperation(item: EditorialItem, now: Date) {
       observed: Boolean(publication.creativeAssetIds[0]?.trim()),
       message: publication.creativeAssetIds[0]?.trim()
         ? 'Primera referencia de media presente; autorización y vigencia pendientes de validar en servidor.'
-        : 'Falta la primera referencia de imagen requerida por el runtime.',
+        : publication.channel === 'INSTAGRAM_REEL'
+          ? 'Falta la primera referencia de video requerida para Reel.'
+          : 'Falta la primera referencia de imagen requerida por el runtime.',
     },
     {
       code: 'ATTEMPT_HISTORY',

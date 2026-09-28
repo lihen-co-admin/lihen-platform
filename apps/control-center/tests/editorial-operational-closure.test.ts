@@ -43,6 +43,7 @@ function runtime() {
     META_FACEBOOK_PAGE_ID: 'fake',
   };
   let role = 'OWNER';
+  let videoStatus = 'ACTIVE';
   let completeFails = false;
   const from = vi.fn((table: string) => {
     const result = () => ({
@@ -67,6 +68,19 @@ function runtime() {
     return query;
   });
   const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+    if (name === 'get_marketing_editorial_video_assets')
+      return {
+        data: [
+          {
+            id: 'video',
+            product_id: 'product',
+            public_url: 'https://example.invalid/reel.mp4',
+            mime_type: 'video/mp4',
+            status: videoStatus,
+          },
+        ],
+        error: null,
+      };
     if (name === 'get_product_images')
       return {
         data: [
@@ -182,6 +196,9 @@ function runtime() {
     failCompletion: () => {
       completeFails = true;
     },
+    setVideoStatus: (value: string) => {
+      videoStatus = value;
+    },
   };
 }
 
@@ -213,7 +230,7 @@ describe('governed operational closure — real handler, local doubles only', ()
     expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(400);
     expect(r.fetchMock).toHaveBeenCalledTimes(1);
   });
-  it.each(['TIKTOK', 'INSTAGRAM_REEL', 'WHATSAPP_DIRECT'])(
+  it.each(['TIKTOK', 'WHATSAPP_DIRECT'])(
     'blocks unsupported channel %s before any writes/provider calls',
     async (channel) => {
       const r = runtime();
@@ -247,6 +264,46 @@ describe('governed operational closure — real handler, local doubles only', ()
       expect(r.attempts[0]?.status).toBe('SUCCEEDED');
     },
   );
+  it('publishes an Instagram Reel only from an authorized persisted video asset', async () => {
+    const r = runtime();
+    r.publication.channel = 'INSTAGRAM_REEL';
+    r.publication.creative_asset_ids = ['video'];
+    r.env.META_INSTAGRAM_ACCESS_TOKEN = 'fake';
+    r.env.META_INSTAGRAM_ACCOUNT_ID = 'fake';
+    expect((await r.assess()).body.data.nextAction).toBe('CREATE_PUBLICATION_ATTEMPT');
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    r.env.META_PUBLICATION_ENABLED = 'true';
+    expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(200);
+    const createCall = r.fetchMock.mock.calls[0] as unknown as [string | URL, RequestInit];
+    const createBody = String(createCall[1]?.body ?? '');
+    expect(createBody).toContain('media_type=REELS');
+    expect(createBody).toContain('video_url=https%3A%2F%2Fexample.invalid%2Freel.mp4');
+    expect(r.attempts[0]?.status).toBe('SUCCEEDED');
+  });
+
+  it('blocks Reel when its persisted creative asset is not an authorized video', async () => {
+    const r = runtime();
+    r.publication.channel = 'INSTAGRAM_REEL';
+    r.publication.creative_asset_ids = ['image'];
+    r.env.META_INSTAGRAM_ACCESS_TOKEN = 'fake';
+    r.env.META_INSTAGRAM_ACCOUNT_ID = 'fake';
+    const assessed = await r.assess();
+    expect(assessed.body.data.blockers).toContain('REEL_VIDEO_NOT_AUTHORIZED');
+    expect(assessed.body.data.nextAction).toBeNull();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('blocks Reel when the persisted video asset is inactive', async () => {
+    const r = runtime();
+    r.publication.channel = 'INSTAGRAM_REEL';
+    r.publication.creative_asset_ids = ['video'];
+    r.setVideoStatus('ARCHIVED');
+    const assessed = await r.assess();
+    expect(assessed.body.data.blockers).toContain('REEL_VIDEO_NOT_AUTHORIZED');
+    expect(assessed.body.data.nextAction).toBeNull();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+
   it('rereads the selected publication and its attempts without provider calls', async () => {
     const r = runtime();
     await r.confirm('CREATE_PUBLICATION_ATTEMPT');
