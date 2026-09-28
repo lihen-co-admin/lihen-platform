@@ -128,6 +128,11 @@ const SocialContentPage = lazy(async () => {
   return { default: module.SocialContentPage };
 });
 
+const ConversationsPage = lazy(async () => {
+  const module = await import('../pages/ConversationsPage');
+  return { default: module.ConversationsPage };
+});
+
 const WhatsAppPreflightPage = lazy(async () => {
   const module = await import('../pages/WhatsAppPreflightPage');
   return { default: module.WhatsAppPreflightPage };
@@ -167,6 +172,7 @@ export function App() {
             <Route path="/catalogs/content" element={<CatalogInstitutionalContentPage />} />
             <Route path="/content/public-hub" element={<PublicHubPage />} />
             <Route path="/content/social" element={<SocialContentPage />} />
+            <Route path="/conversations" element={<ConversationsPage />} />
             <Route path="/brands" element={<BrandsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/dev-auth-probe" element={<DevAuthProbePage />} />

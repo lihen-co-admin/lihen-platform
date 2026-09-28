@@ -11,6 +11,8 @@ function filesUnder(dir: string): string[] {
   const absolute = join(root, dir);
   const results: string[] = [];
   for (const entry of readdirSync(absolute)) {
+    // Audit owned source, not generated output or pnpm's linked dependency trees.
+    if (entry === 'node_modules' || entry === 'dist' || entry === '.git') continue;
     const path = join(absolute, entry);
     if (statSync(path).isDirectory()) results.push(...filesUnder(relative(root, path)));
     else if (/\.(ts|tsx)$/.test(entry)) results.push(path);
