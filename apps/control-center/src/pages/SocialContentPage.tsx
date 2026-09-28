@@ -23,6 +23,7 @@ import {
 import { EditorialAgenda } from '../components/EditorialAgenda';
 import { EditorialComposer } from '../components/EditorialComposer';
 import { EditorialPlanner } from '../components/EditorialPlanner';
+import { EditorialVariantComparison } from '../components/EditorialVariantComparison';
 import '../styles/editorial.css';
 
 const initialGoals: EditorialGoals = {
@@ -261,7 +262,11 @@ export function SocialContentPage() {
           Cargando productos y contenido compartido de DEV…
         </div>
       )}
-      {busy && <div role="status" className="info-state">Guardando estado editorial en DEV… No se está publicando.</div>}
+      {busy && (
+        <div role="status" className="info-state">
+          Guardando estado editorial en DEV… No se está publicando.
+        </div>
+      )}
       {error && (
         <div role="alert" className="error-state">
           {error}
@@ -443,6 +448,7 @@ export function SocialContentPage() {
           <p>{current.publication.callToAction}</p>
           <p>{current.publication.hashtags.map((tag) => `#${tag}`).join(' ')}</p>
           <p>Media: {current.publication.creativeAssetIds.length} referencia(s) durables.</p>
+          <EditorialVariantComparison items={items} current={current} onOpen={open} />
           {current.productId && (
             <Link to={`/products/${current.productId}`}>Ver producto asociado</Link>
           )}
