@@ -24,6 +24,7 @@ import { EditorialAgenda } from '../components/EditorialAgenda';
 import { EditorialComposer } from '../components/EditorialComposer';
 import { EditorialPlanner } from '../components/EditorialPlanner';
 import { EditorialVariantComparison } from '../components/EditorialVariantComparison';
+import { EditorialOperationAssessment } from '../components/EditorialOperationAssessment';
 import '../styles/editorial.css';
 
 const initialGoals: EditorialGoals = {
@@ -449,6 +450,7 @@ export function SocialContentPage() {
           <p>{current.publication.hashtags.map((tag) => `#${tag}`).join(' ')}</p>
           <p>Media: {current.publication.creativeAssetIds.length} referencia(s) durables.</p>
           <EditorialVariantComparison items={items} current={current} onOpen={open} />
+          <EditorialOperationAssessment item={current} now={now} />
           {current.productId && (
             <Link to={`/products/${current.productId}`}>Ver producto asociado</Link>
           )}
