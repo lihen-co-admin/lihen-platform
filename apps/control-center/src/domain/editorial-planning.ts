@@ -5,7 +5,7 @@ export const editorialChannels = [
   { id: 'INSTAGRAM_STORY', label: 'Instagram Story', runtime: true },
   { id: 'INSTAGRAM_REEL', label: 'Instagram Reel', runtime: true },
   { id: 'FACEBOOK', label: 'Facebook', runtime: true },
-  { id: 'TIKTOK', label: 'TikTok', runtime: false },
+  { id: 'TIKTOK', label: 'TikTok', runtime: true },
 ] as const;
 export type EditorialChannel = (typeof editorialChannels)[number]['id'];
 export const whatsappCapability = {

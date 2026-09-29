@@ -1,5 +1,7 @@
 # MULTICHANNEL-05 — Diagnóstico operativo por variante
 
+Nota histórica: este documento describe aquel incremento. SOCIAL-03 habilitó el runtime gobernado de Reel; [TIKTOK-01](TIKTOK-01-GOVERNED-DIRECT-POST-DEV.md) describe la fundación DEV de TikTok, todavía bloqueada externamente.
+
 Base: `9a338637829c1e0cac21f65bcee14fb2888332ab`, HEAD y referencia local
 `origin/next-phase` coincidentes al inicio. Sin fetch ni cambios remotos.
 

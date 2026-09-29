@@ -61,6 +61,7 @@ interface PublicationAttemptRow {
   completed_at: string | null;
   external_publication_ref: string | null;
   failure_code: string | null;
+  provider_evidence?: readonly Readonly<Record<string, unknown>>[];
 }
 
 function mapContentSchedule(row: ContentScheduleRow): ContentSchedule {
@@ -107,6 +108,7 @@ function mapPublicationAttempt(
       row.completed_at === null ? null : new Date(row.completed_at),
     externalPublicationRef: row.external_publication_ref,
     failureCode: row.failure_code,
+    ...(row.provider_evidence ? { providerEvidence: row.provider_evidence } : {}),
   };
 }
 

@@ -4,6 +4,16 @@ import { runtimeErrorMessage, type EditorialRuntimeClient } from './editorial-wo
 export type EditorialOperationalAction =
   'CREATE_PUBLICATION_ATTEMPT' | 'EXECUTE_PUBLICATION_ATTEMPT';
 export interface EditorialServerAssessment {
+  tiktokCreator?: {
+    accountId: string;
+    revision: string;
+    privacyOptions: string[];
+    consentText: string;
+    maxVideoDurationSec: number;
+    interactions: readonly { key: string; label: string; allowed: boolean }[];
+  } | null;
+  tiktokChoices?: { creatorRevision: string; privacy: string; consent: true; interactions: Readonly<Record<string, boolean>> } | null;
+  tiktokCreatorContext?: string | null;
   snapshot: string;
   preparedPublicationId: string;
   productId: string;
@@ -36,10 +46,22 @@ export function createEditorialOperations(client: EditorialRuntimeClient, dev: b
     return result.data;
   };
   return {
-    async assess(preparedPublicationId: string, productId: string) {
+    async readTikTokCreator(preparedPublicationId: string, productId: string) {
+      const result = await invoke<{ creator: NonNullable<EditorialServerAssessment['tiktokCreator']>; context: string }>('READ_TIKTOK_CREATOR_INFO', { preparedPublicationId, productId });
+      if (!result.data.context || !result.data.creator?.accountId || !Array.isArray(result.data.creator.privacyOptions) || !Array.isArray(result.data.creator.interactions)) throw new Error('Información de creador inválida.');
+      return result.data;
+    },
+    async assess(
+      preparedPublicationId: string,
+      productId: string,
+      tiktokChoices?: EditorialServerAssessment['tiktokChoices'],
+      tiktokCreatorContext?: string | null,
+    ) {
       const result = await invoke<EditorialServerAssessment>('ASSESS_PUBLICATION_OPERATION', {
         preparedPublicationId,
         productId,
+        ...(tiktokChoices ? { tiktokChoices } : {}),
+        ...(tiktokCreatorContext ? { tiktokCreatorContext } : {}),
       });
       const assessment = result.data;
       if (
@@ -75,6 +97,8 @@ export function createEditorialOperations(client: EditorialRuntimeClient, dev: b
         attemptId: assessment.attemptId,
         expectedSnapshot: assessment.snapshot,
         confirmedAction,
+        ...(assessment.tiktokChoices ? { tiktokChoices: assessment.tiktokChoices } : {}),
+        ...(assessment.tiktokCreatorContext ? { tiktokCreatorContext: assessment.tiktokCreatorContext } : {}),
       });
     },
   };

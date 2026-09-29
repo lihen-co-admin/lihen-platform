@@ -22,10 +22,21 @@ export interface OperationalSnapshot {
   attempts: { id: string; status: string; [key: string]: unknown }[];
 }
 
-export function assessOperationalSnapshot(snapshot: OperationalSnapshot, now: number) {
+export function assessOperationalSnapshot(
+  snapshot: OperationalSnapshot,
+  now: number,
+  tiktokBlockers: readonly string[] = ['TIKTOK_PROVIDER_CONTRACT_UNVERIFIED'],
+) {
   const { publication: publication, schedule, attempts } = snapshot;
   const blockers: string[] = [];
-  if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(publication.channel))
+  if (publication.channel === 'TIKTOK') {
+    blockers.push(...tiktokBlockers);
+    if (publication.creative_asset_ids.length !== 1) blockers.push('TIKTOK_SINGLE_VIDEO_REQUIRED');
+  } else if (
+    !['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(
+      publication.channel,
+    )
+  )
     blockers.push('CHANNEL_UNAVAILABLE');
   if (publication.status !== 'APPROVED') blockers.push('PUBLICATION_NOT_APPROVED');
   if (

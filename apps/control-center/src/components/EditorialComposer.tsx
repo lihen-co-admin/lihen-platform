@@ -4,6 +4,11 @@ import type { ProductImageDTO, ProductListItemDTO } from '@lihen/products';
 import type { InventoryBalance } from '@lihen/inventory';
 import { productsComposition } from '../composition/products';
 import { inventoryComposition } from '../composition/inventory';
+import {
+  readEditorialVideoAssets,
+  usesEditorialVideo,
+  type EditorialVideoAsset,
+} from '../composition/editorial-video-assets';
 import type { EditorialChannelDraft, EditorialDraft } from '../composition/editorial-workspace';
 import { editorialChannels, type EditorialItem } from '../domain/editorial-planning';
 
@@ -13,12 +18,14 @@ export function EditorialComposer({
   busy,
   onSave,
   onClose,
+  readVideos = readEditorialVideoAssets,
 }: {
   item: EditorialItem | null;
   products: readonly ProductListItemDTO[];
   busy: boolean;
   onSave: (draft: EditorialDraft) => void;
   onClose: () => void;
+  readVideos?: typeof readEditorialVideoAssets;
 }) {
   const [draft, setDraft] = useState<EditorialDraft>(() => ({
     copy: item?.publication.copy ?? '',
@@ -48,6 +55,29 @@ export function EditorialComposer({
     (item?.publication.channel as EditorialDraft['channels'][number]) ?? 'INSTAGRAM_FEED',
   );
   const [images, setImages] = useState<readonly ProductImageDTO[]>([]);
+  const [videos, setVideos] = useState<readonly EditorialVideoAsset[]>([]);
+  const [videoNotice, setVideoNotice] = useState('');
+  const videoChannel = usesEditorialVideo(variantChannel);
+  useEffect(() => {
+    let active = true;
+    if (!videoChannel || !draft.productId) return;
+    readVideos(draft.productId)
+      .then((assets) => {
+        if (active) {
+          setVideos(assets);
+          setVideoNotice('');
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setVideos([]);
+          setVideoNotice('Videos autorizados no disponibles.');
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [draft.productId, videoChannel, readVideos]);
   const [balances, setBalances] = useState<readonly InventoryBalance[]>([]);
   const [mediaNotice, setMediaNotice] = useState('');
   const [search, setSearch] = useState('');
@@ -118,6 +148,7 @@ export function EditorialComposer({
               value={draft.productId}
               onChange={(event) => {
                 setImages([]);
+                setVideos([]);
                 setBalances([]);
                 setDraft({
                   ...draft,
@@ -230,7 +261,10 @@ export function EditorialComposer({
                           ...draft.channelVariants,
                           [channel.id]: {
                             ...starter,
-                            creativeAssetIds: [...starter.creativeAssetIds],
+                            creativeAssetIds:
+                              usesEditorialVideo(channel.id) === videoChannel
+                                ? [...starter.creativeAssetIds]
+                                : [],
                           },
                         },
                       });
@@ -274,33 +308,62 @@ export function EditorialComposer({
         <fieldset>
           <legend>Media del producto</legend>
           <p>
-            Selecciona imágenes del catálogo. El contrato actual admite referencias a activos; no
-            ofrece carga ni publicación de video.
+            Selecciona media durable autorizada para este producto. Reel y TikTok requieren un
+            video. La selección no autoriza publicación. Este editor no carga archivos.
           </p>
-          {mediaNotice && <p>{mediaNotice}</p>}
-          <div className="editorial-media">
-            {images.map((image) => (
-              <label key={image.id}>
-                <img src={image.publicUrl} alt={image.altText ?? 'Imagen del producto'} />
-                <input
-                  type="checkbox"
-                  checked={activeVariant.creativeAssetIds.includes(image.id)}
+          {videoChannel ? (
+            <>
+              {videoNotice && <p>{videoNotice}</p>}
+              <label>
+                Video autorizado
+                <select
+                  value={activeVariant.creativeAssetIds[0] ?? ''}
                   onChange={(event) =>
                     updateVariant({
-                      creativeAssetIds: event.target.checked
-                        ? [...activeVariant.creativeAssetIds, image.id]
-                        : activeVariant.creativeAssetIds.filter((id) => id !== image.id),
+                      creativeAssetIds: event.target.value ? [event.target.value] : [],
                     })
                   }
-                />
-                Usar imagen
+                >
+                  <option value="">Selecciona un video</option>
+                  {videos.map((video) => (
+                    <option key={video.id} value={video.id}>
+                      {video.id} · {video.mimeType}
+                    </option>
+                  ))}
+                </select>
               </label>
-            ))}
-          </div>
-          {!images.length && (
-            <p>
-              Sin imágenes disponibles. Puedes guardar el borrador y completar la media después.
-            </p>
+              {!videos.length && (
+                <p>Sin videos autorizados disponibles; puedes guardar el borrador.</p>
+              )}
+            </>
+          ) : (
+            <>
+              {mediaNotice && <p>{mediaNotice}</p>}
+              <div className="editorial-media">
+                {images.map((image) => (
+                  <label key={image.id}>
+                    <img src={image.publicUrl} alt={image.altText ?? 'Imagen del producto'} />
+                    <input
+                      type="checkbox"
+                      checked={activeVariant.creativeAssetIds.includes(image.id)}
+                      onChange={(event) =>
+                        updateVariant({
+                          creativeAssetIds: event.target.checked
+                            ? [...activeVariant.creativeAssetIds, image.id]
+                            : activeVariant.creativeAssetIds.filter((id) => id !== image.id),
+                        })
+                      }
+                    />
+                    Usar imagen
+                  </label>
+                ))}
+              </div>
+              {!images.length && (
+                <p>
+                  Sin imágenes disponibles. Puedes guardar el borrador y completar la media después.
+                </p>
+              )}
+            </>
           )}
         </fieldset>
         <div className="toolbar">

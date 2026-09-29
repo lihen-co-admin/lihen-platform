@@ -1,5 +1,7 @@
 # MULTICHANNEL-01/02 — Content Workspace
 
+Historical increment snapshot. Reel availability is superseded by SOCIAL-03; see [TIKTOK-01](TIKTOK-01-GOVERNED-DIRECT-POST-DEV.md) for the current blocked TikTok DEV foundation.
+
 Control Center routes: `/content/social` and `/conversations`; Dashboard links to the editorial workspace.
 
 ## Editorial operations
