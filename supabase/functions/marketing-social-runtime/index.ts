@@ -28,7 +28,8 @@ type Action =
   | 'SAVE_CONTENT_SCHEDULE'
   | 'SAVE_PREPARED_PUBLICATION'
   | 'CREATE_PUBLICATION_ATTEMPT'
-  | 'EXECUTE_PUBLICATION_ATTEMPT';
+  | 'EXECUTE_PUBLICATION_ATTEMPT'
+  | 'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT';
 
 interface RuntimeRequest {
   action?: Action;
@@ -166,6 +167,7 @@ async function publishMetaMedia(
 ): Promise<
   | { outcome: 'SUCCEEDED'; externalPublicationRef: string }
   | { outcome: 'FAILED'; failureCode: string }
+  | { outcome: 'UNCERTAIN'; reconciliationCode: string }
 > {
   const accessToken =
     publication.channel === 'FACEBOOK'
@@ -262,9 +264,12 @@ async function publishMetaMedia(
     }
 
     if (containerStatus !== 'FINISHED') {
+      // The provider accepted the container, but bounded polling did not
+      // establish a terminal provider outcome. Never record this as FAILED:
+      // doing so could permit a blind retry of a publication still processing.
       return {
-        outcome: 'FAILED',
-        failureCode: 'META_CONTAINER_PROCESSING_TIMEOUT',
+        outcome: 'UNCERTAIN',
+        reconciliationCode: 'META_CONTAINER_PROCESSING_TIMEOUT',
       };
     }
 
@@ -429,6 +434,7 @@ Deno.serve(async (req: Request) => {
       'ASSESS_PUBLICATION_OPERATION',
       'CREATE_PUBLICATION_ATTEMPT',
       'EXECUTE_PUBLICATION_ATTEMPT',
+      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
     ].includes(action);
     if (operational && Deno.env.get('MARKETING_SOCIAL_ENVIRONMENT') !== 'DEV') {
       return json(
@@ -694,24 +700,62 @@ Deno.serve(async (req: Request) => {
 
       data = result.data;
       error = result.error;
-    } else if (action === 'EXECUTE_PUBLICATION_ATTEMPT') {
-      const assessment = await assess();
-      requireOperationalConfirmation(payload, assessment, action);
-      if (payload.attemptId !== assessment.attemptId)
-        throw new Error('LIHEN_MARKETING_SOCIAL_ATTEMPT_MISMATCH');
-      if (assessment.channel !== 'TIKTOK' && !metaPublicationEnabled()) {
-        return json(
-          {
-            error: 'LIHEN_MARKETING_SOCIAL_META_PUBLICATION_DISABLED',
-            externalPublication: false,
-          },
-          409,
-        );
-      }
-
+    } else if (
+      action === 'EXECUTE_PUBLICATION_ATTEMPT' ||
+      action === 'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT'
+    ) {
+      const scheduledExecution =
+        action === 'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT';
       const attemptId = requiredString(payload, 'attemptId');
       const preparedPublicationId = requiredString(payload, 'preparedPublicationId');
-      const productId = requiredString(payload, 'productId');
+
+      let assessment:
+        | Awaited<ReturnType<typeof assess>>
+        | null = null;
+      let productId: string;
+
+      if (scheduledExecution) {
+        const authority = await serviceSupabase.rpc(
+          'get_marketing_scheduled_execution_authority_server_controlled',
+          {
+            p_actor_id: user.id,
+            p_prepared_publication_id: preparedPublicationId,
+            p_attempt_id: attemptId,
+            p_now: new Date().toISOString(),
+          },
+        );
+
+        if (authority.error) {
+          throw new Error(
+            `LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_READ_FAILED:${authority.error.message ?? 'UNKNOWN'}`,
+          );
+        }
+
+        const authorityRow =
+          Array.isArray(authority.data) ? authority.data[0] ?? null : null;
+
+        if (!authorityRow) {
+          return json(
+            {
+              error: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_EXECUTION_NOT_AUTHORIZED',
+              externalPublication: false,
+            },
+            409,
+          );
+        }
+
+        productId = String(authorityRow.product_id);
+      } else {
+        assessment = await assess();
+        requireOperationalConfirmation(payload, assessment, action);
+
+        if (payload.attemptId !== assessment.attemptId) {
+          throw new Error('LIHEN_MARKETING_SOCIAL_ATTEMPT_MISMATCH');
+        }
+
+        productId = requiredString(payload, 'productId');
+      }
+
       // Fresh server keys prevent replay of an idempotent START into another provider call.
       const invocationId = crypto.randomUUID();
       const startOperationKey = `operational:start:${invocationId}`;
@@ -744,15 +788,27 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      const publication: PreparedPublicationRow = {
-        id: String(executionRow.publication_id),
-        channel: assessment.publication.channel,
-        copy: assessment.publication.copy,
-        cta: assessment.publication.cta,
-        hashtags: assessment.publication.hashtags ?? [],
-        creative_asset_ids: assessment.publication.creative_asset_ids ?? [],
-        status: String(executionRow.publication_status),
-      };
+      const durablePublication = await serviceSupabase
+        .from('marketing_prepared_publications')
+        .select('id,channel,copy,cta,hashtags,creative_asset_ids,status')
+        .eq('id', preparedPublicationId)
+        .single();
+
+      if (durablePublication.error || !durablePublication.data) {
+        throw new Error('LIHEN_MARKETING_SOCIAL_PUBLICATION_READ_FAILED');
+      }
+
+      const publication = durablePublication.data as PreparedPublicationRow;
+
+      if (String(executionRow.publication_id) !== publication.id) {
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_EXECUTION_PUBLICATION_MISMATCH',
+            externalPublication: false,
+          },
+          409,
+        );
+      }
 
       if (publication.status !== 'APPROVED') {
         return json(
@@ -791,6 +847,16 @@ Deno.serve(async (req: Request) => {
         );
       }
 
+      if (publication.channel !== 'TIKTOK' && !metaPublicationEnabled()) {
+        return json(
+          {
+            error: 'LIHEN_MARKETING_SOCIAL_META_PUBLICATION_DISABLED',
+            externalPublication: false,
+          },
+          409,
+        );
+      }
+
       if (!publication.creative_asset_ids?.[0]) {
         return json(
           { error: 'LIHEN_MARKETING_SOCIAL_MEDIA_REQUIRED', externalPublication: false },
@@ -819,16 +885,67 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      // Revalidate after media/config resolution; publish only the explicitly confirmed content.
-      requireOperationalConfirmation(payload, await assess(), action);
-      const started = await serviceSupabase.rpc(
-        'start_marketing_publication_attempt_server_controlled',
-        {
-          p_actor_id: user.id,
-          p_operation_key: startOperationKey,
-          p_attempt_id: attemptId,
-        },
-      );
+      // Revalidate immediately before START.
+      // Manual execution requires a fresh interactive confirmation snapshot.
+      // Scheduled execution requires fresh durable schedule/attempt authority.
+      if (scheduledExecution) {
+        const freshAuthority = await serviceSupabase.rpc(
+          'get_marketing_scheduled_execution_authority_server_controlled',
+          {
+            p_actor_id: user.id,
+            p_prepared_publication_id: preparedPublicationId,
+            p_attempt_id: attemptId,
+            p_now: new Date().toISOString(),
+          },
+        );
+
+        const freshAuthorityRow =
+          Array.isArray(freshAuthority.data)
+            ? freshAuthority.data[0] ?? null
+            : null;
+
+        if (freshAuthority.error || !freshAuthorityRow) {
+          return json(
+            {
+              error: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED',
+              externalPublication: false,
+            },
+            409,
+          );
+        }
+
+        if (String(freshAuthorityRow.product_id) !== productId) {
+          return json(
+            {
+              error: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_MISMATCH',
+              externalPublication: false,
+            },
+            409,
+          );
+        }
+      } else {
+        requireOperationalConfirmation(payload, await assess(), action);
+      }
+
+      const started = scheduledExecution
+        ? await serviceSupabase.rpc(
+            'start_marketing_scheduled_publication_attempt_server_controlled',
+            {
+              p_actor_id: user.id,
+              p_operation_key: startOperationKey,
+              p_prepared_publication_id: preparedPublicationId,
+              p_attempt_id: attemptId,
+              p_now: new Date().toISOString(),
+            },
+          )
+        : await serviceSupabase.rpc(
+            'start_marketing_publication_attempt_server_controlled',
+            {
+              p_actor_id: user.id,
+              p_operation_key: startOperationKey,
+              p_attempt_id: attemptId,
+            },
+          );
       if (started.error) {
         return json(
           {
@@ -871,6 +988,17 @@ Deno.serve(async (req: Request) => {
         } catch (providerError) {
           console.error('MARKETING_SOCIAL_META_PROVIDER_FAILED', providerError);
           providerResult = { outcome: 'FAILED', failureCode: 'META_PROVIDER_EXCEPTION' };
+        }
+
+        if (providerResult.outcome === 'UNCERTAIN') {
+          return json(
+            {
+              error: 'META_RECONCILIATION_REQUIRED',
+              reconciliationCode: providerResult.reconciliationCode,
+              externalPublication: false,
+            },
+            409,
+          );
         }
       }
 
