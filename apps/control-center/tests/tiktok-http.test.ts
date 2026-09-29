@@ -13,17 +13,84 @@ import {
 const config = {
   enabled: true,
   accessToken: 'test-token',
-  verifiedUrlPrefix: 'https://media.invalid/videos/',
+  verifiedUrlPrefix: 'https://media.invalid/storage/v1/object/public/lihen-editorial-video/',
   audited: false,
   authorizedScopes: ['video.publish'],
   contextSigningKey: 'test-only-signing-key-more-than-32-chars',
+  mediaOrigin: 'https://media.invalid',
 };
-const video = { publicUrl: 'https://media.invalid/videos/a.mp4', mediaType: 'VIDEO' as const };
+const video = {
+  publicUrl:
+    'https://media.invalid/storage/v1/object/public/lihen-editorial-video/products/00000000-0000-0000-0000-000000000001/reels/00000000-0000-0000-0000-000000000002.mp4',
+  mediaType: 'VIDEO' as const,
+};
+
+const u32 = (value: number) => {
+  const bytes = new Uint8Array(4);
+  new DataView(bytes.buffer).setUint32(0, value);
+  return bytes;
+};
+const join = (...parts: Uint8Array[]) => {
+  const output = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
+  }
+  return output;
+};
+const ascii = (value: string) => new TextEncoder().encode(value);
+const box = (type: string, ...parts: Uint8Array[]) => {
+  const body = join(...parts);
+  return join(u32(body.length + 8), ascii(type), body);
+};
+const movie = (seconds = 12) => {
+  const header = join(new Uint8Array(12), u32(1000), u32(seconds * 1000));
+  return join(
+    box('ftyp', ascii('isom'), u32(0)),
+    box(
+      'moov',
+      box('mvhd', header),
+      box(
+        'trak',
+        box(
+          'mdia',
+          box('mdhd', header),
+          box('hdlr', new Uint8Array(8), ascii('vide')),
+          box(
+            'minf',
+            box(
+              'stbl',
+              box('stts', u32(0), u32(1), u32(seconds), u32(1000)),
+              box('stsz', u32(0), u32(1), u32(seconds)),
+            ),
+          ),
+        ),
+      ),
+    ),
+    box('mdat', new Uint8Array(seconds)),
+  );
+};
+const mediaResponse = (bytes = movie(), headers: Record<string, string> = {}) =>
+  new Response(bytes, {
+    headers: {
+      'content-type': 'video/mp4',
+      'content-length': String(bytes.length),
+      etag: '"test-object"',
+      ...headers,
+    },
+  });
 function fixture(status: unknown = 'PROCESSING_DOWNLOAD') {
   const request = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
-    if (init?.method === 'HEAD')
+    if (String(url) === video.publicUrl && init?.method === 'GET')
+      return mediaResponse(movie(), { etag: '"test-object"' });
+    if (String(url) === video.publicUrl && init?.method === 'HEAD')
       return new Response(null, {
-        headers: { 'content-length': '1000', 'content-type': 'video/mp4', etag: '"test-object"' },
+        headers: {
+          'content-length': String(movie().length),
+          'content-type': 'video/mp4',
+          etag: '"test-object"',
+        },
       });
     const data = String(url).endsWith('creator_info/query/')
       ? {
@@ -54,13 +121,20 @@ describe('TikTok HTTP transport — injected HTTP only', () => {
       privacy: 'SELF_ONLY',
       consent: true as const,
       interactions: { comment: false, duet: false, stitch: true },
+      disclosure: {
+        ownBrand: false,
+        brandedContent: false,
+        musicUsageAccepted: true as const,
+      },
     };
+    expect(
+      await transport.verifyVideo(video, new AbortController().signal, creator.maxVideoDurationSec),
+    ).toBe(true);
     await transport.initialize(
       { videoUrl: video.publicUrl, caption: 'Editable caption #tag', choices },
       new AbortController().signal,
     );
     await transport.status('provider-operation', new AbortController().signal);
-    expect(await transport.verifyVideo(video, new AbortController().signal)).toBe(false);
     const calls = request.mock.calls;
     const initialized = calls.find(([url]) => String(url).endsWith('video/init/'))!;
     expect(JSON.parse(String(initialized[1]?.body))).toEqual({
@@ -71,6 +145,8 @@ describe('TikTok HTTP transport — injected HTTP only', () => {
         disable_comment: true,
         disable_duet: true,
         disable_stitch: false,
+        brand_organic_toggle: false,
+        brand_content_toggle: false,
       },
     });
     for (const [url, init] of calls.filter(([, init]) => init?.method === 'POST')) {
@@ -85,7 +161,7 @@ describe('TikTok HTTP transport — injected HTTP only', () => {
     }
     const head = calls.find(([, init]) => init?.method === 'HEAD')!;
     expect(head[1]?.redirect).toBe('error');
-    expect(head[1]?.headers).toBeUndefined();
+    expect(head[1]?.headers).toEqual({ 'If-Match': '"test-object"' });
     const statusCall = calls.find(([url]) => String(url).endsWith('status/fetch/'))!;
     expect(JSON.parse(String(statusCall[1]?.body))).toEqual({ publish_id: 'provider-operation' });
   });
@@ -117,7 +193,7 @@ describe('TikTok HTTP transport — injected HTTP only', () => {
   });
   it('constructs fixed official transport without dynamic wire configuration', () => {
     expect(configuredTikTokTransport(config, null, vi.fn())?.physicalVerificationAvailable).toBe(
-      false,
+      true,
     );
   });
   it('validates duration against current creator info and refuses fabricated interaction choices', async () => {
@@ -130,14 +206,16 @@ describe('TikTok HTTP transport — injected HTTP only', () => {
       interactions: { comment: false, duet: false, stitch: true },
     };
     const untrusted = { ...video, durationSeconds: 1, verifiedEtag: '"browser"' };
-    expect(assessTikTok(config, transport, untrusted, choices)).toContain(
+    expect(assessTikTok(config, transport, untrusted, choices)).not.toContain(
       'TIKTOK_VIDEO_DURATION_VERIFICATION_UNAVAILABLE',
     );
     const initialize = vi.spyOn(transport, 'initialize');
     expect(
       await executeTikTok(config, transport, untrusted, choices, 'copy', async () => {}),
     ).toEqual({ outcome: 'UNCERTAIN' });
-    expect(initialize).not.toHaveBeenCalled();
+    // Browser-supplied duration/ETag are ignored. The server performs its own
+    // governed byte measurement before initialization.
+    expect(initialize).toHaveBeenCalledTimes(1);
     transport.creator.interactions = [
       { key: 'interaction', label: 'Test interaction', allowed: false },
     ];

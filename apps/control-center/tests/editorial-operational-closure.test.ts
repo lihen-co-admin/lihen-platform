@@ -49,6 +49,8 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
   let videoMime = 'video/mp4';
   let evidenceFails = false;
   let completeFails = false;
+  let scheduledAuthorityReads = 0;
+
   const from = vi.fn((table: string) => {
     const result = () => ({
       data:
@@ -104,6 +106,31 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
       attempts[0]!.provider_evidence = evidence;
       return { data: null, error: null };
     }
+    if (
+      name ===
+      'get_marketing_scheduled_execution_authority_server_controlled'
+    ) {
+      scheduledAuthorityReads += 1;
+
+      const mode = env.TEST_SCHEDULED_AUTHORITY ?? 'ALLOW';
+      const authorized =
+        mode !== 'DENY' &&
+        !(mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 1);
+
+      return {
+        data: authorized
+          ? [
+              {
+                publication_id: publication.id,
+                attempt_id: args.p_attempt_id,
+                product_id: 'product',
+              },
+            ]
+          : [],
+        error: null,
+      };
+    }
+
     if (name === 'create_marketing_publication_attempt_server_controlled') {
       if (!attempts.length)
         attempts.push({
@@ -126,6 +153,39 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
         ],
         error: null,
       };
+    if (
+      name ===
+      'start_marketing_scheduled_publication_attempt_server_controlled'
+    ) {
+      const attempt = attempts.find(
+        (candidate) =>
+          candidate.id === args.p_attempt_id &&
+          candidate.prepared_publication_id ===
+            args.p_prepared_publication_id,
+      );
+
+      if (!attempt || attempt.status !== 'PENDING') {
+        return {
+          data: null,
+          error: { message: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED' },
+        };
+      }
+
+      const mode = env.TEST_SCHEDULED_AUTHORITY ?? 'ALLOW';
+      if (
+        mode === 'DENY' ||
+        (mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 0)
+      ) {
+        return {
+          data: null,
+          error: { message: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED' },
+        };
+      }
+
+      attempt.status = 'IN_PROGRESS';
+      return { data: [attempt], error: null };
+    }
+
     if (name === 'start_marketing_publication_attempt_server_controlled') {
       if (attempts[0]?.status !== 'PENDING')
         return { data: null, error: { message: 'Not pending' } };
@@ -632,6 +692,94 @@ describe('governed operational closure — real handler, local doubles only', ()
     expect(r.rpc).not.toHaveBeenCalled();
     expect(r.fetchMock).not.toHaveBeenCalled();
   });
+  it('scheduled execution fails closed without durable authority', async () => {
+    const r = runtime();
+    r.attempts.push({
+      id: 'scheduled-attempt',
+      prepared_publication_id: r.publication.id,
+      status: 'PENDING',
+    });
+    r.env.META_PUBLICATION_ENABLED = 'true';
+    r.env.TEST_SCHEDULED_AUTHORITY = 'DENY';
+
+    const result = await r.call(
+      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
+      {
+        preparedPublicationId: r.publication.id,
+        attemptId: 'scheduled-attempt',
+      },
+    );
+
+    expect(result.status).toBe(409);
+    expect(result.body.error).toBe(
+      'LIHEN_MARKETING_SOCIAL_SCHEDULED_EXECUTION_NOT_AUTHORIZED',
+    );
+    expect(r.attempts[0]?.status).toBe('PENDING');
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('scheduled execution uses durable authority without manual confirmation fields', async () => {
+    const r = runtime();
+    r.attempts.push({
+      id: 'scheduled-attempt',
+      prepared_publication_id: r.publication.id,
+      status: 'PENDING',
+    });
+    r.env.META_PUBLICATION_ENABLED = 'true';
+
+    const result = await r.call(
+      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
+      {
+        preparedPublicationId: r.publication.id,
+        attemptId: 'scheduled-attempt',
+      },
+    );
+
+    const authorityReads = r.rpc.mock.calls.filter(
+      ([name]) =>
+        name ===
+        'get_marketing_scheduled_execution_authority_server_controlled',
+    );
+
+    expect(result.status).toBe(200);
+    expect(authorityReads).toHaveLength(2);
+    expect(r.attempts[0]?.status).toBe('SUCCEEDED');
+    expect(r.fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('scheduled execution revalidates authority immediately before START', async () => {
+    const r = runtime();
+    r.attempts.push({
+      id: 'scheduled-attempt',
+      prepared_publication_id: r.publication.id,
+      status: 'PENDING',
+    });
+    r.env.META_PUBLICATION_ENABLED = 'true';
+    r.env.TEST_SCHEDULED_AUTHORITY = 'REVOKE_AFTER_FIRST';
+
+    const result = await r.call(
+      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
+      {
+        preparedPublicationId: r.publication.id,
+        attemptId: 'scheduled-attempt',
+      },
+    );
+
+    const authorityReads = r.rpc.mock.calls.filter(
+      ([name]) =>
+        name ===
+        'get_marketing_scheduled_execution_authority_server_controlled',
+    );
+
+    expect(result.status).toBe(409);
+    expect(result.body.error).toBe(
+      'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED',
+    );
+    expect(authorityReads).toHaveLength(2);
+    expect(r.attempts[0]?.status).toBe('PENDING');
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+
   it('only one concurrent request wins START and contacts the fake provider', async () => {
     const r = runtime();
     await r.confirm('CREATE_PUBLICATION_ATTEMPT');

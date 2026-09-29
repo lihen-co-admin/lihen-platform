@@ -1,3 +1,4 @@
+import { governedVideoUrl, measureGovernedVideo, type VideoMeasurement } from './video-measurement.ts';
 import type { TikTokConfig, TikTokCreator, TikTokTransport } from './tiktok-provider.ts';
 
 // Fixed official contract; no environment-provided JSON paths.
@@ -30,6 +31,7 @@ export function createTikTokHttpTransport(
   request: typeof fetch = fetch,
 ): TikTokTransport {
   const scopes = config.authorizedScopes ?? [];
+  let verified: { url: string; measurement: VideoMeasurement } | null = null;
   const post = async (
     endpoint: 'creator_info/query' | 'video/init' | 'status/fetch',
     body: Record<string, unknown>,
@@ -57,7 +59,7 @@ export function createTikTokHttpTransport(
     creator,
     authorizedScopes: scopes,
     contractVerified: true,
-    physicalVerificationAvailable: false,
+    physicalVerificationAvailable: true,
     async queryCreator(signal) {
       const result = await post('creator_info/query', {}, signal);
       const identity = at(result, ['data', 'creator_username']);
@@ -81,11 +83,12 @@ export function createTikTokHttpTransport(
       });
       const data = {
         accountId: identity,
+        nickname: typeof at(result, ['data', 'creator_nickname']) === 'string' ? String(at(result, ['data', 'creator_nickname'])) : identity,
         privacyOptions: [...new Set(privacy as string[])],
         maxVideoDurationSec: maxDuration,
         interactions: controls,
         consentText: 'Autorizo enviar este video y texto a TikTok con las opciones seleccionadas.',
-        controlsSupported: false,
+        controlsSupported: true,
       };
       return {
         ...data,
@@ -93,62 +96,34 @@ export function createTikTokHttpTransport(
         expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
       };
     },
-    async verifyVideo(video, signal) {
-      // HEAD can reject an object, but cannot measure duration or certify its bytes.
-      // No persisted or caller-declared duration/ETag is trusted.
+    async verifyVideo(video, signal, maxDurationSec) {
+      verified = null;
       try {
-        const prefix = new URL(config.verifiedUrlPrefix);
-        const url = new URL(video.publicUrl);
-        if (
-          prefix.protocol !== 'https:' ||
-          url.protocol !== 'https:' ||
-          prefix.username ||
-          prefix.password ||
-          prefix.search ||
-          prefix.hash ||
-          !prefix.pathname.endsWith('/') ||
-          url.origin !== prefix.origin ||
-          !url.pathname.startsWith(prefix.pathname) ||
-          url.username ||
-          url.password ||
-          url.search ||
-          url.hash ||
-          video.mediaType !== 'VIDEO'
-        )
-          return false;
-        const response = await request(url.href, {
-          method: 'HEAD',
-          redirect: 'error',
-          signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]),
-        });
-        const size = Number(response.headers.get('content-length'));
-        const etag = response.headers.get('etag');
-        if (
-          !response.ok ||
-          response.redirected ||
-          !etag ||
-          !/^"[^"\r\n]+"$/.test(etag) ||
-          !Number.isSafeInteger(size) ||
-          size <= 0 ||
-          size > 104857600 ||
-          !['video/mp4', 'video/quicktime'].includes(
-            response.headers.get('content-type')?.split(';')[0]?.trim() ?? '',
-          )
-        )
-          return false;
-        // A strong observed ETag is not a certified duration/ETag binding.
-        return false;
-      } catch {
-        return false;
-      }
+        if (video.mediaType !== 'VIDEO' || !maxDurationSec || !Number.isFinite(maxDurationSec)) return false;
+        const measured = await measureGovernedVideo(video.publicUrl, config.mediaOrigin ?? '', config.verifiedUrlPrefix, signal, request);
+        if (measured.durationSeconds > maxDurationSec) throw new Error('TIKTOK_VIDEO_DURATION_EXCEEDED');
+        this.measurement = measured;
+        verified = { url: video.publicUrl, measurement: measured };
+        return true;
+      } catch { return false; }
     },
     async initialize(input, signal) {
+      const proof = verified;
+      verified = null; // A physical proof licenses at most one initialization in this invocation.
+      if (!proof || proof.url !== input.videoUrl) throw new Error('TIKTOK_VIDEO_DURATION_VERIFICATION_UNAVAILABLE');
+      const url = governedVideoUrl(input.videoUrl, config.mediaOrigin ?? '', config.verifiedUrlPrefix);
+      const head = await request(url, { method: 'HEAD', redirect: 'error', signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]), headers: { 'If-Match': proof.measurement.etag } });
+      if (head.status !== 200 || head.redirected || head.headers.get('etag') !== proof.measurement.etag || Number(head.headers.get('content-length')) !== proof.measurement.bytes) throw new Error('TIKTOK_VIDEO_CHANGED');
+      const disclosure = input.choices.disclosure;
+      if (!disclosure || disclosure.musicUsageAccepted !== true || typeof disclosure.ownBrand !== 'boolean' || typeof disclosure.brandedContent !== 'boolean' || (disclosure.brandedContent && input.choices.privacy === 'SELF_ONLY') || (!config.audited && input.choices.privacy !== 'SELF_ONLY')) throw new Error('TIKTOK_DISCLOSURE_REQUIRED');
       const body: Record<string, unknown> = {
         source_info: { source: 'PULL_FROM_URL', video_url: input.videoUrl },
       };
       const postInfo: Record<string, unknown> = {
         title: input.caption,
         privacy_level: input.choices.privacy,
+        brand_organic_toggle: disclosure.ownBrand,
+        brand_content_toggle: disclosure.brandedContent,
       };
       body.post_info = postInfo;
       for (const interaction of interactions) {

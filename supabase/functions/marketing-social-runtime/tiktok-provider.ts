@@ -1,8 +1,10 @@
+import type { VideoMeasurement } from './video-measurement.ts';
 import { createTikTokHttpTransport } from './tiktok-http.ts';
 export { readTikTokCreator, signTikTokCreator } from './tiktok-http.ts';
 // Internal normalized contracts. Official wire fields are fixed in the HTTP adapter.
 export interface TikTokCreator {
   accountId: string;
+  nickname?: string;
   revision: string;
   expiresAt: string;
   privacyOptions: string[];
@@ -16,6 +18,7 @@ export interface TikTokChoices {
   creatorRevision: string;
   privacy: string;
   consent: true;
+  disclosure?: { ownBrand: boolean; brandedContent: boolean; musicUsageAccepted: true };
   interactions: Readonly<Record<string, boolean>>;
 }
 export interface TikTokConfig {
@@ -25,6 +28,7 @@ export interface TikTokConfig {
   audited: boolean;
   authorizedScopes?: readonly string[];
   contextSigningKey?: string;
+  mediaOrigin?: string;
 }
 export interface TikTokVideo {
   publicUrl: string;
@@ -44,7 +48,8 @@ export interface TikTokTransport {
   physicalVerificationAvailable: boolean;
   queryCreator(signal: AbortSignal): Promise<TikTokCreator>;
   // Implementor must verify video.publish and URL download/no-redirect rules.
-  verifyVideo(video: TikTokVideo, signal: AbortSignal): Promise<boolean>;
+  verifyVideo(video: TikTokVideo, signal: AbortSignal, maxDurationSec?: number): Promise<boolean>;
+  measurement?: VideoMeasurement;
   initialize(
     input: { videoUrl: string; caption: string; choices: TikTokChoices },
     signal: AbortSignal,
@@ -53,6 +58,8 @@ export interface TikTokTransport {
   status(publishId: string, signal: AbortSignal): Promise<TikTokStatus>;
 }
 export interface TikTokEvidence {
+  measurement?: VideoMeasurement;
+  disclosure?: TikTokChoices['disclosure'];
   kind: 'CONSENT' | 'ACCEPTED' | 'PROCESSING' | 'UNKNOWN' | 'COMPLETE' | 'FAILED';
   publishId?: string;
   accountId?: string;
@@ -91,6 +98,7 @@ export function tikTokConfig(env: (name: string) => string | undefined): TikTokC
       .map((scope) => scope.trim())
       .filter(Boolean),
     contextSigningKey: env('TIKTOK_CONTEXT_SIGNING_KEY') ?? '',
+    mediaOrigin: env('SUPABASE_URL') ?? '',
   };
 }
 export function allowedTikTokPrivacy(config: TikTokConfig, creator: TikTokCreator): string[] {
@@ -100,7 +108,7 @@ export function validTikTokChoices(value: unknown): value is TikTokChoices {
   if (!value || typeof value !== 'object') return false;
   const choice = value as Partial<TikTokChoices>;
   return (
-    Object.keys(value).sort().join(',') === 'consent,creatorRevision,interactions,privacy' &&
+    ['consent,creatorRevision,interactions,privacy', 'consent,creatorRevision,disclosure,interactions,privacy'].includes(Object.keys(value).sort().join(',')) &&
     typeof choice.creatorRevision === 'string' &&
     typeof choice.privacy === 'string' &&
     choice.consent === true &&
@@ -227,10 +235,12 @@ export async function executeTikTok(
       assessTikTok(config, { ...transport, creator }, video, choices).length
     )
       return { outcome: 'UNCERTAIN' };
-    if ((await bounded((signal) => transport.verifyVideo(video, signal))) !== true)
+    if ((await bounded((signal) => transport.verifyVideo(video, signal, creator.maxVideoDurationSec))) !== true)
       return { outcome: 'UNCERTAIN' };
     await persist({
       kind: 'CONSENT',
+      ...(transport.measurement ? { measurement: transport.measurement } : {}),
+      ...(choices.disclosure ? { disclosure: choices.disclosure } : {}),
       accountId: creator.accountId,
       creatorRevision: creator.revision,
       privacy: choices.privacy,

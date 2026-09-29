@@ -11,7 +11,7 @@ describe('TikTok governed boundary', () => {
     expect(provider).toContain("env('TIKTOK_PUBLICATION_ENABLED') === 'true'");
     expect(provider).toContain('return null;');
     expect(provider).not.toContain('TIKTOK_WIRE_CONTRACT');
-    expect(http).toContain('physicalVerificationAvailable: false');
+    expect(http).toContain('physicalVerificationAvailable: true');
     expect(runtime).toContain('get_marketing_editorial_video_assets');
     expect(runtime).not.toMatch(
       /get_marketing_tiktok_video_metadata|duration_seconds|duration_verified_etag/,
