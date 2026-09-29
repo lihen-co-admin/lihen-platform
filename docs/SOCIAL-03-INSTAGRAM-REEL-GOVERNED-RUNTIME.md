@@ -8,7 +8,7 @@ Enable Instagram Reel inside the existing governed DEV publication flow without 
 
 `marketing_editorial_video_assets` stores authorized editorial video metadata associated with a product. Direct authenticated table access is denied. `get_marketing_editorial_video_assets` exposes read-only metadata only to ACTIVE OWNER/ADMIN users.
 
-The foundation does not create a Storage bucket, upload a video, seed an asset, authorize publication, enable the scheduler, or touch PROD.
+The migration creates/configures the `lihen-editorial-video` Storage bucket and its governed mutation policies. It does not upload a video, seed an asset, authorize publication, enable the scheduler, or touch PROD.
 
 ## Runtime invariants
 

@@ -1,5 +1,7 @@
 # MULTICHANNEL-02 — durable editorial workspace in DEV
 
+Historical increment snapshot. Reel availability is superseded by SOCIAL-03; see [TIKTOK-01](TIKTOK-01-GOVERNED-DIRECT-POST-DEV.md) for the current blocked TikTok DEV foundation.
+
 ## Persisted contracts
 
 The Control Center reads `marketing_content_schedules`, `marketing_prepared_publications` and `marketing_publication_attempts` through the `READ_EDITORIAL_WORKSPACE` action in `marketing-social-runtime`. The action requires a valid bearer session and an `ACTIVE` OWNER/ADMIN profile, and returns only fields required for editorial items, calendar state and attempt history. The runtime uses its existing server-side database client; no service-role credential is sent to the browser. No table policy or migration was added.

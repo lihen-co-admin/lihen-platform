@@ -3,6 +3,7 @@ import { transformSync } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEditorialOperations } from '../src/composition/editorial-operations';
 import * as policy from '../../../supabase/functions/marketing-social-runtime/operational-policy';
+import * as tiktok from '../../../supabase/functions/marketing-social-runtime/tiktok-provider';
 
 const compiledRuntime = transformSync(
   readFileSync('supabase/functions/marketing-social-runtime/index.ts', 'utf8'),
@@ -11,7 +12,7 @@ const compiledRuntime = transformSync(
 
 // Execute the real Edge request handler with local auth, persistence and provider doubles.
 // No Supabase client or network transport is instantiated.
-function runtime() {
+function runtime(transport: tiktok.TikTokTransport | null = null) {
   const publication = {
     id: 'publication',
     campaign_id: 'campaign',
@@ -44,6 +45,9 @@ function runtime() {
   };
   let role = 'OWNER';
   let videoStatus = 'ACTIVE';
+  let videoProduct = 'product';
+  let videoMime = 'video/mp4';
+  let evidenceFails = false;
   let completeFails = false;
   const from = vi.fn((table: string) => {
     const result = () => ({
@@ -73,9 +77,9 @@ function runtime() {
         data: [
           {
             id: 'video',
-            product_id: 'product',
+            product_id: videoProduct,
             public_url: 'https://example.invalid/reel.mp4',
-            mime_type: 'video/mp4',
+            mime_type: videoMime,
             status: videoStatus,
           },
         ],
@@ -93,6 +97,13 @@ function runtime() {
         ],
         error: null,
       };
+    if (name === 'append_marketing_tiktok_evidence_server_controlled') {
+      if (evidenceFails) return { data: null, error: { message: 'Evidence unavailable' } };
+      const evidence = (attempts[0]!.provider_evidence ?? []) as unknown[];
+      evidence.push(args.p_evidence);
+      attempts[0]!.provider_evidence = evidence;
+      return { data: null, error: null };
+    }
     if (name === 'create_marketing_publication_attempt_server_controlled') {
       if (!attempts.length)
         attempts.push({
@@ -146,7 +157,18 @@ function runtime() {
     auth: { getUser: async () => ({ data: { user: { id: 'actor' } }, error: null }) },
   };
   new Function('require', 'Deno', 'fetch', compiledRuntime)(
-    (name: string) => (name === 'supabase' ? { createClient: () => client } : policy),
+    (name: string) =>
+      name === 'supabase'
+        ? { createClient: () => client }
+        : name.includes('tiktok-provider')
+          ? {
+              ...tiktok,
+              configuredTikTokTransport: (
+                _config: tiktok.TikTokConfig,
+                creator: tiktok.TikTokCreator | null = null,
+              ) => (transport ? { ...transport, creator } : null),
+            }
+          : policy,
     {
       env: { get: (name: string) => env[name] },
       serve: (fn: typeof handler) => {
@@ -165,10 +187,34 @@ function runtime() {
     );
     return { status: response.status, body: await response.json() };
   };
-  const assess = () =>
+  const context = async () =>
+    transport?.creator
+      ? tiktok.signTikTokCreator(
+          tiktok.tikTokConfig((name) => env[name]),
+          {
+            actorId: 'actor',
+            publicationId: publication.id,
+            productId: 'product',
+            media: { publicUrl: 'https://example.invalid/reel.mp4', mediaType: 'VIDEO' },
+          },
+          transport.creator,
+        )
+      : null;
+  const assess = async () =>
     call('ASSESS_PUBLICATION_OPERATION', {
       preparedPublicationId: publication.id,
       productId: 'product',
+      ...(transport?.creator
+        ? {
+            tiktokChoices: {
+              creatorRevision: transport.creator.revision,
+              privacy: 'SELF_ONLY',
+              consent: true,
+              interactions: {},
+            },
+            tiktokCreatorContext: await context(),
+          }
+        : {}),
     });
   const confirm = async (action: string, snapshot?: string) => {
     const current = await assess();
@@ -178,6 +224,17 @@ function runtime() {
       attemptId: attempts[0]?.id,
       expectedSnapshot: snapshot ?? current.body.data?.snapshot,
       confirmedAction: action,
+      ...(transport?.creator
+        ? {
+            tiktokChoices: {
+              creatorRevision: transport.creator.revision,
+              privacy: 'SELF_ONLY',
+              consent: true,
+              interactions: {},
+            },
+            tiktokCreatorContext: await context(),
+          }
+        : {}),
     });
   };
   return {
@@ -199,10 +256,231 @@ function runtime() {
     setVideoStatus: (value: string) => {
       videoStatus = value;
     },
+    setVideoProduct: (value: string) => {
+      videoProduct = value;
+    },
+    setVideoMime: (value: string) => {
+      videoMime = value;
+    },
+    failEvidence: () => {
+      evidenceFails = true;
+    },
   };
 }
 
 afterEach(() => vi.restoreAllMocks());
+
+function fakeTikTok() {
+  const creator: tiktok.TikTokCreator = {
+    accountId: 'test-creator',
+    revision: 'revision-1',
+    expiresAt: '2099-01-01',
+    privacyOptions: ['SELF_ONLY'],
+    consentText: 'Test provider consent',
+    controlsSupported: true,
+    maxVideoDurationSec: 120,
+    interactions: [],
+  };
+  return {
+    creator,
+    contractVerified: true,
+    physicalVerificationAvailable: true,
+    authorizedScopes: ['video.publish'],
+    queryCreator: vi.fn(async () => creator),
+    verifyVideo: vi.fn(async () => true),
+    initialize: vi.fn(async () => ({ publishId: 'test-publish-id' })),
+    status: vi.fn(async (): Promise<tiktok.TikTokStatus> => ({ state: 'PROCESSING' })),
+  };
+}
+function tikTokRuntime() {
+  const provider = fakeTikTok();
+  const r = runtime(provider);
+  r.publication.channel = 'TIKTOK';
+  r.publication.creative_asset_ids = ['video'];
+  r.env.TIKTOK_PUBLICATION_ENABLED = 'true';
+  r.env.TIKTOK_ACCESS_TOKEN = 'local-test-only';
+  r.env.TIKTOK_VERIFIED_URL_PREFIX = 'https://example.invalid/';
+  r.env.TIKTOK_CONTEXT_SIGNING_KEY = 'test-only-signing-key-at-least-32-characters';
+  r.env.TIKTOK_AUTHORIZED_SCOPES = 'video.publish';
+  for (const key of Object.keys(r.env)) if (key.startsWith('META_')) delete r.env[key];
+  return { ...r, provider };
+}
+
+describe('TikTok governed runtime — local normalized provider only', () => {
+  it('blocks unmeasurable duration before START despite browser metadata and URLs', async () => {
+    const r = tikTokRuntime();
+    r.provider.physicalVerificationAvailable = false;
+    const result = await r.call('ASSESS_PUBLICATION_OPERATION', {
+      preparedPublicationId: 'publication',
+      productId: 'product',
+      durationSeconds: 1,
+      verifiedEtag: '"browser-claim"',
+      videoUrl: 'https://attacker.invalid/video.mp4',
+      physicalVerificationAvailable: true,
+    });
+    expect(result.body.data.blockers).toContain('TIKTOK_VIDEO_DURATION_VERIFICATION_UNAVAILABLE');
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
+    expect(r.attempts).toHaveLength(0);
+    expect(r.provider.queryCreator).not.toHaveBeenCalled();
+    expect(r.provider.initialize).not.toHaveBeenCalled();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it('rejects multiple videos and missing authorization before START', async () => {
+    const r = tikTokRuntime();
+    r.publication.creative_asset_ids = ['video', 'second'];
+    expect((await r.assess()).body.data.blockers).toContain('TIKTOK_SINGLE_VIDEO_REQUIRED');
+    r.publication.creative_asset_ids = ['video'];
+    r.provider.authorizedScopes = [];
+    expect((await r.assess()).body.data.blockers).toContain('TIKTOK_VIDEO_PUBLISH_SCOPE_REQUIRED');
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    expect(r.attempts).toHaveLength(0);
+    expect(r.provider.queryCreator).not.toHaveBeenCalled();
+  });
+  it('assessment and CREATE never call provider; accepted processing stays IN_PROGRESS with durable evidence', async () => {
+    const r = tikTokRuntime();
+    expect((await r.assess()).body.data.nextAction).toBe('CREATE_PUBLICATION_ATTEMPT');
+    expect((await r.confirm('CREATE_PUBLICATION_ATTEMPT')).status).toBe(200);
+    expect(r.provider.queryCreator).not.toHaveBeenCalled();
+    expect(r.provider.initialize).not.toHaveBeenCalled();
+    const response = await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
+    expect(response.body.error).toBe('TIKTOK_RECONCILIATION_REQUIRED');
+    expect(response.body.externalPublication).toBe(false);
+    expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
+    expect(r.attempts[0]?.provider_evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'CONSENT', privacy: 'SELF_ONLY', consent: true }),
+        { kind: 'ACCEPTED', publishId: 'test-publish-id' },
+        { kind: 'PROCESSING', publishId: 'test-publish-id' },
+      ]),
+    );
+    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
+    expect(r.attempts).toHaveLength(1);
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it.each(['TIKTOK_PUBLICATION_ENABLED', 'TIKTOK_ACCESS_TOKEN', 'TIKTOK_VERIFIED_URL_PREFIX'])(
+    'blocks missing %s before START',
+    async (key) => {
+      const r = tikTokRuntime();
+      await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+      delete r.env[key];
+      expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(400);
+      expect(r.attempts[0]?.status).toBe('PENDING');
+      expect(r.rpc.mock.calls.some(([name]) => name.startsWith('start_'))).toBe(false);
+      expect(r.provider.queryCreator).not.toHaveBeenCalled();
+    },
+  );
+  it.each(['missing', 'archived', 'wrong-product', 'image'])(
+    'blocks %s video and browser URL bypass',
+    async (problem) => {
+      const r = tikTokRuntime();
+      if (problem === 'missing') r.publication.creative_asset_ids = [];
+      if (problem === 'archived') r.setVideoStatus('ARCHIVED');
+      if (problem === 'wrong-product') r.setVideoProduct('other');
+      if (problem === 'image') r.setVideoMime('image/png');
+      expect((await r.assess()).body.data.blockers.length).toBeGreaterThan(0);
+      await r.call('EXECUTE_PUBLICATION_ATTEMPT', {
+        preparedPublicationId: 'publication',
+        productId: 'product',
+        videoUrl: 'https://attacker.invalid/video.mp4',
+        confirmedAction: 'EXECUTE_PUBLICATION_ATTEMPT',
+      });
+      expect(r.provider.initialize).not.toHaveBeenCalled();
+      expect(r.rpc.mock.calls.some(([name]) => name.startsWith('start_'))).toBe(false);
+    },
+  );
+  it('requires fresh explicit confirmation including privacy and consent', async () => {
+    const r = tikTokRuntime();
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    const before = await r.assess();
+    const payload = {
+      preparedPublicationId: 'publication',
+      productId: 'product',
+      attemptId: 'publication',
+      expectedSnapshot: before.body.data.snapshot,
+    };
+    expect((await r.call('EXECUTE_PUBLICATION_ATTEMPT', payload)).status).toBe(400);
+    r.publication.copy = 'changed';
+    expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT', before.body.data.snapshot)).status).toBe(
+      400,
+    );
+    expect(r.provider.initialize).not.toHaveBeenCalled();
+  });
+  it('uses only durable video URL and succeeds only from verified terminal completion', async () => {
+    const r = tikTokRuntime();
+    r.provider.status.mockResolvedValue({
+      state: 'COMPLETE',
+      publicationRef: 'verified-final-ref',
+    });
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    const a = (await r.assess()).body.data;
+    const result = await r.call('EXECUTE_PUBLICATION_ATTEMPT', {
+      preparedPublicationId: 'publication',
+      productId: 'product',
+      attemptId: 'publication',
+      expectedSnapshot: a.snapshot,
+      confirmedAction: a.nextAction,
+      tiktokChoices: a.tiktokChoices,
+      tiktokCreatorContext: a.tiktokCreatorContext,
+      videoUrl: 'https://attacker.invalid/a.mp4',
+    });
+    expect(result.body.externalPublication).toBe(true);
+    expect(r.attempts[0]?.status).toBe('SUCCEEDED');
+    expect(r.attempts[0]?.external_publication_ref).toBe('verified-final-ref');
+    expect(r.provider.initialize.mock.calls[0]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ videoUrl: 'https://example.invalid/reel.mp4' }),
+      ]),
+    );
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it('records a terminal failure and never reuses the attempt', async () => {
+    const r = tikTokRuntime();
+    r.provider.status.mockResolvedValue({ state: 'FAILED', code: 'TEST_TERMINAL_FAILURE' });
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).body.externalPublication).toBe(false);
+    expect(r.attempts[0]?.status).toBe('FAILED');
+    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
+    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
+  });
+  it.each(['UNKNOWN', 'malformed', 'exception', 'evidence', 'completion'])(
+    'requires reconciliation after %s',
+    async (problem) => {
+      const r = tikTokRuntime();
+      await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+      if (problem === 'UNKNOWN') r.provider.status.mockResolvedValue({ state: 'UNKNOWN' });
+      if (problem === 'malformed')
+        r.provider.status.mockResolvedValue({ state: 'COMPLETE' } as tiktok.TikTokStatus);
+      if (problem === 'exception')
+        r.provider.status.mockRejectedValue(new Error('network timeout'));
+      if (problem === 'evidence')
+        r.provider.initialize.mockImplementation(async () => {
+          r.failEvidence();
+          return { publishId: 'test-publish-id' };
+        });
+      if (problem === 'completion') {
+        r.provider.status.mockResolvedValue({ state: 'COMPLETE', publicationRef: 'verified-ref' });
+        r.failCompletion();
+      }
+      expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(409);
+      expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
+      await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
+      expect(r.provider.initialize).toHaveBeenCalledTimes(1);
+    },
+  );
+  it('only one concurrent execution can initialize and replay cannot initialize again', async () => {
+    const r = tikTokRuntime();
+    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
+    await Promise.all([
+      r.confirm('EXECUTE_PUBLICATION_ATTEMPT'),
+      r.confirm('EXECUTE_PUBLICATION_ATTEMPT'),
+    ]);
+    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
+    expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
+  });
+});
 
 describe('governed operational closure — real handler, local doubles only', () => {
   it('assesses without writes, creates PENDING only after confirmation, then requires separate execution approval', async () => {
@@ -235,7 +513,9 @@ describe('governed operational closure — real handler, local doubles only', ()
     async (channel) => {
       const r = runtime();
       r.publication.channel = channel;
-      expect((await r.assess()).body.data.blockers).toContain('CHANNEL_UNAVAILABLE');
+      expect((await r.assess()).body.data.blockers).toContain(
+        channel === 'TIKTOK' ? 'TIKTOK_PUBLICATION_DISABLED' : 'CHANNEL_UNAVAILABLE',
+      );
       expect((await r.confirm('CREATE_PUBLICATION_ATTEMPT')).status).toBe(400);
       expect(r.attempts).toHaveLength(0);
       expect(r.fetchMock).not.toHaveBeenCalled();

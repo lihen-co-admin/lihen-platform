@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
 import { useAuth } from '../auth/auth-context';
 import { productsComposition } from '../composition/products';
+import { readEditorialVideoAssets } from '../composition/editorial-video-assets';
 import {
   createEditorialDraft,
   programEditorial,
@@ -92,6 +93,7 @@ export function SocialContentPage() {
               remoteItems,
               catalog,
               async (productId) => productsComposition.getProductImages.execute({ productId }),
+              readEditorialVideoAssets,
             );
             updateItems(linked);
           }
@@ -347,8 +349,8 @@ export function SocialContentPage() {
             <span className="editorial-chip">{channelCapability(channel.id).status}</span>
             <p>
               {channel.runtime
-                ? 'Operación gobernada con imágenes de catálogo: requiere evaluación del servidor y confirmación explícita. Bloqueada si el servidor no la habilita.'
-                : 'Preparación editorial disponible. Reel requiere video; video y publicación TikTok no están integrados.'}
+                ? 'Operación gobernada con media durable: Reel y TikTok requieren video. Requiere evaluación del servidor y confirmación explícita; permanece bloqueada sin configuración y habilitación.'
+                : 'Preparación editorial disponible; la publicación requiere una integración gobernada.'}
             </p>
           </article>
         ))}

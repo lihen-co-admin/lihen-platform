@@ -1,5 +1,7 @@
 # MULTICHANNEL-06 — Governed Operational Closure
 
+Historical increment snapshot. Reel availability is superseded by SOCIAL-03; see [TIKTOK-01](TIKTOK-01-GOVERNED-DIRECT-POST-DEV.md) for the current blocked TikTok DEV foundation.
+
 Base local autoritativa: HEAD y `origin/next-phase` coinciden en
 `f693ab92eded889be7dde7d2f02f0a0655871f0d`. Sin fetch, commit, push ni merge.
 

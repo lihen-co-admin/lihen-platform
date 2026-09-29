@@ -1,5 +1,15 @@
 import { createClient } from 'supabase';
 import {
+  tikTokConfig,
+  configuredTikTokTransport,
+  assessTikTok,
+  allowedTikTokPrivacy,
+  validTikTokChoices,
+  executeTikTok,
+  readTikTokCreator,
+  signTikTokCreator,
+} from './tiktok-provider.ts';
+import {
   assessOperationalSnapshot,
   requireOperationalConfirmation,
   type OperationalSnapshot,
@@ -12,6 +22,7 @@ const corsHeaders = {
 };
 
 type Action =
+  | 'READ_TIKTOK_CREATOR_INFO'
   | 'ASSESS_PUBLICATION_OPERATION'
   | 'READ_EDITORIAL_WORKSPACE'
   | 'SAVE_CONTENT_SCHEDULE'
@@ -121,14 +132,16 @@ async function resolveAuthorizedPublicationMedia(
   const assetId = publication.creative_asset_ids?.[0]?.trim();
   if (!assetId) throw new Error('LIHEN_MARKETING_SOCIAL_MEDIA_REQUIRED');
 
-  if (publication.channel !== 'INSTAGRAM_REEL') {
+  if (!['INSTAGRAM_REEL', 'TIKTOK'].includes(publication.channel)) {
     return {
       publicUrl: await resolveAuthorizedProductImageUrl(client, productId, assetId),
       mediaType: 'IMAGE',
     };
   }
 
-  const result = await client.rpc('get_marketing_editorial_video_assets', { p_product_id: productId });
+  const result = await client.rpc('get_marketing_editorial_video_assets', {
+    p_product_id: productId,
+  });
   if (result.error)
     throw new Error(`LIHEN_EDITORIAL_VIDEO_RESOLUTION_FAILED:${result.error.message ?? 'UNKNOWN'}`);
   const rows = Array.isArray(result.data) ? (result.data as EditorialVideoRpcRow[]) : [];
@@ -143,6 +156,7 @@ async function resolveAuthorizedPublicationMedia(
     throw new Error('LIHEN_EDITORIAL_REEL_VIDEO_REQUIRED');
   const publicUrl = String(row.public_url ?? '').trim();
   if (!publicUrl) throw new Error('LIHEN_EDITORIAL_VIDEO_SOURCE_UNAVAILABLE');
+
   return { publicUrl, mediaType: 'VIDEO' };
 }
 
@@ -411,6 +425,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const operational = [
+      'READ_TIKTOK_CREATOR_INFO',
       'ASSESS_PUBLICATION_OPERATION',
       'CREATE_PUBLICATION_ATTEMPT',
       'EXECUTE_PUBLICATION_ATTEMPT',
@@ -444,7 +459,7 @@ Deno.serve(async (req: Request) => {
       const attemptsResult = await serviceSupabase
         .from('marketing_publication_attempts')
         .select(
-          'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code',
+          'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code,provider_evidence',
         )
         .eq('prepared_publication_id', publicationId)
         .order('attempt_number', { ascending: false })
@@ -464,8 +479,7 @@ Deno.serve(async (req: Request) => {
       const state = await readOperationalState();
       const publication = state.publication;
       const publicationId = publication.id;
-      const policy = assessOperationalSnapshot(state, Date.now());
-      const blockers = [...policy.blockers];
+      const mediaBlockers: string[] = [];
       let media: AuthorizedMedia | null = null;
       try {
         media = await resolveAuthorizedPublicationMedia(
@@ -474,13 +488,36 @@ Deno.serve(async (req: Request) => {
           requiredString(payload, 'productId'),
         );
       } catch {
-        blockers.push(
-          publication.channel === 'INSTAGRAM_REEL'
-            ? 'REEL_VIDEO_NOT_AUTHORIZED'
-            : 'PRODUCT_MEDIA_NOT_AUTHORIZED',
+        mediaBlockers.push(
+          publication.channel === 'TIKTOK'
+            ? 'TIKTOK_VIDEO_NOT_AUTHORIZED'
+            : publication.channel === 'INSTAGRAM_REEL'
+              ? 'REEL_VIDEO_NOT_AUTHORIZED'
+              : 'PRODUCT_MEDIA_NOT_AUTHORIZED',
         );
       }
-      if (policy.nextAction === 'EXECUTE_PUBLICATION_ATTEMPT') {
+      const config = tikTokConfig((name) => Deno.env.get(name));
+      const creator = publication.channel === 'TIKTOK' ? await readTikTokCreator(config, { actorId: user.id, publicationId, productId: payload.productId, media }, payload.tiktokCreatorContext) : null;
+      const transport = publication.channel === 'TIKTOK' ? configuredTikTokTransport(config, creator) : null;
+      const tiktokBlockers =
+        publication.channel === 'TIKTOK'
+          ? assessTikTok(config, transport, media, payload.tiktokChoices)
+          : [];
+      const policy = assessOperationalSnapshot(state, Date.now(), tiktokBlockers);
+      const blockers = [...policy.blockers, ...mediaBlockers];
+      const tiktokCreator =
+        transport?.contractVerified &&
+        transport.creator?.controlsSupported &&
+        Date.parse(transport.creator.expiresAt) > Date.now()
+          ? {
+              ...transport.creator,
+              privacyOptions: allowedTikTokPrivacy(config, transport.creator),
+            }
+          : null;
+      const tiktokChoices = validTikTokChoices(payload.tiktokChoices)
+        ? payload.tiktokChoices
+        : null;
+      if (policy.nextAction === 'EXECUTE_PUBLICATION_ATTEMPT' && publication.channel !== 'TIKTOK') {
         if (!metaPublicationEnabled()) blockers.push('META_PUBLICATION_DISABLED');
         const settings =
           publication.channel === 'FACEBOOK'
@@ -496,7 +533,20 @@ Deno.serve(async (req: Request) => {
       const bytes = await crypto.subtle.digest(
         'SHA-256',
         new TextEncoder().encode(
-          JSON.stringify({ state, productId: payload.productId, media }),
+          JSON.stringify({
+            state,
+            productId: payload.productId,
+            media,
+            ...(publication.channel === 'TIKTOK'
+              ? {
+                  tiktokCreator,
+                  tiktokChoices,
+                  enabled: config.enabled,
+                  verifiedUrlPrefix: config.verifiedUrlPrefix,
+                  audited: config.audited,
+                }
+              : {}),
+          }),
         ),
       );
       const snapshot = Array.from(new Uint8Array(bytes), (byte) =>
@@ -517,13 +567,27 @@ Deno.serve(async (req: Request) => {
         publication,
         assessedAt: new Date().toISOString(),
         executionAllowed: false,
+        ...(publication.channel === 'TIKTOK' ? { tiktokCreator, tiktokChoices, tiktokCreatorContext: creator ? payload.tiktokCreatorContext : null } : {}),
       };
     };
 
     let data: unknown;
     let error: { message?: string } | null = null;
 
-    if (action === 'READ_EDITORIAL_WORKSPACE') {
+    if (action === 'READ_TIKTOK_CREATOR_INFO') {
+      // Explicit operator metadata query. Never called by assessment/save/CREATE.
+      const state = await readOperationalState();
+      if (state.publication.channel !== 'TIKTOK' || state.publication.creative_asset_ids.length !== 1 || state.attempts.some((attempt) => attempt.status !== 'PENDING')) throw new Error('TIKTOK_CREATOR_QUERY_BLOCKED');
+      const config = tikTokConfig((name) => Deno.env.get(name));
+      const transport = configuredTikTokTransport(config);
+      if (!transport) throw new Error('TIKTOK_PROVIDER_NOT_CONFIGURED');
+      const media = await resolveAuthorizedPublicationMedia(userSupabase, state.publication, requiredString(payload, 'productId'));
+      const prerequisites = assessTikTok(config, transport, media, null).filter((blocker) => !['TIKTOK_CREATOR_INFO_REQUIRED', 'TIKTOK_EXPLICIT_CHOICES_REQUIRED'].includes(blocker));
+      if (prerequisites.length) throw new Error(prerequisites.join(','));
+      const creator = await transport.queryCreator(AbortSignal.timeout(10000));
+      const context = await signTikTokCreator(config, { actorId: user.id, publicationId: state.publication.id, productId: payload.productId, media }, creator);
+      return json({ data: { creator: { ...creator, privacyOptions: allowedTikTokPrivacy(config, creator) }, context }, externalPublication: false });
+    } else if (action === 'READ_EDITORIAL_WORKSPACE') {
       if (payload.preparedPublicationId) {
         const state = await readOperationalState();
         return json({
@@ -555,7 +619,7 @@ Deno.serve(async (req: Request) => {
         serviceSupabase
           .from('marketing_publication_attempts')
           .select(
-            'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code',
+            'id,prepared_publication_id,attempt_number,status,started_at,completed_at,external_publication_ref,failure_code,provider_evidence',
           )
           .order('attempt_number', { ascending: false })
           .limit(2000),
@@ -635,7 +699,7 @@ Deno.serve(async (req: Request) => {
       requireOperationalConfirmation(payload, assessment, action);
       if (payload.attemptId !== assessment.attemptId)
         throw new Error('LIHEN_MARKETING_SOCIAL_ATTEMPT_MISMATCH');
-      if (!metaPublicationEnabled()) {
+      if (assessment.channel !== 'TIKTOK' && !metaPublicationEnabled()) {
         return json(
           {
             error: 'LIHEN_MARKETING_SOCIAL_META_PUBLICATION_DISABLED',
@@ -700,7 +764,11 @@ Deno.serve(async (req: Request) => {
         );
       }
 
-      if (!['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL'].includes(publication.channel)) {
+      if (
+        !['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL', 'TIKTOK'].includes(
+          publication.channel,
+        )
+      ) {
         return json(
           {
             error: 'LIHEN_MARKETING_SOCIAL_META_CHANNEL_UNSUPPORTED',
@@ -734,13 +802,21 @@ Deno.serve(async (req: Request) => {
       const media = await resolveAuthorizedPublicationMedia(userSupabase, publication, productId);
 
       // All provider/config preflight is intentionally completed before START.
-      requiredEnv('META_GRAPH_API_VERSION');
-      if (publication.channel === 'FACEBOOK') {
-        requiredEnv('META_FACEBOOK_ACCESS_TOKEN');
-        requiredEnv('META_FACEBOOK_PAGE_ID');
+      const tiktokConfiguration = tikTokConfig((name) => Deno.env.get(name));
+      const tiktokTransport =
+        publication.channel === 'TIKTOK' ? configuredTikTokTransport(tiktokConfiguration, await readTikTokCreator(tiktokConfiguration, { actorId: user.id, publicationId: publication.id, productId, media }, payload.tiktokCreatorContext)) : null;
+      if (publication.channel === 'TIKTOK') {
+        if (assessTikTok(tiktokConfiguration, tiktokTransport, media, payload.tiktokChoices).length)
+          throw new Error('TIKTOK_PREFLIGHT_FAILED');
       } else {
-        requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
-        requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
+        requiredEnv('META_GRAPH_API_VERSION');
+        if (publication.channel === 'FACEBOOK') {
+          requiredEnv('META_FACEBOOK_ACCESS_TOKEN');
+          requiredEnv('META_FACEBOOK_PAGE_ID');
+        } else {
+          requiredEnv('META_INSTAGRAM_ACCESS_TOKEN');
+          requiredEnv('META_INSTAGRAM_ACCOUNT_ID');
+        }
       }
 
       // Revalidate after media/config resolution; publish only the explicitly confirmed content.
@@ -765,11 +841,37 @@ Deno.serve(async (req: Request) => {
       }
 
       let providerResult: Awaited<ReturnType<typeof publishMetaMedia>>;
-      try {
-        providerResult = await publishMetaMedia(publication, media);
-      } catch (providerError) {
-        console.error('MARKETING_SOCIAL_META_PROVIDER_FAILED', providerError);
-        providerResult = { outcome: 'FAILED', failureCode: 'META_PROVIDER_EXCEPTION' };
+      if (publication.channel === 'TIKTOK') {
+        if (!tiktokTransport || !validTikTokChoices(payload.tiktokChoices))
+          throw new Error('TIKTOK_PREFLIGHT_FAILED');
+        const result = await executeTikTok(
+          tiktokConfiguration,
+          tiktokTransport,
+          media,
+          payload.tiktokChoices,
+          publicationCaption(publication),
+          async (evidence) => {
+            const saved = await serviceSupabase.rpc(
+              'append_marketing_tiktok_evidence_server_controlled',
+              {
+                p_actor_id: user.id,
+                p_attempt_id: attemptId,
+                p_evidence: evidence,
+              },
+            );
+            if (saved.error) throw new Error('TIKTOK_EVIDENCE_PERSISTENCE_FAILED');
+          },
+        );
+        if (result.outcome === 'UNCERTAIN')
+          return json({ error: 'TIKTOK_RECONCILIATION_REQUIRED', externalPublication: false }, 409);
+        providerResult = result;
+      } else {
+        try {
+          providerResult = await publishMetaMedia(publication, media);
+        } catch (providerError) {
+          console.error('MARKETING_SOCIAL_META_PROVIDER_FAILED', providerError);
+          providerResult = { outcome: 'FAILED', failureCode: 'META_PROVIDER_EXCEPTION' };
+        }
       }
 
       const completed = await serviceSupabase.rpc(

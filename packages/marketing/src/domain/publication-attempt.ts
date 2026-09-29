@@ -6,8 +6,7 @@ export const publicationAttemptStatuses = [
   'CANCELLED',
 ] as const;
 
-export type PublicationAttemptStatus =
-  (typeof publicationAttemptStatuses)[number];
+export type PublicationAttemptStatus = (typeof publicationAttemptStatuses)[number];
 
 export interface PublicationAttempt {
   readonly id: string;
@@ -18,4 +17,5 @@ export interface PublicationAttempt {
   readonly completedAt: Date | null;
   readonly externalPublicationRef: string | null;
   readonly failureCode: string | null;
+  readonly providerEvidence?: readonly Readonly<Record<string, unknown>>[];
 }

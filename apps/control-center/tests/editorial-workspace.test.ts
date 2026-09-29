@@ -176,19 +176,27 @@ describe('editorial workspace governance', () => {
     expect(planEditorial([], goals, now).gaps).toHaveLength(7);
   });
   it('keeps TikTok external integration pending and WhatsApp send blocked', () => {
-    expect(channelCapability('TIKTOK').runtimeSupported).toBe(false);
+    expect(channelCapability('TIKTOK').runtimeSupported).toBe(true);
     expect(channelCapability('INSTAGRAM_REEL').runtimeSupported).toBe(true);
     expect(channelCapability('TIKTOK').externalPublicationEnabled).toBe(false);
     expect(whatsappCapability.sendingEnabled).toBe(false);
     expect(channelCapability('WHATSAPP').status).toBe('ENVÍO BLOQUEADO');
   });
-  it('reflects the real governed Meta runtime allowlist without claiming activation', () => {
+  it('reflects governed channel dispatch without claiming activation', () => {
     const runtime = readFileSync(
       resolve('supabase/functions/marketing-social-runtime/index.ts'),
       'utf8',
     );
-    expect(runtime).toContain("['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL']");
-    for (const channel of ['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL']) {
+    expect(runtime).toContain(
+      "['FACEBOOK', 'INSTAGRAM_FEED', 'INSTAGRAM_STORY', 'INSTAGRAM_REEL', 'TIKTOK']",
+    );
+    for (const channel of [
+      'FACEBOOK',
+      'INSTAGRAM_FEED',
+      'INSTAGRAM_STORY',
+      'INSTAGRAM_REEL',
+      'TIKTOK',
+    ]) {
       expect(channelCapability(channel).runtimeSupported).toBe(true);
       expect(channelCapability(channel).externalPublicationEnabled).toBe(false);
     }

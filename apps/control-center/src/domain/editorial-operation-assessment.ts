@@ -73,8 +73,8 @@ export function assessEditorialOperation(item: EditorialItem, now: Date) {
       observed: Boolean(publication.creativeAssetIds[0]?.trim()),
       message: publication.creativeAssetIds[0]?.trim()
         ? 'Primera referencia de media presente; autorización y vigencia pendientes de validar en servidor.'
-        : publication.channel === 'INSTAGRAM_REEL'
-          ? 'Falta la primera referencia de video requerida para Reel.'
+        : ['INSTAGRAM_REEL', 'TIKTOK'].includes(publication.channel)
+          ? 'Falta la primera referencia de video requerida para este canal.'
           : 'Falta la primera referencia de imagen requerida por el runtime.',
     },
     {

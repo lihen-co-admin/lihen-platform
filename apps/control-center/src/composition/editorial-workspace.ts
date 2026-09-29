@@ -9,6 +9,7 @@ import {
 } from '@lihen/marketing';
 import type { EditorialChannel, EditorialItem } from '../domain/editorial-planning';
 import { getBrowserSupabaseClient } from '@lihen/database';
+import { usesEditorialVideo } from './editorial-video-assets';
 
 export async function syncEditorialDraftInDev(item: EditorialItem): Promise<void> {
   if (!import.meta.env.DEV || import.meta.env.VITE_EDITORIAL_DEV_SYNC_ENABLED !== 'true')
@@ -68,6 +69,7 @@ interface EditorialWorkspaceRows {
     readonly completed_at: string | null;
     readonly external_publication_ref: string | null;
     readonly failure_code: string | null;
+    readonly provider_evidence?: readonly Readonly<Record<string, unknown>>[];
   }[];
 }
 
@@ -110,6 +112,7 @@ function toEditorialItems(rows: EditorialWorkspaceRows): EditorialItem[] {
       completedAt: row.completed_at ? new Date(row.completed_at) : null,
       externalPublicationRef: row.external_publication_ref,
       failureCode: row.failure_code,
+      ...(row.provider_evidence ? { providerEvidence: row.provider_evidence } : {}),
     });
     attempts.set(row.prepared_publication_id, related);
   }
@@ -418,19 +421,29 @@ export async function resolveProductAssociationsFromMedia(
   items: readonly EditorialItem[],
   products: readonly { readonly id: string }[],
   readProductImages: (productId: string) => Promise<readonly { readonly id: string }[]>,
+  readProductVideos: (
+    productId: string,
+  ) => Promise<readonly { readonly id: string }[]> = async () => [],
 ): Promise<EditorialItem[]> {
   const mediaIds = new Set(items.flatMap((item) => item.publication.creativeAssetIds));
   if (!mediaIds.size) return [...items];
   const resolved = new Map<string, string>();
+  const videos = new Map<string, string>();
+  const needsVideo = items.some((item) => usesEditorialVideo(item.publication.channel));
+  const needsImages = items.some((item) => !usesEditorialVideo(item.publication.channel));
   for (let start = 0; start < products.length; start += 6) {
     const group = products.slice(start, start + 6);
     const results = await Promise.all(
       group.map(async (product) => ({
         productId: product.id,
-        images: await readProductImages(product.id),
+        images: needsImages ? await readProductImages(product.id) : [],
+        videos: needsVideo ? await readProductVideos(product.id) : [],
       })),
     );
     for (const result of results) {
+      for (const video of result.videos) {
+        if (mediaIds.has(video.id)) videos.set(video.id, result.productId);
+      }
       for (const image of result.images) {
         if (mediaIds.has(image.id)) resolved.set(image.id, result.productId);
       }
@@ -438,6 +451,9 @@ export async function resolveProductAssociationsFromMedia(
   }
   return items.map((item) => ({
     ...item,
-    productId: resolved.get(item.publication.creativeAssetIds[0] ?? '') ?? '',
+    productId:
+      (usesEditorialVideo(item.publication.channel) ? videos : resolved).get(
+        item.publication.creativeAssetIds[0] ?? '',
+      ) ?? '',
   }));
 }
