@@ -10,6 +10,7 @@ const runtime = readFileSync(
 );
 
 const expectedActions = [
+  'EDITORIAL_RESEARCH_PREFLIGHT',
   'EDITORIAL_RESEARCH',
   'DOCUMENT_EXTRACTION',
   'ASSISTANT',

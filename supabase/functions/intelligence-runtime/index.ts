@@ -11,6 +11,8 @@ import { readAssistantProductContext } from './assistant-product-context-reader.
 import { createGroqModelPort } from './providers/groq-model.ts';
 import { parseEditorialAuthorityRegistry } from './providers/editorial-authority-registry.ts';
 import { createEditorialResearchRuntimeDependencies } from './providers/editorial-research-search.ts';
+import type { EditorialResearchSearchConfig } from './providers/editorial-research-search.ts';
+import { evaluateEditorialResearchReadiness } from './providers/editorial-research-readiness.ts';
 import {
   createDocumentExtractionRuntime,
   createSupabaseStorageDocumentContentResolver,
@@ -67,8 +69,8 @@ function editorialResearchDomains(): readonly string[] {
   ];
 }
 
-function editorialResearchDependencies() {
-  return createEditorialResearchRuntimeDependencies({
+function editorialResearchConfig(): EditorialResearchSearchConfig {
+  return {
     enabled: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_ENABLED')?.trim() === 'true',
     groqApiKey: Deno.env.get('GROQ_API_KEY')?.trim(),
     allowedDomains: editorialResearchDomains(),
@@ -77,7 +79,7 @@ function editorialResearchDependencies() {
     ),
     freeOnlyEvidenceRef: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_EVIDENCE_REF')?.trim(),
     freeOnlyVerifiedAt: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_VERIFIED_AT')?.trim(),
-  });
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -160,6 +162,14 @@ Deno.serve(async (req: Request) => {
 
     const action = typeof body.action === 'string' ? body.action.trim() : '';
 
+    if (action === 'EDITORIAL_RESEARCH_PREFLIGHT') {
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        readiness: evaluateEditorialResearchReadiness(editorialResearchConfig()),
+      });
+    }
+
     if (action === 'EDITORIAL_RESEARCH') {
       const productId =
         typeof body.productId === 'string' && body.productId.trim() ? body.productId.trim() : '';
@@ -198,7 +208,7 @@ Deno.serve(async (req: Request) => {
             attributes: {},
           },
         },
-        editorialResearchDependencies(),
+        createEditorialResearchRuntimeDependencies(editorialResearchConfig()),
       );
 
       return json({
