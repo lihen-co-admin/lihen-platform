@@ -239,7 +239,12 @@ export function createEditorialDraft(
 }
 export function parseEditorialDate(value: string): Date {
   const result = new Date(`${value}:00-05:00`);
-  if (!Number.isFinite(result.getTime())) throw new Error('Fecha editorial inválida.');
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ||
+    !Number.isFinite(result.getTime()) ||
+    new Date(result.getTime() - 5 * 3600000).toISOString().slice(0, 16) !== value
+  )
+    throw new Error('Fecha editorial inválida.');
   return result;
 }
 export async function reviewEditorial(
@@ -400,7 +405,26 @@ export async function saveEditorialItemInDev(
 ): Promise<EditorialItem> {
   if (!import.meta.env.DEV)
     throw new Error('La persistencia editorial solo está habilitada en DEV.');
-  return saveEditorialItemToRuntime(item, client);
+  await saveEditorialItemToRuntime(item, client);
+  const rows = await readEditorialWorkspace(client, item.publication.id);
+  const confirmed = rows.find((row) => row.publication.id === item.publication.id);
+  // Only render the durable response. A write acknowledgement is not the saved editorial state.
+  const sameFields = (expected: object, actual: object) =>
+    Object.entries(expected).every(
+      ([key, value]) =>
+        JSON.stringify(value) === JSON.stringify((actual as Record<string, unknown>)[key]),
+    );
+  if (
+    !confirmed ||
+    !sameFields(item.publication, confirmed.publication) ||
+    (item.schedule
+      ? !confirmed.schedule || !sameFields(item.schedule, confirmed.schedule)
+      : confirmed.schedule !== null)
+  )
+    throw new Error(
+      'DEV no confirmó el estado solicitado. Actualiza desde DEV antes de volver a guardar o programar.',
+    );
+  return { ...confirmed, productId: item.productId, campaignName: item.campaignName };
 }
 export async function saveEditorialDraftToRuntime(
   item: EditorialItem,

@@ -3,29 +3,20 @@ import {
   fetchResolvedProductImageBytes,
   resolveAuthorizedProductImageAsset,
 } from './product-image-asset-resolver.ts';
-import {
-  createRemoveBgTransformationProvider,
-} from './providers/remove-bg-image-transformation.ts';
-import {
-  persistTransformedCandidate,
-} from './persist-transformed-candidate.ts';
-import {
-  createApprovedCandidateReviewAccess,
-} from './approved-candidate-review-access.ts';
-import {
-  promoteApprovedCandidateToCatalogPdf,
-} from './promote-catalog-pdf-candidate.ts';
-import {
-  readAssistantProductContext,
-} from './assistant-product-context-reader.ts';
-import {
-  createGroqModelPort,
-} from './providers/groq-model.ts';
+import { createRemoveBgTransformationProvider } from './providers/remove-bg-image-transformation.ts';
+import { persistTransformedCandidate } from './persist-transformed-candidate.ts';
+import { createApprovedCandidateReviewAccess } from './approved-candidate-review-access.ts';
+import { promoteApprovedCandidateToCatalogPdf } from './promote-catalog-pdf-candidate.ts';
+import { readAssistantProductContext } from './assistant-product-context-reader.ts';
+import { createGroqModelPort } from './providers/groq-model.ts';
+import { parseEditorialAuthorityRegistry } from './providers/editorial-authority-registry.ts';
+import { createEditorialResearchRuntimeDependencies } from './providers/editorial-research-search.ts';
 import {
   INTELLIGENCE_PERMISSION,
   createCreativeIntelligenceHandler,
   createImageTransformationHandler,
   orchestrateIntelligenceRequest,
+  researchEditorialProduct,
   runLihenAssistantTurn,
 } from './intelligence-core-edge.mjs';
 
@@ -59,6 +50,30 @@ function publishableKey(): string {
   throw new Error('SUPABASE_PUBLISHABLE_KEY_NOT_CONFIGURED');
 }
 
+function editorialResearchDomains(): readonly string[] {
+  return [
+    ...new Set(
+      (Deno.env.get('LIHEN_EDITORIAL_RESEARCH_ALLOWED_DOMAINS') ?? '')
+        .split(',')
+        .map((domain) => domain.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function editorialResearchDependencies() {
+  return createEditorialResearchRuntimeDependencies({
+    enabled: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_ENABLED')?.trim() === 'true',
+    groqApiKey: Deno.env.get('GROQ_API_KEY')?.trim(),
+    allowedDomains: editorialResearchDomains(),
+    authorities: parseEditorialAuthorityRegistry(
+      Deno.env.get('LIHEN_EDITORIAL_RESEARCH_AUTHORITIES'),
+    ),
+    freeOnlyEvidenceRef: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_EVIDENCE_REF')?.trim(),
+    freeOnlyVerifiedAt: Deno.env.get('LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_VERIFIED_AT')?.trim(),
+  });
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -74,42 +89,30 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      publishableKey(),
-      {
-        global: {
-          headers: {
-            Authorization: authorization,
-          },
-        },
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
+    const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', publishableKey(), {
+      global: {
+        headers: {
+          Authorization: authorization,
         },
       },
-    );
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
 
-    const serviceRoleKey =
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!serviceRoleKey) {
-      return json(
-        { error: 'LIHEN_SERVICE_ROLE_NOT_CONFIGURED' },
-        500,
-      );
+      return json({ error: 'LIHEN_SERVICE_ROLE_NOT_CONFIGURED' }, 500);
     }
 
-    const serviceSupabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      serviceRoleKey,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
+    const serviceSupabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
-    );
+    });
 
     const token = authorization.slice('Bearer '.length);
 
@@ -143,44 +146,77 @@ Deno.serve(async (req: Request) => {
 
     const payload = await req.json().catch(() => null);
 
-    if (
-      payload === null
-      || typeof payload !== 'object'
-      || Array.isArray(payload)
-    ) {
+    if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
       return json({ error: 'LIHEN_INTELLIGENCE_REQUEST_INVALID' }, 400);
     }
 
     const body = payload as Record<string, unknown>;
 
-    const action =
-      typeof body.action === 'string' ? body.action.trim() : '';
+    const action = typeof body.action === 'string' ? body.action.trim() : '';
+
+    if (action === 'EDITORIAL_RESEARCH') {
+      const productId =
+        typeof body.productId === 'string' && body.productId.trim() ? body.productId.trim() : '';
+
+      if (!productId) {
+        return json({ error: 'LIHEN_EDITORIAL_RESEARCH_PRODUCT_ID_REQUIRED' }, 400);
+      }
+
+      const product = await readAssistantProductContext(supabase, productId);
+
+      if (!product) {
+        return json({ error: 'PRODUCT_NOT_FOUND' }, 404);
+      }
+
+      const identity = {
+        productId: product.id,
+        productName: product.name,
+        ...(product.sku ? { sku: product.sku } : {}),
+        ...(product.brandId ? { brandId: product.brandId } : {}),
+        ...(product.brandName ? { brand: product.brandName } : {}),
+        ...(product.categoryName ? { category: product.categoryName } : {}),
+      };
+
+      const requestId = crypto.randomUUID();
+      const correlationId = crypto.randomUUID();
+
+      const report = await researchEditorialProduct(
+        identity,
+        {
+          correlationId,
+          requestedBy: user.id,
+          context: {
+            contextId: `product:${product.id}`,
+            type: 'PRODUCT',
+            entityId: product.id,
+            attributes: {},
+          },
+        },
+        editorialResearchDependencies(),
+      );
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        requestId,
+        correlationId,
+        report,
+      });
+    }
 
     if (action === 'ASSISTANT') {
       const productId =
-        typeof body.productId === 'string'
-        && body.productId.trim()
-          ? body.productId.trim()
-          : '';
+        typeof body.productId === 'string' && body.productId.trim() ? body.productId.trim() : '';
 
       const prompt =
-        typeof body.prompt === 'string'
-        && body.prompt.trim()
-          ? body.prompt.trim()
-          : '';
+        typeof body.prompt === 'string' && body.prompt.trim() ? body.prompt.trim() : '';
 
       if (!productId) {
-        return json(
-          { error: 'LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED' },
-          400,
-        );
+        return json({ error: 'LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED' }, 400);
       }
 
       if (!prompt) {
-        return json(
-          { error: 'LIHEN_ASSISTANT_PROMPT_REQUIRED' },
-          400,
-        );
+        return json({ error: 'LIHEN_ASSISTANT_PROMPT_REQUIRED' }, 400);
       }
 
       const requestId = crypto.randomUUID();
@@ -210,25 +246,16 @@ Deno.serve(async (req: Request) => {
               {
                 type: 'PRODUCT' as const,
                 async resolve({ query }) {
-                  const requestedProductId =
-                    query.entityId?.trim();
+                  const requestedProductId = query.entityId?.trim();
 
                   if (!requestedProductId) {
-                    throw new Error(
-                      'LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED',
-                    );
+                    throw new Error('LIHEN_ASSISTANT_PRODUCT_ID_REQUIRED');
                   }
 
-                  const product =
-                    await readAssistantProductContext(
-                      supabase,
-                      requestedProductId,
-                    );
+                  const product = await readAssistantProductContext(supabase, requestedProductId);
 
                   if (!product) {
-                    throw new Error(
-                      'PRODUCT_NOT_FOUND',
-                    );
+                    throw new Error('PRODUCT_NOT_FOUND');
                   }
 
                   return {
@@ -273,23 +300,15 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'PROMOTE_CATALOG_PDF') {
       const candidateId =
-        typeof body.candidateId === 'string'
-        && body.candidateId.trim()
+        typeof body.candidateId === 'string' && body.candidateId.trim()
           ? body.candidateId.trim()
           : '';
 
       if (!candidateId) {
-        return json(
-          { error: 'LIHEN_CATALOG_PDF_CANDIDATE_ID_REQUIRED' },
-          400,
-        );
+        return json({ error: 'LIHEN_CATALOG_PDF_CANDIDATE_ID_REQUIRED' }, 400);
       }
 
-      const promotion =
-        await promoteApprovedCandidateToCatalogPdf(
-          serviceSupabase,
-          candidateId,
-        );
+      const promotion = await promoteApprovedCandidateToCatalogPdf(serviceSupabase, candidateId);
 
       return json({
         runtime: 'LIHEN_INTELLIGENCE',
@@ -301,23 +320,15 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'GET_CATALOG_PDF_REVIEW_ACCESS') {
       const candidateId =
-        typeof body.candidateId === 'string'
-        && body.candidateId.trim()
+        typeof body.candidateId === 'string' && body.candidateId.trim()
           ? body.candidateId.trim()
           : '';
 
       if (!candidateId) {
-        return json(
-          { error: 'LIHEN_CATALOG_PDF_CANDIDATE_ID_REQUIRED' },
-          400,
-        );
+        return json({ error: 'LIHEN_CATALOG_PDF_CANDIDATE_ID_REQUIRED' }, 400);
       }
 
-      const reviewAccess =
-        await createApprovedCandidateReviewAccess(
-          serviceSupabase,
-          candidateId,
-        );
+      const reviewAccess = await createApprovedCandidateReviewAccess(serviceSupabase, candidateId);
 
       return json({
         runtime: 'LIHEN_INTELLIGENCE',
@@ -332,21 +343,18 @@ Deno.serve(async (req: Request) => {
         ? body.productId.trim()
         : undefined;
 
-    const instruction =
-      typeof body.instruction === 'string' ? body.instruction.trim() : '';
+    const instruction = typeof body.instruction === 'string' ? body.instruction.trim() : '';
 
-    const intendedUse =
-      typeof body.intendedUse === 'string' ? body.intendedUse.trim() : '';
+    const intendedUse = typeof body.intendedUse === 'string' ? body.intendedUse.trim() : '';
 
     const sourceAssetRefs =
-      Array.isArray(body.sourceAssetRefs)
-      && body.sourceAssetRefs.every((item) => typeof item === 'string')
+      Array.isArray(body.sourceAssetRefs) &&
+      body.sourceAssetRefs.every((item) => typeof item === 'string')
         ? body.sourceAssetRefs
         : [];
 
     const constraints =
-      Array.isArray(body.constraints)
-      && body.constraints.every((item) => typeof item === 'string')
+      Array.isArray(body.constraints) && body.constraints.every((item) => typeof item === 'string')
         ? body.constraints
         : [];
 
@@ -358,10 +366,8 @@ Deno.serve(async (req: Request) => {
     const correlationId = crypto.randomUUID();
 
     const context = {
-      contextId: productId
-        ? `product:${productId}`
-        : `creative:${requestId}`,
-      type: productId ? 'PRODUCT' as const : 'ASSET' as const,
+      contextId: productId ? `product:${productId}` : `creative:${requestId}`,
+      type: productId ? ('PRODUCT' as const) : ('ASSET' as const),
       ...(productId ? { entityId: productId } : {}),
       ...(body.businessLine === 'BEAUTY_CARE' || body.businessLine === 'STYLE'
         ? { businessLine: body.businessLine }
@@ -385,13 +391,9 @@ Deno.serve(async (req: Request) => {
 
     const permissionScope = {
       domain: context.type.toLowerCase(),
-      ...(context.businessLine === undefined
-        ? {}
-        : { businessLine: context.businessLine }),
+      ...(context.businessLine === undefined ? {} : { businessLine: context.businessLine }),
       entityType: context.type,
-      ...(context.entityId === undefined
-        ? {}
-        : { entityId: context.entityId }),
+      ...(context.entityId === undefined ? {} : { entityId: context.entityId }),
     };
 
     const principal = {
@@ -434,49 +436,35 @@ Deno.serve(async (req: Request) => {
                   throw new Error('LIHEN_TRANSFORMATION_PRODUCT_ID_REQUIRED');
                 }
 
-                const asset = await resolveAuthorizedProductImageAsset(
-                  supabase,
-                  {
-                    productId,
-                    productImageId: request.sourceAssetRef,
-                  },
-                );
+                const asset = await resolveAuthorizedProductImageAsset(supabase, {
+                  productId,
+                  productImageId: request.sourceAssetRef,
+                });
 
                 const source = await fetchResolvedProductImageBytes(asset);
 
-                const provider =
-                  createRemoveBgTransformationProvider();
+                const provider = createRemoveBgTransformationProvider();
 
-                const transformed =
-                  await provider.removeBackground(source);
+                const transformed = await provider.removeBackground(source);
 
-                const digest = await crypto.subtle.digest(
-                  'SHA-256',
-                  transformed.bytes,
-                );
+                const digest = await crypto.subtle.digest('SHA-256', transformed.bytes);
 
-                const sha256 = Array.from(
-                  new Uint8Array(digest),
-                )
+                const sha256 = Array.from(new Uint8Array(digest))
                   .map((byte) => byte.toString(16).padStart(2, '0'))
                   .join('');
 
-                const persisted =
-                  await persistTransformedCandidate(
-                    serviceSupabase,
-                    {
-                      requestId,
-                      correlationId,
-                      productId,
-                      productImageId: request.sourceAssetRef,
-                      createdBy: user.id,
-                      bytes: transformed.bytes,
-                      mimeType: transformed.mimeType,
-                      sha256,
-                      intendedUse: request.intendedUse,
-                      constraints: request.constraints,
-                    },
-                  );
+                const persisted = await persistTransformedCandidate(serviceSupabase, {
+                  requestId,
+                  correlationId,
+                  productId,
+                  productImageId: request.sourceAssetRef,
+                  createdBy: user.id,
+                  bytes: transformed.bytes,
+                  mimeType: transformed.mimeType,
+                  sha256,
+                  intendedUse: request.intendedUse,
+                  constraints: request.constraints,
+                });
 
                 return {
                   status: 'SUCCESS',
@@ -488,10 +476,7 @@ Deno.serve(async (req: Request) => {
                       provenance: 'TRANSFORMED',
                     },
                   ],
-                  messages: [
-                    'BACKGROUND_REMOVAL_PERSISTED_FOR_REVIEW',
-                    'NO_PUBLICATION_OCCURRED',
-                  ],
+                  messages: ['BACKGROUND_REMOVAL_PERSISTED_FOR_REVIEW', 'NO_PUBLICATION_OCCURRED'],
                 };
               },
             },

@@ -23,7 +23,7 @@ describe('Intelligence Runtime Assistant route architecture', () => {
 
   it('reads Product Master with the authenticated user client', () => {
     expect(route).toMatch(
-      /readAssistantProductContext\(\s*supabase,\s*requestedProductId,\s*\)/,
+      /readAssistantProductContext\(\s*supabase,\s*requestedProductId,?\s*\)/,
     );
     expect(route).not.toMatch(
       /readAssistantProductContext\(\s*serviceSupabase/,

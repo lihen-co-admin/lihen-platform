@@ -26,6 +26,14 @@ export default tseslint.config(
     },
   },
   {
+    files: ['supabase/functions/intelligence-runtime/intelligence-core-edge.mjs'],
+    languageOptions: {
+      globals: {
+        URL: 'readonly',
+      },
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',

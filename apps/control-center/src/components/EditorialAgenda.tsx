@@ -2,6 +2,7 @@ import {
   channelCapability,
   dayKey,
   editorialStatus,
+  isEditorialScheduled,
   type EditorialItem,
 } from '../domain/editorial-planning';
 
@@ -53,13 +54,19 @@ export function EditorialAgenda({
                       {new Intl.DateTimeFormat('es-CO', {
                         hour: '2-digit',
                         minute: '2-digit',
-                        timeZone: item.schedule!.timezone,
+                        timeZone: 'America/Bogota',
+                        hourCycle: 'h23',
                       }).format(item.schedule!.scheduledFor)}{' '}
                       · {channelCapability(item.publication.channel).label}
                     </strong>
                     <span>{item.publication.copy.slice(0, 90)}</span>
                     <small>{editorialStatus(item)}</small>
-                    <small>{item.schedule!.timezone}</small>
+                    <small>
+                      America/Bogota ·{' '}
+                      {isEditorialScheduled(item)
+                        ? 'Programación APPROVED'
+                        : 'Fecha propuesta; no confirmada'}
+                    </small>
                     {item.campaignName && <small>{item.campaignName}</small>}
                     <small>{channelCapability(item.publication.channel).status}</small>
                   </button>
