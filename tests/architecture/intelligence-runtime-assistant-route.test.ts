@@ -11,7 +11,9 @@ const runtime = readFileSync(
 
 describe('Intelligence Runtime Assistant route architecture', () => {
   const start = runtime.indexOf("if (action === 'ASSISTANT')");
-  const end = runtime.indexOf("if (action === 'PROMOTE_CATALOG_PDF')");
+  const end = runtime.indexOf(
+    "if (action === 'LIST_STYLE_CATALOG_PDF_APPROVED_UNPROMOTED')",
+  );
   const route = runtime.slice(start, end);
 
   it('keeps the governed ASSISTANT route', () => {

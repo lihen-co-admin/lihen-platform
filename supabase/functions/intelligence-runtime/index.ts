@@ -12,6 +12,12 @@ import { createGroqModelPort } from './providers/groq-model.ts';
 import { parseEditorialAuthorityRegistry } from './providers/editorial-authority-registry.ts';
 import { createEditorialResearchRuntimeDependencies } from './providers/editorial-research-search.ts';
 import {
+  createDocumentExtractionRuntime,
+  createSupabaseStorageDocumentContentResolver,
+  createSupplierDocumentSourceResolver,
+  createSequentialSupabaseStorageDocumentExecution,
+} from './document-extraction-edge.mjs';
+import {
   INTELLIGENCE_PERMISSION,
   createCreativeIntelligenceHandler,
   createImageTransformationHandler,
@@ -204,6 +210,97 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (action === 'DOCUMENT_EXTRACTION') {
+      const documentId =
+        typeof body.documentId === 'string'
+        && body.documentId.trim()
+          ? body.documentId.trim()
+          : '';
+
+      if (!documentId) {
+        return json(
+          {
+            error:
+              'LIHEN_DOCUMENT_EXTRACTION_DOCUMENT_ID_REQUIRED',
+          },
+          400,
+        );
+      }
+
+      const geminiApiKey =
+        Deno.env.get('GEMINI_API_KEY')
+          ?.trim();
+
+      if (!geminiApiKey) {
+        return json(
+          {
+            error:
+              'LIHEN_GEMINI_API_KEY_NOT_CONFIGURED',
+          },
+          503,
+        );
+      }
+
+      const sourceResolver =
+        createSupplierDocumentSourceResolver(
+          supabase,
+        );
+
+      const resolver =
+        createSupabaseStorageDocumentContentResolver({
+          client: supabase,
+          resolveSource:
+            sourceResolver,
+        });
+
+      const runtime =
+        createDocumentExtractionRuntime({
+          geminiApiKey,
+          resolver,
+          executeDocument:
+            createSequentialSupabaseStorageDocumentExecution({
+              client: supabase,
+              resolveSource:
+                sourceResolver,
+              maxPartBytes:
+                12 * 1024 * 1024,
+            }),
+          timeoutBudget: {
+            primaryMs: 30000,
+            localFallbackMs: 300000,
+          },
+        });
+
+      const extraction =
+        await runtime.execute({
+          requestId:
+            crypto.randomUUID(),
+          document: {
+            documentRef:
+              documentId,
+          },
+        });
+
+      return json({
+        runtime:
+          'LIHEN_INTELLIGENCE',
+        action,
+        roleCode:
+          profile.role_code,
+        documentId,
+        providerPolicy: {
+          primary:
+            'GEMINI_3_6_FLASH',
+          localFallback:
+            'OLLAMA_QWEN3_VL_4B',
+          localFallbackRuntime:
+            runtime.localFallbackRuntime,
+          freeOnly: true,
+        },
+        extraction,
+      });
+    }
+
     if (action === 'ASSISTANT') {
       const productId =
         typeof body.productId === 'string' && body.productId.trim() ? body.productId.trim() : '';
@@ -298,6 +395,344 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (action === 'LIST_STYLE_CATALOG_PDF_APPROVED_UNPROMOTED') {
+      const { data: rows, error: listError } =
+        await serviceSupabase.rpc(
+          'list_style_catalog_pdf_approved_unpromoted',
+        );
+
+      if (listError) {
+        return json(
+          {
+            error: 'LIHEN_STYLE_APPROVED_UNPROMOTED_READ_FAILED',
+            message: listError.message,
+          },
+          500,
+        );
+      }
+
+      if (!Array.isArray(rows)) {
+        return json(
+          { error: 'LIHEN_STYLE_APPROVED_UNPROMOTED_INVALID_RESULT' },
+          500,
+        );
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        count: rows.length,
+        items: rows.map((raw) => {
+          const row = raw as {
+            candidate_id: string;
+            product_id: string;
+            sku: string | null;
+            product_name: string;
+          };
+
+          return {
+            candidateId: row.candidate_id,
+            productId: row.product_id,
+            sku: row.sku,
+            productName: row.product_name,
+          };
+        }),
+      });
+    }
+
+    if (action === 'PREPARE_STYLE_CATALOG_PDF_BROWSER_PROMOTION') {
+      const candidateId =
+        typeof body.candidateId === 'string'
+        && body.candidateId.trim()
+          ? body.candidateId.trim()
+          : '';
+
+      const sha256 =
+        typeof body.sha256 === 'string'
+          ? body.sha256.trim().toLowerCase()
+          : '';
+
+      const byteSize =
+        typeof body.byteSize === 'number'
+          ? body.byteSize
+          : 0;
+
+      const width =
+        typeof body.width === 'number'
+          ? body.width
+          : 0;
+
+      const height =
+        typeof body.height === 'number'
+          ? body.height
+          : 0;
+
+      if (
+        !candidateId
+        || !/^[0-9a-f]{64}$/.test(sha256)
+        || byteSize <= 0
+        || byteSize > 3 * 1024 * 1024
+        || width <= 0
+        || height <= 0
+      ) {
+        return json(
+          { error: 'LIHEN_STYLE_BROWSER_PROMOTION_METADATA_INVALID' },
+          400,
+        );
+      }
+
+      const context =
+        await createApprovedCandidateReviewAccess(
+          serviceSupabase,
+          candidateId,
+        );
+
+      const productImageId = context.candidateId;
+
+      const storagePath = [
+        'products',
+        context.productId,
+        productImageId,
+        'web',
+        `${sha256}.webp`,
+      ].join('/');
+
+      const bucket =
+        serviceSupabase.storage.from('lihen-product-web');
+
+      const { data: signedUpload, error: signedUploadError } =
+        await bucket.createSignedUploadUrl(
+          storagePath,
+          { upsert: true },
+        );
+
+      if (
+        signedUploadError
+        || !signedUpload?.token
+        || !signedUpload?.path
+      ) {
+        return json(
+          {
+            error: 'LIHEN_STYLE_BROWSER_PROMOTION_SIGNED_UPLOAD_FAILED',
+            message:
+              signedUploadError?.message ?? 'SIGNED_UPLOAD_MISSING',
+          },
+          500,
+        );
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        candidateId: context.candidateId,
+        productId: context.productId,
+        productImageId,
+        sourceId: context.sourceId,
+        reviewUrl: context.signedUrl,
+        reviewExpiresInSeconds: context.expiresInSeconds,
+        storageBucket: 'lihen-product-web',
+        storagePath,
+        uploadToken: signedUpload.token,
+        mimeType: 'image/webp',
+        byteSize,
+        sha256,
+        width,
+        height,
+      });
+    }
+
+    if (action === 'FINALIZE_STYLE_CATALOG_PDF_BROWSER_PROMOTION') {
+      const candidateId =
+        typeof body.candidateId === 'string'
+        && body.candidateId.trim()
+          ? body.candidateId.trim()
+          : '';
+
+      const sha256 =
+        typeof body.sha256 === 'string'
+          ? body.sha256.trim().toLowerCase()
+          : '';
+
+      const byteSize =
+        typeof body.byteSize === 'number'
+          ? body.byteSize
+          : 0;
+
+      const width =
+        typeof body.width === 'number'
+          ? body.width
+          : 0;
+
+      const height =
+        typeof body.height === 'number'
+          ? body.height
+          : 0;
+
+      if (
+        !candidateId
+        || !/^[0-9a-f]{64}$/.test(sha256)
+        || byteSize <= 0
+        || byteSize > 3 * 1024 * 1024
+        || width <= 0
+        || height <= 0
+      ) {
+        return json(
+          { error: 'LIHEN_STYLE_BROWSER_PROMOTION_METADATA_INVALID' },
+          400,
+        );
+      }
+
+      const context =
+        await createApprovedCandidateReviewAccess(
+          serviceSupabase,
+          candidateId,
+        );
+
+      const productImageId = context.candidateId;
+
+      const storagePath = [
+        'products',
+        context.productId,
+        productImageId,
+        'web',
+        `${sha256}.webp`,
+      ].join('/');
+
+      const bucket =
+        serviceSupabase.storage.from('lihen-product-web');
+
+      const { data: publicData } =
+        bucket.getPublicUrl(storagePath);
+
+      if (!publicData.publicUrl) {
+        return json(
+          { error: 'LIHEN_STYLE_BROWSER_PROMOTION_PUBLIC_URL_MISSING' },
+          500,
+        );
+      }
+
+      const operationKey =
+        `catalog-pdf-promotion:${context.candidateId}:${sha256}`;
+
+      const { data: promoted, error: promotionError } =
+        await serviceSupabase.rpc(
+          'promote_catalog_pdf_approved_candidate',
+          {
+            p_operation_key: operationKey,
+            p_candidate_id: context.candidateId,
+            p_product_image_id: productImageId,
+            p_bucket_id: 'lihen-product-web',
+            p_object_path: storagePath,
+            p_public_url: publicData.publicUrl,
+            p_mime_type: 'image/webp',
+            p_byte_size: byteSize,
+            p_sha256: sha256,
+            p_width_px: width,
+            p_height_px: height,
+          },
+        );
+
+      if (promotionError) {
+        return json(
+          {
+            error: 'LIHEN_STYLE_BROWSER_PROMOTION_FINALIZE_FAILED',
+            message: promotionError.message,
+          },
+          500,
+        );
+      }
+
+      if (!Array.isArray(promoted) || promoted.length !== 1) {
+        return json(
+          { error: 'LIHEN_STYLE_BROWSER_PROMOTION_FINALIZE_INVALID_RESULT' },
+          500,
+        );
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        promotion: promoted[0],
+      });
+    }
+
+    if (action === 'PROMOTE_STYLE_CATALOG_PDF_BATCH') {
+      const { data: rows, error: listError } =
+        await serviceSupabase.rpc(
+          'list_style_catalog_pdf_approved_unpromoted',
+        );
+
+      if (listError) {
+        return json(
+          {
+            error: 'LIHEN_STYLE_BATCH_PROMOTION_READ_FAILED',
+            message: listError.message,
+          },
+          500,
+        );
+      }
+
+      if (!Array.isArray(rows)) {
+        return json(
+          { error: 'LIHEN_STYLE_BATCH_PROMOTION_INVALID_RESULT' },
+          500,
+        );
+      }
+
+      const promoted = [];
+      const failed = [];
+      const batch = rows.slice(0, 1);
+
+      for (const raw of batch) {
+        const row = raw as {
+          candidate_id: string;
+          product_id: string;
+          sku: string | null;
+          product_name: string;
+        };
+
+        try {
+          const promotion =
+            await promoteApprovedCandidateToCatalogPdf(
+              serviceSupabase,
+              row.candidate_id,
+            );
+
+          promoted.push({
+            sku: row.sku,
+            productName: row.product_name,
+            ...promotion,
+          });
+        } catch (error) {
+          failed.push({
+            candidateId: row.candidate_id,
+            productId: row.product_id,
+            sku: row.sku,
+            productName: row.product_name,
+            error:
+              error instanceof Error
+                ? error.message
+                : 'UNKNOWN_PROMOTION_FAILURE',
+          });
+        }
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        attempted: batch.length,
+        promotedCount: promoted.length,
+        failedCount: failed.length,
+        remainingCount: Math.max(0, rows.length - batch.length),
+        promoted,
+        failed,
+      });
+    }
+
     if (action === 'PROMOTE_CATALOG_PDF') {
       const candidateId =
         typeof body.candidateId === 'string' && body.candidateId.trim()
@@ -318,6 +753,104 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (action === 'LIST_STYLE_CATALOG_PDF_PENDING_REVIEWS') {
+      const { data: rows, error: listError } =
+        await serviceSupabase.rpc(
+          'list_style_catalog_pdf_pending_review_candidates_controlled',
+        );
+
+      if (listError) {
+        return json(
+          {
+            error: 'LIHEN_STYLE_REVIEW_GALLERY_READ_FAILED',
+            message: listError.message,
+          },
+          500,
+        );
+      }
+
+      if (!Array.isArray(rows)) {
+        return json(
+          { error: 'LIHEN_STYLE_REVIEW_GALLERY_INVALID_RESULT' },
+          500,
+        );
+      }
+
+      const items = [];
+
+      for (const raw of rows) {
+        const row = raw as {
+          candidate_id: string;
+          product_id: string;
+          sku: string | null;
+          product_name: string;
+          source_product_image_id: string;
+          review_bucket: string;
+          review_path: string;
+          review_mime_type: string;
+          sha256: string;
+          provider_name: string;
+          intended_use: string;
+          created_at: string;
+        };
+
+        if (
+          row.review_bucket !== 'lihen-intelligence-review'
+          || row.review_mime_type !== 'image/png'
+          || row.intended_use !== 'CATALOG_PDF'
+        ) {
+          return json(
+            {
+              error: 'LIHEN_STYLE_REVIEW_GALLERY_CONTRACT_INVALID',
+              candidateId: row.candidate_id,
+            },
+            500,
+          );
+        }
+
+        const { data: signed, error: signedError } =
+          await serviceSupabase.storage
+            .from(row.review_bucket)
+            .createSignedUrl(
+              row.review_path,
+              900,
+            );
+
+        if (signedError || !signed?.signedUrl) {
+          return json(
+            {
+              error: 'LIHEN_STYLE_REVIEW_GALLERY_SIGNED_URL_FAILED',
+              candidateId: row.candidate_id,
+              message:
+                signedError?.message ?? 'SIGNED_URL_MISSING',
+            },
+            500,
+          );
+        }
+
+        items.push({
+          candidateId: row.candidate_id,
+          productId: row.product_id,
+          sku: row.sku,
+          productName: row.product_name,
+          sourceProductImageId: row.source_product_image_id,
+          sha256: row.sha256,
+          providerName: row.provider_name,
+          createdAt: row.created_at,
+          signedUrl: signed.signedUrl,
+          expiresInSeconds: 900,
+        });
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        count: items.length,
+        items,
+      });
+    }
+
     if (action === 'GET_CATALOG_PDF_REVIEW_ACCESS') {
       const candidateId =
         typeof body.candidateId === 'string' && body.candidateId.trim()
@@ -335,6 +868,162 @@ Deno.serve(async (req: Request) => {
         action,
         roleCode: profile.role_code,
         reviewAccess,
+      });
+    }
+
+    if (action === 'REGISTER_STYLE_CATEGORY_COVERS') {
+      const catalogVersionId =
+        typeof body.catalogVersionId === 'string'
+        && body.catalogVersionId.trim()
+          ? body.catalogVersionId.trim()
+          : '';
+
+      const covers = Array.isArray(body.covers)
+        ? body.covers
+        : [];
+
+      if (!catalogVersionId || covers.length === 0) {
+        return json(
+          { error: 'LIHEN_STYLE_CATEGORY_COVERS_REQUEST_INVALID' },
+          400,
+        );
+      }
+
+      const registered = [];
+
+      for (const raw of covers) {
+        if (
+          raw === null
+          || typeof raw !== 'object'
+          || Array.isArray(raw)
+        ) {
+          return json(
+            { error: 'LIHEN_STYLE_CATEGORY_COVER_ITEM_INVALID' },
+            400,
+          );
+        }
+
+        const cover = raw as Record<string, unknown>;
+        const categoryKey =
+          typeof cover.categoryKey === 'string'
+            ? cover.categoryKey.trim()
+            : '';
+        const categoryLabel =
+          typeof cover.categoryLabel === 'string'
+            ? cover.categoryLabel.trim()
+            : '';
+        const storagePath =
+          typeof cover.storagePath === 'string'
+            ? cover.storagePath.trim()
+            : '';
+        const publicUrl =
+          typeof cover.publicUrl === 'string'
+            ? cover.publicUrl.trim()
+            : '';
+        const mimeType =
+          typeof cover.mimeType === 'string'
+            ? cover.mimeType.trim()
+            : '';
+        const sha256 =
+          typeof cover.sha256 === 'string'
+            ? cover.sha256.trim()
+            : '';
+        const byteSize =
+          typeof cover.byteSize === 'number'
+            ? cover.byteSize
+            : 0;
+        const width =
+          typeof cover.width === 'number'
+            ? cover.width
+            : 0;
+        const height =
+          typeof cover.height === 'number'
+            ? cover.height
+            : 0;
+
+        const normalizedKey = categoryKey.toUpperCase();
+        const extension = mimeType === 'image/webp'
+          ? 'webp'
+          : mimeType === 'image/jpeg'
+            ? 'jpg'
+            : mimeType === 'image/png'
+              ? 'png'
+              : '';
+        const expectedPath = [
+          'style',
+          'category-covers',
+          catalogVersionId,
+          normalizedKey.toLowerCase(),
+          `${sha256}.${extension}`,
+        ].join('/');
+
+        if (
+          !categoryKey
+          || !categoryLabel
+          || !storagePath
+          || !publicUrl
+          || !extension
+          || !/^[0-9a-f]{64}$/.test(sha256)
+          || byteSize <= 0
+          || width <= 0
+          || height <= 0
+          || storagePath !== expectedPath
+        ) {
+          return json(
+            { error: 'LIHEN_STYLE_CATEGORY_COVER_CONTRACT_INVALID' },
+            400,
+          );
+        }
+
+        const { data: rows, error: registerError } =
+          await serviceSupabase.rpc(
+            'register_catalog_style_category_cover_asset',
+            {
+              p_catalog_version_id: catalogVersionId,
+              p_category_key: normalizedKey,
+              p_category_label: categoryLabel,
+              p_storage_bucket: 'catalog-assets',
+              p_storage_path: storagePath,
+              p_public_url: publicUrl,
+              p_mime_type: mimeType,
+              p_byte_size: byteSize,
+              p_sha256: sha256,
+              p_width_px: width,
+              p_height_px: height,
+              p_approved_by: user.id,
+            },
+          );
+
+        if (registerError) {
+          return json(
+            {
+              error: 'LIHEN_STYLE_CATEGORY_COVER_REGISTER_FAILED',
+              message: registerError.message,
+              categoryKey: normalizedKey,
+            },
+            500,
+          );
+        }
+
+        if (!Array.isArray(rows) || rows.length !== 1) {
+          return json(
+            {
+              error: 'LIHEN_STYLE_CATEGORY_COVER_REGISTER_INVALID_RESULT',
+              categoryKey: normalizedKey,
+            },
+            500,
+          );
+        }
+
+        registered.push(rows[0]);
+      }
+
+      return json({
+        runtime: 'LIHEN_INTELLIGENCE',
+        action,
+        roleCode: profile.role_code,
+        catalogVersionId,
+        registered,
       });
     }
 
