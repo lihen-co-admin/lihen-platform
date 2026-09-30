@@ -34,6 +34,23 @@ export default tseslint.config(
     },
   },
   {
+    files: ['supabase/functions/intelligence-runtime/document-extraction-edge.mjs'],
+    languageOptions: {
+      globals: {
+        AbortController: 'readonly',
+        btoa: 'readonly',
+        clearTimeout: 'readonly',
+        fetch: 'readonly',
+        performance: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
