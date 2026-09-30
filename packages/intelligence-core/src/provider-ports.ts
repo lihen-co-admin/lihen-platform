@@ -1,8 +1,4 @@
-import type {
-  CorrelationId,
-  IntelligenceContext,
-  ToolDescriptor,
-} from './contracts';
+import type { CorrelationId, IntelligenceContext, ToolDescriptor } from './contracts';
 
 /**
  * LIHEN Intelligence Provider & Tool Abstraction — GAP-007
@@ -15,12 +11,7 @@ import type {
  */
 
 export type ProviderOperationStatus =
-  | 'SUCCESS'
-  | 'PARTIAL'
-  | 'NO_RESULT'
-  | 'RATE_LIMITED'
-  | 'UNAVAILABLE'
-  | 'FAILED';
+  'SUCCESS' | 'PARTIAL' | 'NO_RESULT' | 'RATE_LIMITED' | 'UNAVAILABLE' | 'FAILED';
 
 export interface ProviderUsage {
   readonly inputUnits?: number;
@@ -91,9 +82,7 @@ export interface VisionObservation {
 
 export interface VisionPort {
   readonly descriptor: ToolDescriptor;
-  analyze(
-    request: VisionAnalysisRequest,
-  ): Promise<ProviderResult<readonly VisionObservation[]>>;
+  analyze(request: VisionAnalysisRequest): Promise<ProviderResult<readonly VisionObservation[]>>;
 }
 
 export interface SearchQuery {
@@ -104,6 +93,43 @@ export interface SearchQuery {
 
 export interface SearchRequest extends IntelligenceToolContext {
   readonly queries: readonly SearchQuery[];
+  readonly expectedProductIdentity?: SearchProductIdentity;
+  readonly costPolicy?: 'FREE_ONLY';
+}
+
+/** Durable catalog identity. A generic name alone never identifies a product. */
+export interface SearchProductIdentity {
+  readonly productId: string;
+  readonly productName: string;
+  readonly sku?: string;
+  readonly brandId?: string;
+  readonly brand?: string;
+  readonly category?: string;
+  readonly knownAttributes?: Readonly<Record<string, string>>;
+}
+
+/** Extracted values are untrusted until verified against the retrieved extracts. */
+export interface SearchEvidenceValue {
+  readonly value: string;
+  readonly evidenceRef: string;
+}
+
+export interface SearchProductEvidence {
+  readonly domain: string;
+  readonly retrievedAt: string;
+  readonly extracts: readonly { readonly id: string; readonly text: string }[];
+  readonly identity: {
+    readonly productName?: SearchEvidenceValue;
+    readonly sku?: SearchEvidenceValue;
+    readonly brand?: SearchEvidenceValue;
+    readonly category?: SearchEvidenceValue;
+    readonly knownAttributes?: Readonly<Record<string, SearchEvidenceValue>>;
+  };
+  readonly claims: readonly {
+    readonly field: string;
+    readonly value: string;
+    readonly evidenceRefs: readonly string[];
+  }[];
 }
 
 export interface SearchResultItem {
@@ -113,13 +139,13 @@ export interface SearchResultItem {
   readonly sourceName?: string;
   readonly publishedAt?: string;
   readonly metadata?: Readonly<Record<string, unknown>>;
+  /** No source may declare its own verified authority here. */
+  readonly productEvidence?: SearchProductEvidence;
 }
 
 export interface SearchPort {
   readonly descriptor: ToolDescriptor;
-  search(
-    request: SearchRequest,
-  ): Promise<ProviderResult<readonly SearchResultItem[]>>;
+  search(request: SearchRequest): Promise<ProviderResult<readonly SearchResultItem[]>>;
 }
 
 export interface DocumentInput {
@@ -147,9 +173,7 @@ export interface DocumentExtraction {
 
 export interface DocumentExtractionPort {
   readonly descriptor: ToolDescriptor;
-  extract(
-    request: DocumentExtractionRequest,
-  ): Promise<ProviderResult<DocumentExtraction>>;
+  extract(request: DocumentExtractionRequest): Promise<ProviderResult<DocumentExtraction>>;
 }
 
 export interface ImageGenerationRequest extends IntelligenceToolContext {
@@ -169,13 +193,10 @@ export interface GeneratedImage {
 
 export interface ImageGenerationPort {
   readonly descriptor: ToolDescriptor;
-  generate(
-    request: ImageGenerationRequest,
-  ): Promise<ProviderResult<readonly GeneratedImage[]>>;
+  generate(request: ImageGenerationRequest): Promise<ProviderResult<readonly GeneratedImage[]>>;
 }
 
-export type ImageTransformationOperation =
-  | 'REMOVE_BACKGROUND';
+export type ImageTransformationOperation = 'REMOVE_BACKGROUND';
 
 export interface ImageTransformationRequest extends IntelligenceToolContext {
   readonly operation: ImageTransformationOperation;
@@ -220,9 +241,7 @@ export interface GeneratedReport {
 
 export interface ReportGenerationPort {
   readonly descriptor: ToolDescriptor;
-  generate(
-    request: ReportGenerationRequest,
-  ): Promise<ProviderResult<readonly GeneratedReport[]>>;
+  generate(request: ReportGenerationRequest): Promise<ProviderResult<readonly GeneratedReport[]>>;
 }
 
 export interface EmbeddingRequest extends IntelligenceToolContext {
@@ -241,9 +260,7 @@ export interface EmbeddingVector {
 
 export interface EmbeddingPort {
   readonly descriptor: ToolDescriptor;
-  embed(
-    request: EmbeddingRequest,
-  ): Promise<ProviderResult<readonly EmbeddingVector[]>>;
+  embed(request: EmbeddingRequest): Promise<ProviderResult<readonly EmbeddingVector[]>>;
 }
 
 export type IntelligenceProviderPort =

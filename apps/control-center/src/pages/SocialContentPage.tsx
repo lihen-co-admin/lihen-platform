@@ -17,10 +17,12 @@ import {
   channelCapability,
   editorialChannels,
   editorialStatus,
+  formatEditorialDate,
   planEditorial,
   type EditorialGoals,
   type EditorialItem,
 } from '../domain/editorial-planning';
+import { EditorialScheduling } from '../components/EditorialScheduling';
 import { EditorialAgenda } from '../components/EditorialAgenda';
 import { EditorialComposer } from '../components/EditorialComposer';
 import { EditorialPlanner } from '../components/EditorialPlanner';
@@ -57,7 +59,6 @@ export function SocialContentPage() {
   const [notice, setNotice] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [selected, setSelected] = useState('');
-  const [date, setDate] = useState('');
   const [filter, setFilter] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
 
@@ -185,13 +186,14 @@ export function SocialContentPage() {
           history: previous.history,
         };
       });
-      for (const item of next) await saveEditorialItemInDev(item);
-      const byId = new Map(next.map((item) => [item.publication.id, item]));
+      const confirmed: EditorialItem[] = [];
+      for (const item of next) confirmed.push(await saveEditorialItemInDev(item));
+      const byId = new Map(confirmed.map((item) => [item.publication.id, item]));
       setItems((currentItems) => [
         ...currentItems.filter((item) => !byId.has(item.publication.id)),
-        ...next,
+        ...confirmed,
       ]);
-      setSelected(next[0]!.publication.id);
+      setSelected(confirmed[0]!.publication.id);
       setEditing(null);
       setNotice(
         'Guardado en DEV. El servidor confirmó los registros editoriales; no se creó un intento ni se publicó.',
@@ -204,7 +206,6 @@ export function SocialContentPage() {
   function open(id: string) {
     if (busy) return;
     setSelected(id);
-    setDate('');
     window.setTimeout(
       () =>
         document
@@ -217,13 +218,13 @@ export function SocialContentPage() {
     if (!current) return;
     await perform(async () => {
       const next = await reviewEditorial(current, decision, new Date());
-      await saveEditorialItemInDev(next);
+      const confirmed = await saveEditorialItemInDev(next);
       setItems((previous) =>
-        previous.map((item) => (item.publication.id === current.publication.id ? next : item)),
+        previous.map((item) => (item.publication.id === current.publication.id ? confirmed : item)),
       );
       setNotice(
         decision === 'APPROVE'
-          ? 'Aprobación humana guardada en DEV.'
+          ? 'Contenido APPROVED confirmado en DEV. Siguiente paso: elige fecha y hora y confirma la programación editorial.'
           : 'Estado de revisión guardado en DEV.',
       );
     });
@@ -266,7 +267,14 @@ export function SocialContentPage() {
           y actividad no incluidos en el contrato remoto se muestran solo cuando pueden derivarse de
           media o del historial de intentos.
         </p>
-        <p>Guardar, aprobar o programar no publica contenido ni crea intentos.</p>
+        <p>
+          1. Prepara contenido por canal → 2. Envía a revisión y aprueba → 3. Elige fecha y hora →
+          4. Confirma la programación.
+        </p>
+        <p>
+          Guardar, aprobar o programar no publica contenido ni crea intentos. La ejecución externa
+          automática continúa desactivada.
+        </p>
       </div>
       {loading && (
         <div role="status" className="info-state">
@@ -432,11 +440,7 @@ export function SocialContentPage() {
                 <span>{item.publication.copy}</span>
                 <small>
                   {item.schedule
-                    ? item.schedule.scheduledFor.toLocaleString('es-CO', {
-                        timeZone: item.schedule.timezone,
-                      }) +
-                      ' · ' +
-                      item.schedule.timezone
+                    ? formatEditorialDate(item.schedule.scheduledFor) + ' · America/Bogota'
                     : 'Sin fecha'}
                 </small>
                 <small>
@@ -460,14 +464,6 @@ export function SocialContentPage() {
           <p>{current.publication.hashtags.map((tag) => `#${tag}`).join(' ')}</p>
           <p>Media: {current.publication.creativeAssetIds.length} referencia(s) durables.</p>
           <EditorialVariantComparison items={items} current={current} onOpen={open} />
-          <EditorialOperationAssessment item={current} now={now} />
-          <EditorialOperationalActions
-            key={current.publication.id}
-            item={current}
-            disabled={!canOperate || busy || loading || refreshing}
-            onRefresh={() => refresh(true, current.publication.id)}
-            onBusyChange={setBusy}
-          />
           {current.productId && (
             <Link to={`/products/${current.productId}`}>Ver producto asociado</Link>
           )}
@@ -497,37 +493,50 @@ export function SocialContentPage() {
               </button>
             )}
           </div>
-          {current.publication.status === 'APPROVED' && current.schedule?.status !== 'APPROVED' && (
-            <div className="stack">
-              <label>
-                Programar · America/Bogota
-                <input
-                  type="datetime-local"
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                />
-              </label>
-              <button
-                disabled={busy || !date}
-                onClick={() =>
-                  void perform(async () => {
-                    const next = await programEditorial(current, date, new Date(), () =>
-                      crypto.randomUUID(),
-                    );
-                    await saveEditorialItemInDev(next);
-                    setItems((all) =>
-                      all.map((item) =>
-                        item.publication.id === current.publication.id ? next : item,
-                      ),
-                    );
-                    setNotice('Programación editorial guardada en DEV. No se ejecutó publicación.');
-                  })
-                }
-              >
-                Confirmar programación editorial
-              </button>
-            </div>
-          )}
+          <EditorialScheduling
+            key={
+              current.publication.id +
+              ':' +
+              current.publication.status +
+              ':' +
+              (current.schedule?.status ?? '')
+            }
+            item={current}
+            productName={products.find((product) => product.id === current.productId)?.name}
+            now={now}
+            disabled={!canOperate || busy || loading || refreshing}
+            onSchedule={(date) =>
+              void perform(async () => {
+                const next = await programEditorial(current, date, new Date(), () =>
+                  crypto.randomUUID(),
+                );
+                const confirmed = await saveEditorialItemInDev(next);
+                setItems((all) =>
+                  all.map((item) =>
+                    item.publication.id === current.publication.id ? confirmed : item,
+                  ),
+                );
+                setNotice(
+                  'Programado editorialmente · APPROVED confirmado en DEV. La ejecución externa automática continúa desactivada; no se creó ningún intento ni se publicó.',
+                );
+              })
+            }
+          />
+          <details>
+            <summary>Operaciones de publicación · separadas de la programación</summary>
+            <p>
+              Estos controles gestionan intentos y publicación externa. No son necesarios para
+              guardar la programación editorial.
+            </p>
+            <EditorialOperationAssessment item={current} now={now} />
+            <EditorialOperationalActions
+              key={current.publication.id}
+              item={current}
+              disabled={!canOperate || busy || loading || refreshing}
+              onRefresh={() => refresh(true, current.publication.id)}
+              onBusyChange={setBusy}
+            />
+          </details>
           <details>
             <summary>Intentos registrados por el runtime</summary>
             {current.attempts.length ? (

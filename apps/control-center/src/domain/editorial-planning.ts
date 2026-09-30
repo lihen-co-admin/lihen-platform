@@ -51,6 +51,25 @@ export function dayKey(date: Date, timezone = 'America/Bogota'): string {
     day: '2-digit',
   }).format(date);
 }
+export function formatEditorialDate(date: Date): string {
+  return new Intl.DateTimeFormat('es-CO', {
+    timeZone: 'America/Bogota',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(date);
+}
+export function isEditorialScheduled(item: EditorialItem): boolean {
+  return (
+    item.publication.status === 'APPROVED' &&
+    item.schedule?.status === 'APPROVED' &&
+    item.publication.scheduleId === item.schedule.id &&
+    item.schedule.channelVariantId === item.publication.channelVariantId
+  );
+}
 export function editorialStatus(item: EditorialItem): string {
   const attempt = [...item.attempts].sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
   if (attempt?.status === 'SUCCEEDED')
@@ -64,9 +83,7 @@ export function editorialStatus(item: EditorialItem): string {
   if (item.publication.status === 'CANCELLED') return 'Cancelado';
   if (item.publication.status === 'IN_REVIEW') return 'Pendiente de revisión';
   if (item.publication.status === 'APPROVED')
-    return item.schedule?.status === 'APPROVED'
-      ? 'Programado editorialmente'
-      : 'Aprobado · sin programar';
+    return isEditorialScheduled(item) ? 'Programado editorialmente' : 'Aprobado · sin programar';
   return 'Borrador';
 }
 export function planEditorial(items: readonly EditorialItem[], goals: EditorialGoals, now: Date) {

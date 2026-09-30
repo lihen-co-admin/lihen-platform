@@ -1,5 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { EditorialProductSelector } from './EditorialProductSelector';
+import { EditorialSuggestion, useEditorialSuggestions } from './EditorialSuggestions';
 import type { ProductImageDTO, ProductListItemDTO } from '@lihen/products';
 import type { InventoryBalance } from '@lihen/inventory';
 import { productsComposition } from '../composition/products';
@@ -27,6 +29,10 @@ export function EditorialComposer({
   onClose: () => void;
   readVideos?: typeof readEditorialVideoAssets;
 }) {
+  const composerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    composerRef.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }, []);
   const [draft, setDraft] = useState<EditorialDraft>(() => ({
     copy: item?.publication.copy ?? '',
     callToAction: item?.publication.callToAction ?? '',
@@ -80,7 +86,20 @@ export function EditorialComposer({
   }, [draft.productId, videoChannel, readVideos]);
   const [balances, setBalances] = useState<readonly InventoryBalance[]>([]);
   const [mediaNotice, setMediaNotice] = useState('');
-  const [search, setSearch] = useState('');
+  useEffect(() => {
+    let active = true;
+    inventoryComposition.getInventory.execute().then(
+      (stock) => {
+        if (active) setBalances(stock);
+      },
+      () => {
+        if (active) setBalances([]);
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [draft.productId]);
   useEffect(() => {
     let active = true;
     if (!draft.productId) return;
@@ -88,11 +107,9 @@ export function EditorialComposer({
       productsComposition.canReadImages
         ? productsComposition.getProductImages.execute({ productId: draft.productId })
         : Promise.reject(new Error('Lectura de imágenes no habilitada.')),
-      inventoryComposition.getInventory.execute(),
-    ]).then(([media, stock]) => {
+    ]).then(([media]) => {
       if (!active) return;
       setImages(media.status === 'fulfilled' ? media.value : []);
-      setBalances(stock.status === 'fulfilled' ? stock.value : []);
       setMediaNotice(
         media.status === 'rejected' ? 'Imágenes no disponibles desde la fuente configurada.' : '',
       );
@@ -102,6 +119,7 @@ export function EditorialComposer({
     };
   }, [draft.productId]);
   const product = products.find((entry) => entry.id === draft.productId);
+  const suggestions = useEditorialSuggestions({ product, draft, channel: variantChannel });
   const balance = balances.find((entry) => entry.productId === draft.productId);
   const activeVariant = draft.channelVariants?.[variantChannel] ?? {
     copy: draft.copy,
@@ -127,66 +145,77 @@ export function EditorialComposer({
   }
   return (
     <section
+      ref={composerRef}
       className="card stack editorial-composer"
       id="editorial-composer"
       aria-labelledby="compose-title"
     >
       <h2 id="compose-title">{item ? 'Editar borrador' : 'Crear contenido'}</h2>
+      <p>
+        Prepara una variante por canal. Guardar crea un borrador; después debes revisar, aprobar y
+        confirmar su programación.
+      </p>
       <form className="stack" onSubmit={submit}>
+        <div className="editorial-intelligence">
+          <button
+            type="button"
+            disabled={suggestions.disabled || busy}
+            onClick={() => void suggestions.generate('all')}
+          >
+            ✨ Sugerir contenido con LIHEN Intelligence
+          </button>
+          <p>
+            Intelligence propone; tú decides. Una sugerencia no es contenido oficial ni aprueba,
+            programa o publica. Revisa los datos antes de usarla.
+          </p>
+          {!product && <small>Selecciona un producto para recibir recomendaciones.</small>}
+          {suggestions.notice && (
+            <p role="status" aria-live="polite">
+              {suggestions.notice}
+            </p>
+          )}
+        </div>
         <div className="editorial-fields">
-          <label>
-            Buscar producto
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Nombre o SKU"
+          <EditorialProductSelector
+            products={products}
+            balances={balances}
+            value={draft.productId}
+            onChange={(productId) => {
+              if (productId === draft.productId) return;
+              setImages([]);
+              setVideos([]);
+              setDraft({
+                ...draft,
+                productId,
+                creativeAssetIds: [],
+                channelVariants: Object.fromEntries(
+                  Object.entries(draft.channelVariants ?? {}).map(([channel, variant]) => [
+                    channel,
+                    { ...variant, creativeAssetIds: [] },
+                  ]),
+                ),
+              });
+            }}
+          />
+          <div>
+            <label>
+              Campaña editorial
+              <input
+                value={draft.campaignName}
+                onChange={(event) => setDraft({ ...draft, campaignName: event.target.value })}
+                placeholder="Ej. Cuidado de la piel"
+              />
+            </label>
+            <EditorialSuggestion
+              field="campaignName"
+              label="campaña"
+              currentValue={draft.campaignName}
+              suggestions={suggestions}
+              onUse={(campaignName) => setDraft((current) => ({ ...current, campaignName }))}
             />
-          </label>
+          </div>
           <label>
-            Producto
-            <select
-              value={draft.productId}
-              onChange={(event) => {
-                setImages([]);
-                setVideos([]);
-                setBalances([]);
-                setDraft({
-                  ...draft,
-                  productId: event.target.value,
-                  creativeAssetIds: [],
-                  channelVariants: Object.fromEntries(
-                    Object.entries(draft.channelVariants ?? {}).map(([channel, variant]) => [
-                      channel,
-                      { ...variant, creativeAssetIds: [] },
-                    ]),
-                  ),
-                });
-              }}
-            >
-              <option value="">Sin producto asociado</option>
-              {products
-                .filter(
-                  (entry) =>
-                    entry.id === draft.productId ||
-                    `${entry.name} ${entry.sku}`.toLowerCase().includes(search.toLowerCase()),
-                )
-                .map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {entry.name} · {entry.sku}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label>
-            Campaña editorial
-            <input
-              value={draft.campaignName}
-              onChange={(event) => setDraft({ ...draft, campaignName: event.target.value })}
-              placeholder="Ej. Cuidado de la piel"
-            />
-          </label>
-          <label>
-            Fecha prevista · Bogotá (opcional)
+            Fecha propuesta · America/Bogota (opcional)
             <input
               type="datetime-local"
               value={draft.date}
@@ -209,10 +238,20 @@ export function EditorialComposer({
                 ? `Inventario disponible: ${balance.stockAvailable}`
                 : 'Inventario no disponible; no se presume stock.'}
             </p>
+            {balance?.stockAvailable === 0 && (
+              <p role="alert">
+                Sin inventario disponible. Puedes guardar el borrador editorial; revisa las
+                existencias antes de promocionar.
+              </p>
+            )}
             <Link to={`/products/${product.id}`}>Abrir producto</Link> ·{' '}
             <Link to="/inventory">Inventario</Link>
           </div>
         )}
+        <p>
+          Editando {editorialChannels.find((channel) => channel.id === variantChannel)?.label}:
+          copy, CTA, hashtags y media independientes. Usa las pestañas para revisar cada canal.
+        </p>
         <label>
           Copy / caption ·{' '}
           {editorialChannels.find((channel) => channel.id === variantChannel)?.label}
@@ -224,23 +263,48 @@ export function EditorialComposer({
             placeholder="Cuenta qué hace especial a esta propuesta…"
           />
         </label>
+        <EditorialSuggestion
+          field="copy"
+          label="copy"
+          currentValue={activeVariant.copy}
+          suggestions={suggestions}
+          onUse={(copy) => updateVariant({ copy })}
+        />
         <div className="editorial-fields">
-          <label>
-            CTA
-            <input
-              value={activeVariant.callToAction}
-              onChange={(event) => updateVariant({ callToAction: event.target.value })}
-              placeholder="Conoce más en LIHEN.CO"
+          <div>
+            <label>
+              CTA
+              <input
+                value={activeVariant.callToAction}
+                onChange={(event) => updateVariant({ callToAction: event.target.value })}
+                placeholder="Conoce más en LIHEN.CO"
+              />
+            </label>
+            <EditorialSuggestion
+              field="callToAction"
+              label="CTA"
+              currentValue={activeVariant.callToAction}
+              suggestions={suggestions}
+              onUse={(callToAction) => updateVariant({ callToAction })}
             />
-          </label>
-          <label>
-            Hashtags
-            <input
-              value={activeVariant.hashtags}
-              onChange={(event) => updateVariant({ hashtags: event.target.value })}
-              placeholder="#LIHENCO #BeautyCare"
+          </div>
+          <div>
+            <label>
+              Hashtags
+              <input
+                value={activeVariant.hashtags}
+                onChange={(event) => updateVariant({ hashtags: event.target.value })}
+                placeholder="#LIHENCO #BeautyCare"
+              />
+            </label>
+            <EditorialSuggestion
+              field="hashtags"
+              label="hashtags"
+              currentValue={activeVariant.hashtags}
+              suggestions={suggestions}
+              onUse={(hashtags) => updateVariant({ hashtags })}
             />
-          </label>
+          </div>
         </div>
         <fieldset>
           <legend>Canales · una pieza editable por canal</legend>
@@ -260,7 +324,9 @@ export function EditorialComposer({
                         channelVariants: {
                           ...draft.channelVariants,
                           [channel.id]: {
-                            ...starter,
+                            copy: '',
+                            callToAction: '',
+                            hashtags: '',
                             creativeAssetIds:
                               usesEditorialVideo(channel.id) === videoChannel
                                 ? [...starter.creativeAssetIds]
@@ -367,10 +433,10 @@ export function EditorialComposer({
           )}
         </fieldset>
         <div className="toolbar">
-          <button type="submit" disabled={busy}>
+          <button type="submit" disabled={busy || !draft.channels.length}>
             Guardar borrador
           </button>
-          <button type="button" className="button-ghost" onClick={onClose}>
+          <button type="button" className="button-ghost" disabled={busy} onClick={onClose}>
             Cerrar editor
           </button>
         </div>

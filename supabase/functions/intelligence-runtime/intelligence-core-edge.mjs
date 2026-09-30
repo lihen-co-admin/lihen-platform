@@ -467,6 +467,209 @@ function validateToolDescriptor(descriptor, expectedKind) {
   return issues;
 }
 
+// packages/intelligence-core/src/capabilities/editorial-research.ts
+var normalized = (value) => value.normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+var validTime = (value) => Boolean(value?.trim()) && Number.isFinite(Date.parse(value));
+function editorialIdentityKey(identity) {
+  return JSON.stringify([
+    identity.productId,
+    identity.productName,
+    identity.sku ?? "",
+    identity.brandId ?? "",
+    identity.brand ?? "",
+    identity.category ?? "",
+    Object.entries(identity.knownAttributes ?? {}).sort(([a], [b]) => a.localeCompare(b))
+  ]);
+}
+function buildEditorialSearchQuery(identity) {
+  if (![
+    identity.productId,
+    identity.productName,
+    identity.sku,
+    identity.brandId,
+    identity.brand
+  ].every((value) => value?.trim()))
+    return null;
+  return [
+    identity.productName,
+    identity.brand,
+    identity.sku,
+    ...identity.category ? [identity.category] : [],
+    ...Object.entries(identity.knownAttributes ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}: ${value}`)
+  ].map((value) => JSON.stringify(value)).join(" ");
+}
+function verifyEditorialSourceIdentity(expected, result) {
+  const data = result.productEvidence;
+  if (!data || !buildEditorialSearchQuery(expected)) return "INSUFFICIENT_EVIDENCE";
+  const extracts = new Map(data.extracts.map((entry) => [entry.id, entry.text]));
+  if (extracts.size !== data.extracts.length) return "INSUFFICIENT_EVIDENCE";
+  const checks = [
+    [expected.productName, data.identity.productName],
+    [expected.brand, data.identity.brand],
+    [expected.sku, data.identity.sku],
+    ...expected.category ? [[expected.category, data.identity.category]] : [],
+    ...Object.entries(expected.knownAttributes ?? {}).map(
+      ([key, value]) => [
+        value,
+        data.identity.knownAttributes?.[key]
+      ]
+    )
+  ];
+  if (checks.some(
+    ([value, actual]) => actual?.value?.trim() && normalized(value) !== normalized(actual.value)
+  ))
+    return "IDENTITY_MISMATCH";
+  const backed = checks.filter(
+    ([value, actual]) => actual && normalized(value) === normalized(actual.value) && Boolean(extracts.get(actual.evidenceRef)?.includes(actual.value))
+  );
+  return backed.length === checks.length ? "VERIFIED" : backed.length ? "PARTIALLY_VERIFIED" : "INSUFFICIENT_EVIDENCE";
+}
+function sourceAuthority(identity, domain, retrievedAt, records) {
+  const matching = records.filter(
+    (record2) => normalized(record2.domain) === domain && record2.brandId === identity.brandId && normalized(record2.brand) === normalized(identity.brand ?? "") && record2.verification.evidenceRef.trim() && record2.verification.reason.trim() && validTime(record2.verification.verifiedAt) && validTime(record2.verification.expiresAt) && Date.parse(record2.verification.verifiedAt) <= Date.parse(retrievedAt) && Date.parse(record2.verification.expiresAt) >= Date.parse(retrievedAt)
+  );
+  if (matching.length !== 1)
+    return {
+      authority: "UNVERIFIED",
+      authorityReason: "No unique, valid domain/brand authority evidence."
+    };
+  const record = matching[0];
+  const authorities = {
+    OFFICIAL_BRAND: "OFFICIAL_BRAND",
+    OFFICIAL_PRODUCT_COLLECTION: "OFFICIAL_BRAND",
+    AUTHORIZED_SUPPLIER: "AUTHORIZED_DISTRIBUTOR",
+    SECONDARY_REFERENCE: "TRUSTED_SECONDARY"
+  };
+  return {
+    authority: authorities[record.role] ?? "UNVERIFIED",
+    authorityReason: record.verification.reason,
+    authorityEvidenceRef: record.verification.evidenceRef
+  };
+}
+var claimFields = /* @__PURE__ */ new Set([
+  "name",
+  "brand",
+  "category",
+  "description",
+  "attributes",
+  "ingredients",
+  "benefits",
+  "results",
+  "usage",
+  "certifications",
+  "dermatologicalProperties",
+  "clinicalClaims",
+  "origin",
+  "composition",
+  "presentation",
+  "discounts",
+  "availability"
+]);
+function assessEditorialSearchResult(identity, result, records = []) {
+  const url = new URL(result.uri);
+  if (url.protocol !== "https:" || url.username || url.password || url.port || !result.title.trim())
+    throw new Error("EDITORIAL_RESEARCH_SOURCE_INVALID");
+  const data = result.productEvidence;
+  if (!data || !validTime(data.retrievedAt) || data.domain.toLowerCase() !== url.hostname.toLowerCase() || new Set(data.extracts.map((item) => item.id)).size !== data.extracts.length)
+    throw new Error("EDITORIAL_RESEARCH_EVIDENCE_INVALID");
+  const identityMatch = verifyEditorialSourceIdentity(identity, result);
+  const authority2 = sourceAuthority(
+    identity,
+    url.hostname.toLowerCase(),
+    data.retrievedAt,
+    records
+  );
+  const id = url.href;
+  const claims = [];
+  const rejectedClaims = [];
+  for (const [index, claim] of data.claims.entries()) {
+    const supported = claim.evidenceRefs.length > 0 && claim.evidenceRefs.every(
+      (ref) => data.extracts.some(
+        (extract) => extract.id === ref && extract.text.trim() === claim.value.trim()
+      )
+    );
+    if (identityMatch !== "VERIFIED" || authority2.authority === "UNVERIFIED" || !supported || !claim.value.trim() || !claimFields.has(claim.field)) {
+      rejectedClaims.push({
+        field: claim.field,
+        reason: identityMatch === "IDENTITY_MISMATCH" ? "IDENTITY_MISMATCH" : "INSUFFICIENT_EVIDENCE"
+      });
+      continue;
+    }
+    const official = authority2.authority === "OFFICIAL_BRAND";
+    claims.push({
+      id: `${id}#claim-${index}`,
+      field: claim.field,
+      claim: claim.value,
+      classification: official ? "VERIFIED_OFFICIAL_BRAND" : "SUPPORTED_SECONDARY",
+      evidenceRefs: [...claim.evidenceRefs],
+      sources: [id],
+      confidence: {
+        score: official ? 0.9 : 0.7,
+        band: official ? "VERY_HIGH" : "HIGH",
+        rationale: [
+          "Exact product identity, verified source authority and verbatim extract; not clinical validation or execution authority."
+        ]
+      },
+      usableInCopy: official && !["discounts", "availability"].includes(claim.field)
+    });
+  }
+  return {
+    id,
+    title: result.title,
+    url: url.href,
+    domain: url.hostname.toLowerCase(),
+    retrievedAt: data.retrievedAt,
+    identityMatch,
+    ...authority2,
+    extracts: data.extracts.map((entry) => ({ id: entry.id, text: entry.text })),
+    claims,
+    rejectedClaims
+  };
+}
+async function researchEditorialProduct(identity, context, dependencies = {}) {
+  const query = buildEditorialSearchQuery(identity);
+  const empty = (status) => ({
+    identity,
+    query,
+    status,
+    evidenceStatus: "INSUFFICIENT_EVIDENCE",
+    sources: []
+  });
+  if (!dependencies.search) return empty("SEARCH_PROVIDER_NOT_CONFIGURED");
+  if (!query || context.context.type !== "PRODUCT" || context.context.entityId !== identity.productId)
+    return empty("INSUFFICIENT_EVIDENCE");
+  if (dependencies.search.descriptor.kind !== "SEARCH" || !dependencies.search.descriptor.readOnly || !dependencies.freeOnly?.evidenceRef.trim() || !validTime(dependencies.freeOnly.verifiedAt))
+    return empty("POLICY_BLOCKED");
+  try {
+    const response = await dependencies.search.search({
+      ...context,
+      expectedProductIdentity: identity,
+      costPolicy: "FREE_ONLY",
+      queries: [{ query, maxResults: 8 }]
+    });
+    if (response.trace?.usage?.costEstimate && response.trace.usage.costEstimate > 0)
+      return empty("POLICY_BLOCKED");
+    if (!["SUCCESS", "PARTIAL", "NO_RESULT"].includes(response.status))
+      return empty("PROVIDER_FAILED");
+    const sources = (response.data ?? []).slice(0, 8).flatMap((result) => {
+      try {
+        return [assessEditorialSearchResult(identity, result, dependencies.authorities)];
+      } catch {
+        return [];
+      }
+    }).filter((source, index, all) => all.findIndex((other) => other.id === source.id) === index);
+    return {
+      identity,
+      query,
+      status: "COMPLETED",
+      evidenceStatus: sources.some((source) => source.claims.length) ? "SUPPORTED" : "INSUFFICIENT_EVIDENCE",
+      sources
+    };
+  } catch {
+    return empty("PROVIDER_FAILED");
+  }
+}
+
 // packages/intelligence-core/src/provider-capability-matrix.ts
 var PROVIDER_CAPABILITY_MATRIX = {
   VISION: {
@@ -1141,9 +1344,9 @@ async function prepareLihenAssistantRecommendation(request) {
 
 // packages/intelligence-core/src/capabilities/brand-intelligence.ts
 function requireText(value, label) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(`${label} is required.`);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(`${label} is required.`);
+  return normalized2;
 }
 function confidenceFrom(score) {
   if (!Number.isFinite(score) || score < 0 || score > 1) {
@@ -1268,7 +1471,7 @@ function prepareBrandAssetCandidate(input) {
     );
   }
   const confidence = confidenceFrom(input.confidenceScore);
-  const sourceAuthority3 = resolveBrandSourceAuthority(input.source);
+  const sourceAuthority4 = resolveBrandSourceAuthority(input.source);
   const protectedManual = findProtectedManualAsset(
     brandId,
     input.assetKind,
@@ -1291,7 +1494,7 @@ function prepareBrandAssetCandidate(input) {
     correlationId,
     context,
     capability: "BRAND_INTELLIGENCE",
-    sourceAuthority: sourceAuthority3,
+    sourceAuthority: sourceAuthority4,
     observation,
     payload: {
       brandId,
@@ -1343,7 +1546,7 @@ function prepareBrandAssetCandidate(input) {
     severity: message.severity,
     source: "BRAND_INTELLIGENCE",
     rationale: [
-      ...sourceAuthority3.rationale,
+      ...sourceAuthority4.rationale,
       `Disposition=${disposition}.`,
       ...protectedManual ? [`Protected manual asset=${protectedManual.id}.`] : [],
       "Confidence is evidence quality, not authorization."
@@ -1363,7 +1566,7 @@ function prepareBrandAssetCandidate(input) {
   };
   const output = {
     disposition,
-    sourceAuthority: sourceAuthority3,
+    sourceAuthority: sourceAuthority4,
     evidence,
     candidate,
     recommendation
@@ -1414,14 +1617,14 @@ var SUPPLIER_RECORD_EXTRACTION_SCHEMA = Object.freeze({
   }
 });
 function requiredText(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function nullableText(value) {
   if (typeof value !== "string") return null;
-  const normalized = value.trim();
-  return normalized ? normalized : null;
+  const normalized2 = value.trim();
+  return normalized2 ? normalized2 : null;
 }
 function nullableNonNegativeNumber(value, code) {
   if (value === null || value === void 0) return null;
@@ -1438,16 +1641,16 @@ function nullableInteger(value, code) {
   return value;
 }
 function confidenceFrom2(score) {
-  const normalized = score ?? 0;
-  if (!Number.isFinite(normalized) || normalized < 0 || normalized > 1) {
+  const normalized2 = score ?? 0;
+  if (!Number.isFinite(normalized2) || normalized2 < 0 || normalized2 > 1) {
     throw new Error("DOCUMENT_INTELLIGENCE_CONFIDENCE_INVALID");
   }
-  const band = normalized >= 0.9 ? "VERY_HIGH" : normalized >= 0.75 ? "HIGH" : normalized >= 0.5 ? "MEDIUM" : normalized >= 0.25 ? "LOW" : "VERY_LOW";
+  const band = normalized2 >= 0.9 ? "VERY_HIGH" : normalized2 >= 0.75 ? "HIGH" : normalized2 >= 0.5 ? "MEDIUM" : normalized2 >= 0.25 ? "LOW" : "VERY_LOW";
   return {
-    score: normalized,
+    score: normalized2,
     band,
     rationale: [
-      `Normalized Document Intelligence confidence: ${normalized.toFixed(2)}.`,
+      `Normalized Document Intelligence confidence: ${normalized2.toFixed(2)}.`,
       "Confidence is evidence quality, not authorization."
     ]
   };
@@ -1619,7 +1822,7 @@ async function executeDocumentIntelligence(tools, input) {
       `DOCUMENT_INTELLIGENCE_PROVIDER_${providerResult.status}`
     );
   }
-  const sourceAuthority3 = supplierSourceAuthority(
+  const sourceAuthority4 = supplierSourceAuthority(
     sourceName,
     input.config.sourceUri
   );
@@ -1635,7 +1838,7 @@ async function executeDocumentIntelligence(tools, input) {
     correlationId,
     context: input.context,
     capability: "DOCUMENT_INTELLIGENCE",
-    sourceAuthority: sourceAuthority3,
+    sourceAuthority: sourceAuthority4,
     observation: `Structured supplier document extraction produced ${records.length} record(s).`,
     payload: {
       documentId,
@@ -1672,7 +1875,7 @@ async function executeDocumentIntelligence(tools, input) {
       correlationId,
       context: input.context,
       capability: "DOCUMENT_INTELLIGENCE",
-      sourceAuthority: sourceAuthority3,
+      sourceAuthority: sourceAuthority4,
       observation: status === "EXTRACTED" ? "Supplier source record extracted with sufficient identity evidence." : "Supplier source record requires review before downstream reconciliation.",
       payload: {
         documentId,
@@ -1695,7 +1898,7 @@ async function executeDocumentIntelligence(tools, input) {
         evidenceId,
         fingerprint,
         schemaVersion,
-        sourceAuthority: sourceAuthority3.level
+        sourceAuthority: sourceAuthority4.level
       }
     });
   }
@@ -1759,9 +1962,9 @@ function createDocumentIntelligenceCapabilityHandler(input) {
 
 // packages/intelligence-core/src/capabilities/product-reconciliation.ts
 function requiredText2(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function validateScore(score, code) {
   if (!Number.isFinite(score) || score < 0 || score > 1) {
@@ -1770,10 +1973,10 @@ function validateScore(score, code) {
   return score;
 }
 function confidenceFrom3(score, rationale) {
-  const normalized = validateScore(score, "PRODUCT_RECONCILIATION_CONFIDENCE_INVALID");
-  const band = normalized >= 0.9 ? "VERY_HIGH" : normalized >= 0.75 ? "HIGH" : normalized >= 0.5 ? "MEDIUM" : normalized >= 0.25 ? "LOW" : "VERY_LOW";
+  const normalized2 = validateScore(score, "PRODUCT_RECONCILIATION_CONFIDENCE_INVALID");
+  const band = normalized2 >= 0.9 ? "VERY_HIGH" : normalized2 >= 0.75 ? "HIGH" : normalized2 >= 0.5 ? "MEDIUM" : normalized2 >= 0.25 ? "LOW" : "VERY_LOW";
   return {
-    score: normalized,
+    score: normalized2,
     band,
     rationale: [
       ...rationale,
@@ -1797,15 +2000,15 @@ function normalizeMatch(match) {
   };
 }
 function uniqueMatches(matches) {
-  const normalized = matches.map(normalizeMatch);
+  const normalized2 = matches.map(normalizeMatch);
   const ids = /* @__PURE__ */ new Set();
-  for (const match of normalized) {
+  for (const match of normalized2) {
     if (ids.has(match.productId)) {
       throw new Error("PRODUCT_RECONCILIATION_DUPLICATE_PRODUCT_CANDIDATE");
     }
     ids.add(match.productId);
   }
-  return normalized.sort((left, right) => {
+  return normalized2.sort((left, right) => {
     if (left.confidence !== right.confidence) {
       return right.confidence - left.confidence;
     }
@@ -2102,9 +2305,9 @@ function evidenceFromPersistedReconciliation(input) {
 
 // packages/intelligence-core/src/capabilities/supplier-price-evidence.ts
 function requiredText3(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function nullableNonNegative(value, code) {
   if (value === null) return null;
@@ -2400,9 +2603,9 @@ function prepareSupplierPriceEvidence(input) {
 
 // packages/intelligence-core/src/capabilities/inventory-intelligence.ts
 function requireText2(value, label) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(`${label} is required.`);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(`${label} is required.`);
+  return normalized2;
 }
 function requireFiniteNonNegative(value, label) {
   if (!Number.isFinite(value) || value < 0) {
@@ -2745,9 +2948,9 @@ function analyzeInventoryIntelligence(input) {
 
 // packages/intelligence-core/src/capabilities/procurement-intelligence.ts
 function requireText3(value, label) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(`${label} is required.`);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(`${label} is required.`);
+  return normalized2;
 }
 function requireFiniteNonNegative2(value, label) {
   if (!Number.isFinite(value) || value < 0) {
@@ -3181,9 +3384,9 @@ function analyzeProcurementIntelligence(input) {
 
 // packages/intelligence-core/src/capabilities/orders-sales-intelligence.ts
 function requireText4(value, label) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(`${label} is required.`);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(`${label} is required.`);
+  return normalized2;
 }
 function requireFiniteNonNegative3(value, label) {
   if (!Number.isFinite(value) || value < 0) {
@@ -4202,9 +4405,9 @@ function createReportGenerationHandler(dependencies) {
 
 // packages/intelligence-core/src/capabilities/analytics-intelligence.ts
 function requiredText4(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function assertFinite(value, code) {
   if (!Number.isFinite(value)) throw new Error(code);
@@ -4462,9 +4665,9 @@ function createAnalyticsIntelligenceHandler() {
 
 // packages/intelligence-core/src/capabilities/controlled-automation.ts
 function requiredText5(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function evaluateControlledAutomationPlan(input) {
   const automationId = requiredText5(
@@ -4649,14 +4852,14 @@ async function prepareControlledAutomationForControlPlane(input) {
 
 // packages/intelligence-core/src/capabilities/audit-intelligence.ts
 function requiredText6(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function toIsoString(value, code) {
   const raw = value instanceof Date ? value.toISOString() : value;
-  const normalized = requiredText6(raw, code);
-  const parsed = new Date(normalized);
+  const normalized2 = requiredText6(raw, code);
+  const parsed = new Date(normalized2);
   if (Number.isNaN(parsed.getTime())) throw new Error(code);
   return parsed.toISOString();
 }
@@ -4973,11 +5176,11 @@ function createAuditIntelligenceHandler() {
 
 // packages/intelligence-core/src/capabilities/customer-intelligence.ts
 function requireText5(value, label) {
-  const normalized = value.trim();
-  if (!normalized) {
+  const normalized2 = value.trim();
+  if (!normalized2) {
     throw new Error(`${label} is required.`);
   }
-  return normalized;
+  return normalized2;
 }
 function confidenceFor4(snapshot) {
   const hasHistory = snapshot.orderCount > 0 || snapshot.purchaseCount > 0;
@@ -4990,7 +5193,7 @@ function confidenceFor4(snapshot) {
     ]
   };
 }
-function sourceAuthority() {
+function sourceAuthority2() {
   return {
     level: "FIRST_PARTY",
     sourceName: "LIHEN Customer Read Model",
@@ -5032,7 +5235,7 @@ function prepareCustomerIntelligence(input) {
     correlationId,
     context,
     capability: "CUSTOMER_INTELLIGENCE",
-    sourceAuthority: sourceAuthority(),
+    sourceAuthority: sourceAuthority2(),
     observation: "First-party Customer activity snapshot analyzed without autonomous mutation or contact.",
     payload: {
       customerId,
@@ -5082,9 +5285,9 @@ function prepareCustomerIntelligence(input) {
 
 // packages/intelligence-core/src/capabilities/marketing-intelligence.ts
 function requireText6(value, code) {
-  const normalized = value.trim();
-  if (!normalized) throw new Error(code);
-  return normalized;
+  const normalized2 = value.trim();
+  if (!normalized2) throw new Error(code);
+  return normalized2;
 }
 function confidenceFor5(snapshot) {
   const hasPerformance = snapshot.channelCount > 0 && (snapshot.totalEngagement > 0 || snapshot.totalConversions > 0 || snapshot.engagementRate !== null);
@@ -5097,7 +5300,7 @@ function confidenceFor5(snapshot) {
     ]
   };
 }
-function sourceAuthority2() {
+function sourceAuthority3() {
   return {
     level: "FIRST_PARTY",
     sourceName: "LIHEN Marketing Read Model",
@@ -5157,7 +5360,7 @@ function prepareMarketingIntelligence(input) {
     correlationId,
     context,
     capability: "MARKETING_INTELLIGENCE",
-    sourceAuthority: sourceAuthority2(),
+    sourceAuthority: sourceAuthority3(),
     observation: "Marketing campaign context analyzed without autonomous publication or customer contact.",
     payload: {
       campaignId,
@@ -5209,11 +5412,11 @@ function prepareMarketingIntelligence(input) {
 
 // packages/intelligence-core/src/capabilities/conversation-intelligence.ts
 function requireText7(value, code) {
-  const normalized = value.trim();
-  if (!normalized) {
+  const normalized2 = value.trim();
+  if (!normalized2) {
     throw new Error(code);
   }
-  return normalized;
+  return normalized2;
 }
 function confidenceFor6(snapshot) {
   const hasConversationEvidence = snapshot.messageCount > 0;
@@ -5417,7 +5620,9 @@ export {
   analyzeOrdersSalesIntelligence,
   analyzeProcurementIntelligence,
   assertReviewItemDoesNotAuthorizeExecution,
+  assessEditorialSearchResult,
   buildControlledActionRequest,
+  buildEditorialSearchQuery,
   buildIntelligenceOrchestrationPlan,
   buildUnifiedHumanReviewQueue,
   buildUnifiedIntelligenceAuditTrail,
@@ -5431,6 +5636,7 @@ export {
   createImageTransformationHandler,
   createReportGenerationHandler,
   definePermissionKey,
+  editorialIdentityKey,
   evaluateAnalyticsSnapshot,
   evaluateControlledAutomationPlan,
   evaluatePermission,
@@ -5451,6 +5657,7 @@ export {
   prepareProductReconciliation,
   prepareSupplierPriceEvidence,
   removeImageBackground,
+  researchEditorialProduct,
   resolveAssistantContext,
   resolveAssistantContextBundle,
   resolveBrandSourceAuthority,
@@ -5458,5 +5665,6 @@ export {
   reviewItemFromRecommendation,
   reviewItemFromReconciliation,
   runLihenAssistantTurn,
-  validateToolDescriptor
+  validateToolDescriptor,
+  verifyEditorialSourceIdentity
 };
