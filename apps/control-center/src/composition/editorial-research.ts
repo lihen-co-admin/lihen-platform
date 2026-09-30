@@ -29,6 +29,84 @@ export interface EditorialResearchEdgeFunctionClient {
   };
 }
 
+export interface EditorialResearchReadiness {
+  readonly featureEnabled: boolean;
+  readonly providerConfigured: boolean;
+  readonly allowlistConfigured: boolean;
+  readonly authorityRegistryConfigured: boolean;
+  readonly freeOnlyConfigured: boolean;
+  readonly dependenciesConfigured: boolean;
+  readonly readyForActivation: boolean;
+  readonly reasons: readonly string[];
+}
+
+export interface EditorialResearchPreflightResponse {
+  readonly runtime: 'LIHEN_INTELLIGENCE';
+  readonly action: 'EDITORIAL_RESEARCH_PREFLIGHT';
+  readonly readiness: EditorialResearchReadiness;
+}
+
+const readinessBooleanFields = [
+  'featureEnabled',
+  'providerConfigured',
+  'allowlistConfigured',
+  'authorityRegistryConfigured',
+  'freeOnlyConfigured',
+  'dependenciesConfigured',
+  'readyForActivation',
+] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isPreflightResponse(value: unknown): value is EditorialResearchPreflightResponse {
+  if (
+    !isRecord(value) ||
+    value.runtime !== 'LIHEN_INTELLIGENCE' ||
+    value.action !== 'EDITORIAL_RESEARCH_PREFLIGHT' ||
+    !isRecord(value.readiness)
+  ) {
+    return false;
+  }
+
+  const readiness = value.readiness;
+  return (
+    Object.keys(value).length === 3 &&
+    Object.keys(readiness).length === readinessBooleanFields.length + 1 &&
+    readinessBooleanFields.every((field) => typeof readiness[field] === 'boolean') &&
+    Array.isArray(readiness.reasons) &&
+    readiness.reasons.every((reason: unknown) => typeof reason === 'string')
+  );
+}
+
+/** Explicit, configuration-free assessment; never executes Editorial Research. */
+export async function preflightEditorialResearchWithClient(
+  client: EditorialResearchEdgeFunctionClient,
+): Promise<EditorialResearchReadiness> {
+  let result: EdgeInvokeResult<unknown>;
+  try {
+    result = await client.functions.invoke<unknown>('intelligence-runtime', {
+      body: { action: 'EDITORIAL_RESEARCH_PREFLIGHT' },
+    });
+  } catch {
+    throw new Error('LIHEN_EDITORIAL_RESEARCH_PREFLIGHT_INVOKE_FAILED');
+  }
+
+  if (result.error) {
+    throw new Error('LIHEN_EDITORIAL_RESEARCH_PREFLIGHT_INVOKE_FAILED');
+  }
+  if (!isPreflightResponse(result.data)) {
+    throw new Error('LIHEN_EDITORIAL_RESEARCH_PREFLIGHT_INVALID_RESPONSE');
+  }
+  return result.data.readiness;
+}
+
+/** Browser boundary: reuse the Control Center client and its authenticated session. */
+export async function preflightEditorialResearch(): Promise<EditorialResearchReadiness> {
+  return preflightEditorialResearchWithClient(getBrowserSupabaseClient(import.meta.env));
+}
+
 export async function researchEditorialGroundingWithClient(
   internal: EditorialGrounding,
   client: EditorialResearchEdgeFunctionClient,
