@@ -134,7 +134,56 @@ describe('Groq SearchPort', () => {
     expect(result.messages).toContain('GROQ_SEARCH_NETWORK_FAILED');
   });
 
-  it('does not promote undocumented browser-search tool results into SearchResultItem', async () => {
+  it('admits only concrete HTTPS URLs from final browser-search content as discovery candidates', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      jsonResponse({
+        id: 'groq-search-1',
+        choices: [
+          {
+            message: {
+              content: [
+                'https://brand.example/products/rose-water',
+                'https://brand.example/products/rose-water.',
+                'http://unsafe.example/product',
+                'https://user:pass@brand.example/secret',
+                'https://brand.example:8443/nonstandard',
+                'not-a-url',
+              ].join('\n'),
+            },
+          },
+        ],
+        usage: {
+          prompt_tokens: 20,
+          completion_tokens: 10,
+        },
+      }),
+    );
+
+    const port = createGroqSearchPort({
+      apiKey: 'server-secret',
+      enabled: true,
+      fetchImpl: fetchImpl as typeof fetch,
+    });
+
+    const result = await port.search(request);
+
+    expect(result.status).toBe('SUCCESS');
+    expect(result.messages).toEqual([]);
+    expect(result.data).toEqual([
+      {
+        title: 'brand.example',
+        uri: 'https://brand.example/products/rose-water',
+        sourceName: 'Groq Browser Search discovery candidate',
+      },
+    ]);
+    expect(result.data?.[0]?.productEvidence).toBeUndefined();
+    expect(result.trace?.usage).toEqual({
+      inputUnits: 20,
+      outputUnits: 10,
+    });
+  });
+
+  it('does not promote provider tool payloads directly into SearchResultItem', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       jsonResponse({
         id: 'groq-search-1',
@@ -187,10 +236,6 @@ describe('Groq SearchPort', () => {
     expect(result.status).toBe('NO_RESULT');
     expect(result.data).toEqual([]);
     expect(result.messages).toContain('GROQ_BROWSER_SEARCH_STRUCTURED_SOURCES_UNAVAILABLE');
-    expect(result.trace?.usage).toEqual({
-      inputUnits: 20,
-      outputUnits: 10,
-    });
   });
 
   it('does not promote provider tool payloads into discovery or product evidence', async () => {
@@ -231,24 +276,13 @@ describe('Groq SearchPort', () => {
     expect(result.messages).toContain('GROQ_BROWSER_SEARCH_STRUCTURED_SOURCES_UNAVAILABLE');
   });
 
-  it('returns NO_RESULT when browser search has no supported structured-source contract', async () => {
+  it('returns NO_RESULT when browser search final content has no concrete HTTPS URL', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       jsonResponse({
         choices: [
           {
             message: {
-              executed_tools: [
-                {
-                  search_results: {
-                    results: [
-                      {
-                        title: '',
-                        url: 'https://example.com',
-                      },
-                    ],
-                  },
-                },
-              ],
+              content: 'No concrete source URL was available.',
             },
           },
         ],
@@ -295,6 +329,9 @@ describe('Groq SearchPort', () => {
         type: 'browser_search',
       },
     ]);
+    expect(body.messages[0].content).toContain(
+      'Return only concrete HTTPS source URLs that you actually visited',
+    );
     expect(body.response_format).toBeUndefined();
   });
 });
