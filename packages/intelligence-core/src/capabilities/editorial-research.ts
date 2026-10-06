@@ -79,6 +79,7 @@ const normalized = (value: string) =>
   value.normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 const validTime = (value: string) => Boolean(value?.trim()) && Number.isFinite(Date.parse(value));
 export function editorialIdentityKey(identity: SearchProductIdentity): string {
+  // Internal SKU != manufacturer/public SKU; retain it only in internal identity.
   return JSON.stringify([
     identity.productId,
     identity.productName,
@@ -91,20 +92,15 @@ export function editorialIdentityKey(identity: SearchProductIdentity): string {
 }
 export function buildEditorialSearchQuery(identity: SearchProductIdentity): string | null {
   if (
-    ![
-      identity.productId,
-      identity.productName,
-      identity.sku,
-      identity.brandId,
-      identity.brand,
-    ].every((value) => value?.trim())
+    ![identity.productId, identity.productName, identity.brandId, identity.brand].every((value) =>
+      value?.trim(),
+    )
   )
     return null;
-  // productId travels in expectedProductIdentity; internal identifiers are not public search terms.
+  // productId and internal SKU travel in expectedProductIdentity, never as public search terms.
   return [
     identity.productName,
     identity.brand!,
-    identity.sku!,
     ...(identity.category ? [identity.category] : []),
     ...Object.entries(identity.knownAttributes ?? {})
       .sort(([a], [b]) => a.localeCompare(b))
@@ -124,7 +120,6 @@ export function verifyEditorialSourceIdentity(
   const checks: [string, SearchEvidenceValue | undefined][] = [
     [expected.productName, data.identity.productName],
     [expected.brand!, data.identity.brand],
-    [expected.sku!, data.identity.sku],
     ...(expected.category
       ? [[expected.category, data.identity.category] as [string, SearchEvidenceValue | undefined]]
       : []),

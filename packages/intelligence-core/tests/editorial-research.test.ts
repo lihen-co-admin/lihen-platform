@@ -25,13 +25,15 @@ function provider(result = searchResult()) {
   return { search, port };
 }
 describe('EDITORIAL-RESEARCH-01 governed SearchPort boundary', () => {
-  it('queries exact name, SKU, brand, category and attributes; binds durable ID without making it a public term', async () => {
+  it('queries public discriminators while retaining internal identity in the request', async () => {
     const { search, port } = provider();
     const expected = { ...identity, knownAttributes: { presentation: '100 ml' } };
     const query = buildEditorialSearchQuery(expected)!;
-    for (const text of ['Agua de rosas', 'Marca A', 'BC-067', 'Cuidado', '100 ml'])
+    for (const text of ['Agua de rosas', 'Marca A', 'Cuidado', '100 ml'])
       expect(query).toContain(text);
     expect(query).not.toContain('durable-product');
+    expect(query).not.toContain(identity.sku!);
+    expect(buildEditorialSearchQuery({ ...expected, sku: undefined })).toBe(query);
     await researchEditorialProduct(expected, context, { search: port, freeOnly });
     expect(search).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -41,7 +43,7 @@ describe('EDITORIAL-RESEARCH-01 governed SearchPort boundary', () => {
       }),
     );
   });
-  it.each(['sku', 'brand', 'brandId', 'productId'])(
+  it.each(['productName', 'brand', 'brandId', 'productId'])(
     'missing %s prevents generic-name research',
     async (field) => {
       const { search, port } = provider();
@@ -53,7 +55,7 @@ describe('EDITORIAL-RESEARCH-01 governed SearchPort boundary', () => {
       expect(search).not.toHaveBeenCalled();
     },
   );
-  it('requires document-backed exact identity; missing SKU is partial, no evidence is insufficient', () => {
+  it('requires document-backed exact identity; missing category is partial, no evidence is insufficient', () => {
     const result = searchResult();
     expect(verifyEditorialSourceIdentity(identity, result)).toBe('VERIFIED');
     const partial = {
@@ -72,7 +74,7 @@ describe('EDITORIAL-RESEARCH-01 governed SearchPort boundary', () => {
       verifyEditorialSourceIdentity(identity, { title: 'Agua de rosas', uri: result.uri }),
     ).toBe('INSUFFICIENT_EVIDENCE');
   });
-  it.each(['brand', 'sku', 'productName', 'category'])(
+  it.each(['brand', 'productName', 'category'])(
     '%s mismatch rejects all claims even on an official domain',
     (field) => {
       const result = searchResult();
@@ -111,6 +113,54 @@ describe('EDITORIAL-RESEARCH-01 governed SearchPort boundary', () => {
     );
     expect(assessed.identityMatch).toBe('IDENTITY_MISMATCH');
     expect(assessed.claims).toHaveLength(0);
+  });
+  it.each([undefined, { value: 'PUBLIC-500ML', evidenceRef: 'public-sku' }])(
+    'missing or different public SKU does not block verified official claims: %j',
+    async (sku) => {
+      const expected = { ...identity, category: undefined };
+      const original = searchResult();
+      const result = {
+        ...original,
+        productEvidence: {
+          ...original.productEvidence!,
+          identity: { ...original.productEvidence!.identity, sku, category: undefined },
+          extracts: [
+            { id: 'identity', text: 'Agua de rosas · Marca A' },
+            { id: 'public-sku', text: 'PUBLIC-500ML' },
+            ...original.productEvidence!.extracts.filter((extract) => extract.id !== 'identity'),
+          ],
+        },
+      };
+      expect(verifyEditorialSourceIdentity(expected, result)).toBe('VERIFIED');
+      expect(
+        assessEditorialSearchResult(expected, result, [authority]).claims.length,
+      ).toBeGreaterThan(0);
+      const { port } = provider(result);
+      expect(
+        await researchEditorialProduct(expected, context, {
+          search: port,
+          freeOnly,
+          authorities: [authority],
+        }),
+      ).toMatchObject({ status: 'COMPLETED', evidenceStatus: 'SUPPORTED' });
+    },
+  );
+  it('missing expected attributes reject claims and conflicting attributes mismatch', () => {
+    const expected = { ...identity, knownAttributes: { presentation: '100 ml' } };
+    const result = searchResult();
+    expect(assessEditorialSearchResult(expected, result, [authority]).claims).toEqual([]);
+    expect(
+      verifyEditorialSourceIdentity(expected, {
+        ...result,
+        productEvidence: {
+          ...result.productEvidence!,
+          identity: {
+            ...result.productEvidence!.identity,
+            knownAttributes: { presentation: { value: '500 ml', evidenceRef: 'identity' } },
+          },
+        },
+      }),
+    ).toBe('IDENTITY_MISMATCH');
   });
   it('known attributes participate in verification and invalidation keys', () => {
     const expected = { ...identity, knownAttributes: { presentation: '100 ml' } };
