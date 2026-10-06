@@ -21,20 +21,92 @@ function decodeHtmlEntities(value: string): string {
     .replace(/&gt;/gi, '>');
 }
 
+function visibleHtml(html: string): string {
+  // A boundary prevents a removed element from joining a heading to unrelated copy.
+  // Also discard unclosed raw-text elements, comments and JSON-LD scripts.
+  return html
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, '<hr>')
+    .replace(/<(script|style|noscript)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, '<hr>');
+}
+
+function renderedText(html: string): string {
+  // Only HTML rendering whitespace/entities change; wording is never rewritten.
+  return decodeHtmlEntities(
+    html
+      .replace(/<\/?(?:p|div|h[1-6]|li|ul|ol|br|hr|summary)\b[^>]*>/gi, ' ')
+      .replace(/<[^>]+>/g, ''),
+  )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function documentToText(document: EditorialEvidenceDocument): string {
   if (document.contentType === 'text/plain') {
     return document.text.replace(/\s+/g, ' ').trim();
   }
 
-  return decodeHtmlEntities(
-    document.text
-      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-      .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
-      .replace(/<[^>]+>/g, ' '),
-  )
-    .replace(/\s+/g, ' ')
-    .trim();
+  return renderedText(visibleHtml(document.text));
+}
+
+const sectionFields: Readonly<Record<string, string>> = {
+  description: 'description',
+  descripcion: 'description',
+  ingredients: 'ingredients',
+  ingredientes: 'ingredients',
+  benefits: 'benefits',
+  beneficios: 'benefits',
+  usage: 'usage',
+  uso: 'usage',
+  'modo de uso': 'usage',
+  presentation: 'presentation',
+  presentacion: 'presentation',
+};
+
+function sectionField(label: string): string | undefined {
+  const key = label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/:\s*$/, '');
+  return Object.prototype.hasOwnProperty.call(sectionFields, key) ? sectionFields[key] : undefined;
+}
+
+function exactSectionClaims(
+  document: EditorialEvidenceDocument,
+): { field: string; value: string }[] {
+  const sections: { field: string; value: string }[] = [];
+  const add = (label: string, value: string) => {
+    const field = sectionField(label);
+    if (field && value.trim()) sections.push({ field, value: value.trim() });
+  };
+  if (document.contentType === 'text/plain') {
+    // Explicit label: value lines only; do not infer sections from surrounding prose.
+    for (const line of document.text.split(/\r?\n/)) {
+      const match = /^([^:]+):\s*(.+)$/.exec(line);
+      if (match) add(match[1]!, match[2]!);
+    }
+    return sections;
+  }
+  const html = visibleHtml(document.text);
+  // Deliberately bounded grammar: a heading followed immediately by one paragraph
+  // or list. Unknown headings, intervening elements and container boundaries stop it.
+  const headed =
+    /<(h[1-6]|summary)\b[^>]*>([\s\S]*?)<\/\1\s*>\s*<(p|ul|ol)\b[^>]*>([\s\S]*?)<\/\3\s*>/gi;
+  const safeContent = (value: string) =>
+    !/<\/?(?!strong\b|em\b|b\b|i\b|span\b|br\b|li\b|a\b)[a-z][^>]*>/i.test(value);
+  for (const match of html.matchAll(headed)) {
+    if (safeContent(match[2]!) && safeContent(match[4]!)) {
+      add(renderedText(match[2]!), renderedText(match[4]!));
+    }
+  }
+  // Explicit inline labels are also sections, e.g. <p>Presentación: 500 ml</p>.
+  for (const match of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p\s*>/gi)) {
+    if (!safeContent(match[1]!)) continue;
+    const labelled = /^([^:]+):\s*(.+)$/.exec(renderedText(match[1]!));
+    if (labelled) add(labelled[1]!, labelled[2]!);
+  }
+  return sections;
 }
 
 function normalizeForComparison(value: string): string {
@@ -127,13 +199,14 @@ export function extractEditorialProductEvidence(
 
   const claims: SearchProductEvidence['claims'][number][] = [];
 
-  const presentation = knownAttributes.presentation;
-
-  if (presentation) {
+  // Presentation is public copy only; identity checks still use expected.knownAttributes.
+  for (const [index, section] of exactSectionClaims(document).entries()) {
+    const id = `claim.${section.field}.${index}`;
+    extracts.push({ id, text: section.value });
     claims.push({
-      field: 'presentation',
-      value: presentation.value,
-      evidenceRefs: [presentation.evidenceRef],
+      field: section.field,
+      value: section.value,
+      evidenceRefs: [id],
     });
   }
 
