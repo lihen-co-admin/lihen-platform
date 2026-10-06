@@ -1,5 +1,8 @@
 import type { EditorialResearchSearchConfig } from './editorial-research-search.ts';
-import { parseEditorialAuthorityRegistry } from './editorial-authority-registry.ts';
+import {
+  officialDiscoveryAuthorities,
+  parseEditorialAuthorityRegistry,
+} from './editorial-authority-registry.ts';
 
 export type EditorialResearchReadinessReason =
   | 'FEATURE_DISABLED'
@@ -24,8 +27,9 @@ export function evaluateEditorialResearchReadiness(
   config: EditorialResearchSearchConfig,
 ): EditorialResearchReadiness {
   const featureEnabled = config.enabled === true;
-  const providerConfigured = Boolean(config.groqApiKey?.trim());
   const domains = (config.allowedDomains ?? []).map((domain) => domain.trim().toLowerCase());
+  const providerConfigured =
+    officialDiscoveryAuthorities(config.authorities ?? [], domains).length > 0;
   const allowlistConfigured =
     domains.length > 0 &&
     domains.every((domain) =>

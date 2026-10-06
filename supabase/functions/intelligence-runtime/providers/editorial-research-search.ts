@@ -2,7 +2,8 @@ import type { EditorialAuthorityRecord } from '../../../../packages/intelligence
 import type { SearchPort } from '../../../../packages/intelligence-core/src/provider-ports.ts';
 
 import { createEditorialEvidenceSearchPort } from './editorial-evidence-search.ts';
-import { createGroqSearchPort } from './groq-search.ts';
+import { createOfficialDomainDiscoveryPort } from './official-domain-discovery.ts';
+import { officialDiscoveryAuthorities } from './editorial-authority-registry.ts';
 
 export interface EditorialResearchSearchConfig {
   readonly enabled?: boolean;
@@ -38,18 +39,18 @@ export function createEditorialResearchRuntimeDependencies(
     return {};
   }
 
-  const apiKey = config.groqApiKey?.trim();
   const evidenceRef = config.freeOnlyEvidenceRef?.trim();
   const verifiedAt = config.freeOnlyVerifiedAt?.trim();
   const allowedDomains = normalizeDomains(config.allowedDomains);
 
-  if (!apiKey || !evidenceRef || !validTime(verifiedAt) || allowedDomains.length === 0) {
+  const authorities = officialDiscoveryAuthorities(config.authorities ?? [], allowedDomains);
+  if (!evidenceRef || !validTime(verifiedAt) || authorities.length === 0) {
     return {};
   }
 
-  const discovery = createGroqSearchPort({
-    apiKey,
-    enabled: true,
+  const discovery = createOfficialDomainDiscoveryPort({
+    authorities,
+    allowedDomains,
     fetchImpl: config.fetchImpl,
   });
 

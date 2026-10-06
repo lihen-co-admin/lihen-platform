@@ -89,7 +89,8 @@ async function request(
     LIHEN_EDITORIAL_RESEARCH_ENABLED: options.enabled ?? 'false',
     LIHEN_EDITORIAL_RESEARCH_ALLOWED_DOMAINS: 'private.example',
     LIHEN_EDITORIAL_RESEARCH_AUTHORITIES: JSON.stringify(registry),
-    LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_EVIDENCE_REF: 'secret-free-only',
+    LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_EVIDENCE_REF:
+      'architecture-reviewed:official-domain-discovery',
     LIHEN_EDITORIAL_RESEARCH_FREE_ONLY_VERIFIED_AT: '2026-09-29',
     ...options.env,
   };
@@ -152,7 +153,7 @@ async function request(
 
 describe('Editorial Research preflight HTTP runtime', () => {
   it.each([
-    ['GROQ_API_KEY', '', 'PROVIDER_NOT_CONFIGURED'],
+    ['LIHEN_EDITORIAL_RESEARCH_AUTHORITIES', '[]', 'PROVIDER_NOT_CONFIGURED'],
     ['LIHEN_EDITORIAL_RESEARCH_ALLOWED_DOMAINS', '', 'ALLOWLIST_NOT_CONFIGURED'],
     [
       'LIHEN_EDITORIAL_RESEARCH_AUTHORITIES',
@@ -202,6 +203,24 @@ describe('Editorial Research preflight HTTP runtime', () => {
     const { body } = await request({ enabled: 'true' });
     expect(body.readiness.readyForActivation).toBe(true);
     expect(body.readiness.reasons).toEqual([]);
+  });
+  it('is ready without GROQ_API_KEY and performs zero discovery I/O', async () => {
+    const { body } = await request({ enabled: 'true', env: { GROQ_API_KEY: '' } });
+    expect(body.readiness.providerConfigured).toBe(true);
+    expect(body.readiness.readyForActivation).toBe(true);
+    expect(Object.keys(body.readiness).sort()).toEqual(
+      [
+        'featureEnabled',
+        'providerConfigured',
+        'allowlistConfigured',
+        'authorityRegistryConfigured',
+        'freeOnlyConfigured',
+        'dependenciesConfigured',
+        'readyForActivation',
+        'reasons',
+      ].sort(),
+    );
+    expect(JSON.stringify(body)).not.toContain('architecture-reviewed:official-domain-discovery');
   });
   it.each(['STAFF', 'CUSTOMER', '', 'owner'])('rejects role %s', async (role) => {
     expect((await request({ role })).response.status).toBe(403);
