@@ -68,6 +68,10 @@ describe('Editorial evidence fetcher', () => {
     ).rejects.toThrow('EDITORIAL_EVIDENCE_REDIRECT_NOT_ALLOWED');
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://brand.example/product',
+      expect.objectContaining({ redirect: 'manual' }),
+    );
   });
 
   it('accepts bounded HTTPS HTML', async () => {
@@ -153,9 +157,71 @@ describe('Editorial evidence fetcher', () => {
     ).rejects.toThrow('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
   });
 
-  it('rejects empty documents', async () => {
+  it.each([1_270_996, 2 * 1024 * 1024])('accepts %i bytes with the default limit', async (size) => {
+    const text = 'x'.repeat(size);
+    const response = new Response(text, {
+      headers: { 'Content-Type': 'text/html', 'Content-Length': String(size) },
+    });
+    const arrayBuffer = vi.spyOn(response, 'arrayBuffer');
+    const result = await fetchEditorialEvidenceDocument('https://brand.example/product', {
+      fetchImpl: vi.fn().mockResolvedValue(response),
+      allowedDomains: ['brand.example'],
+    });
+
+    expect(result.text).toBe(text);
+    expect(arrayBuffer).not.toHaveBeenCalled();
+  });
+
+  it('rejects Content-Length above 2 MiB before reading the body', async () => {
+    const response = new Response('small fixture', {
+      headers: { 'Content-Type': 'text/plain', 'Content-Length': String(2 * 1024 * 1024 + 1) },
+    });
+    const getReader = vi.spyOn(response.body!, 'getReader');
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(response);
+
+    await expect(
+      fetchEditorialEvidenceDocument('https://brand.example/product', {
+        fetchImpl,
+        allowedDomains: ['brand.example'],
+      }),
+    ).rejects.toThrow('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
+
+    expect(getReader).not.toHaveBeenCalled();
+    expect(fetchImpl.mock.calls[0]![1]!.signal!.aborted).toBe(true);
+  });
+
+  it.each([undefined, '1'])(
+    'cancels an oversized stream with Content-Length %s',
+    async (declaredLength) => {
+      const cancel = vi.fn();
+      const pull = vi.fn((controller: ReadableStreamDefaultController<Uint8Array>) => {
+        controller.enqueue(new Uint8Array(256 * 1024));
+      });
+      const response = new Response(new ReadableStream({ pull, cancel }, { highWaterMark: 0 }), {
+        headers: {
+          'Content-Type': 'text/plain',
+          ...(declaredLength === undefined ? {} : { 'Content-Length': declaredLength }),
+        },
+      });
+      const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(response);
+
+      await expect(
+        fetchEditorialEvidenceDocument('https://brand.example/product', {
+          fetchImpl,
+          allowedDomains: ['brand.example'],
+        }),
+      ).rejects.toThrow('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
+
+      expect(pull).toHaveBeenCalledTimes(9);
+      expect(cancel).toHaveBeenCalledTimes(1);
+      expect(response.body!.locked).toBe(false);
+      expect(fetchImpl.mock.calls[0]![1]!.signal!.aborted).toBe(true);
+    },
+  );
+
+  it.each([null, '', '   '])('rejects empty documents (%s)', async (body) => {
     const fetchImpl = vi.fn().mockResolvedValue(
-      new Response('   ', {
+      new Response(body, {
         status: 200,
         headers: {
           'Content-Type': 'text/plain',

@@ -14,7 +14,7 @@ export interface EditorialEvidenceDocument {
 }
 
 const DEFAULT_TIMEOUT_MS = 8_000;
-const DEFAULT_MAX_BYTES = 512_000;
+const DEFAULT_MAX_BYTES = 2 * 1024 * 1024;
 
 function validatePublicHttpsUrl(raw: string): URL {
   const url = new URL(raw);
@@ -101,13 +101,38 @@ export async function fetchEditorialEvidenceDocument(
     const declaredLength = Number(response.headers.get('content-length') ?? '0');
 
     if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+      controller.abort();
       throw new Error('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
     }
 
-    const bytes = new Uint8Array(await response.arrayBuffer());
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    const reader = response.body?.getReader();
 
-    if (bytes.byteLength > maxBytes) {
-      throw new Error('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
+    if (reader) {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          totalBytes += value.byteLength;
+          if (totalBytes > maxBytes) {
+            controller.abort();
+            void reader.cancel().catch(() => undefined);
+            throw new Error('EDITORIAL_EVIDENCE_DOCUMENT_TOO_LARGE');
+          }
+          chunks.push(value);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
     }
 
     const text = new TextDecoder('utf-8', {
