@@ -8,6 +8,20 @@ const roles = new Set<BrandIntelligenceSourceRole>([
   'SECONDARY_REFERENCE',
 ]);
 
+/** Configuration only; discovery permission is not verified product authority. */
+export function officialDiscoveryAuthorities(
+  authorities: readonly EditorialAuthorityRecord[],
+  allowedDomains: readonly string[],
+): readonly EditorialAuthorityRecord[] {
+  const domains = allowedDomains.map((domain) => domain.trim().toLowerCase());
+  return parseEditorialAuthorityRegistry(JSON.stringify(authorities)).filter(
+    (authority) =>
+      (authority.role === 'OFFICIAL_BRAND' || authority.role === 'OFFICIAL_PRODUCT_COLLECTION') &&
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(authority.domain) &&
+      domains.includes(authority.domain),
+  );
+}
+
 function validTime(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0 && Number.isFinite(Date.parse(value));
 }

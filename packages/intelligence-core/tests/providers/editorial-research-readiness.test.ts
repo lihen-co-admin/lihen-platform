@@ -20,7 +20,7 @@ const valid = {
       },
     },
   ],
-  freeOnlyEvidenceRef: 'secret-free-only-evidence',
+  freeOnlyEvidenceRef: 'architecture-reviewed:official-domain-discovery',
   freeOnlyVerifiedAt: '2026-09-29',
 } satisfies EditorialResearchSearchConfig;
 
@@ -72,7 +72,7 @@ describe('Editorial Research pure readiness', () => {
   it.each([
     [{ enabled: false }, 'FEATURE_DISABLED'],
     [{ enabled: undefined }, 'FEATURE_DISABLED'],
-    [{ groqApiKey: ' ' }, 'PROVIDER_NOT_CONFIGURED'],
+    [{ authorities: [] }, 'PROVIDER_NOT_CONFIGURED'],
     [{ allowedDomains: [] }, 'ALLOWLIST_NOT_CONFIGURED'],
     [{ allowedDomains: ['https://private-brand.example'] }, 'ALLOWLIST_NOT_CONFIGURED'],
     [{ authorities: [] }, 'AUTHORITY_REGISTRY_NOT_CONFIGURED'],
@@ -105,5 +105,43 @@ describe('Editorial Research pure readiness', () => {
     ]) {
       expect(serialized).not.toContain(secret);
     }
+  });
+
+  it.each([undefined, '', ' '])('does not require GROQ_API_KEY: %s', (groqApiKey) => {
+    expect(evaluateEditorialResearchReadiness({ ...valid, groqApiKey }).readyForActivation).toBe(
+      true,
+    );
+  });
+
+  it.each(['AUTHORIZED_SUPPLIER', 'SECONDARY_REFERENCE'] as const)(
+    'keeps registry validation independent from official discovery: %s',
+    (role) => {
+      const result = evaluateEditorialResearchReadiness({
+        ...valid,
+        authorities: [{ ...valid.authorities[0], role }],
+      });
+      expect(result.authorityRegistryConfigured).toBe(true);
+      expect(result.providerConfigured).toBe(false);
+      expect(result.reasons).toEqual(['PROVIDER_NOT_CONFIGURED']);
+    },
+  );
+
+  it('accepts official collections and normalizes allowed domains', () => {
+    const result = evaluateEditorialResearchReadiness({
+      ...valid,
+      allowedDomains: [' PRIVATE-BRAND.EXAMPLE '],
+      authorities: [{ ...valid.authorities[0], role: 'OFFICIAL_PRODUCT_COLLECTION' }],
+    });
+    expect(result.readyForActivation).toBe(true);
+  });
+
+  it('keeps a matching provider gate independent from an additional unallowlisted registry entry', () => {
+    const result = evaluateEditorialResearchReadiness({
+      ...valid,
+      authorities: [...valid.authorities, { ...valid.authorities[0], domain: 'other.example' }],
+    });
+    expect(result.providerConfigured).toBe(true);
+    expect(result.authorityRegistryConfigured).toBe(false);
+    expect(result.readyForActivation).toBe(false);
   });
 });
