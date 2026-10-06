@@ -14,7 +14,11 @@ export interface GroqSearchProviderOptions {
 
 interface GroqSearchResponse {
   readonly id?: unknown;
-  readonly choices?: unknown;
+  readonly choices?: readonly {
+    readonly message?: {
+      readonly content?: unknown;
+    };
+  }[];
   readonly usage?: {
     readonly prompt_tokens?: unknown;
     readonly completion_tokens?: unknown;
@@ -28,11 +32,60 @@ function numericUsage(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
-function browserSearchStructuredResults(): readonly SearchResultItem[] {
-  // Browser Search currently provides model-generated response content, but
-  // LIHEN requires concrete structured source URLs before discovery can enter
-  // the evidence-fetch pipeline. Never promote model content into evidence.
-  return [];
+function finalMessageContent(payload: GroqSearchResponse): string {
+  const content = payload.choices?.[0]?.message?.content;
+  return typeof content === 'string' ? content : '';
+}
+
+function stripTrailingUrlPunctuation(value: string): string {
+  return value.replace(/[),.;:\]}]+$/g, '');
+}
+
+function safeHttpsUri(value: string): string | undefined {
+  try {
+    const url = new URL(stripTrailingUrlPunctuation(value));
+
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.port ||
+      !url.hostname
+    ) {
+      return undefined;
+    }
+
+    return url.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Browser Search on GPT-OSS exposes its final answer through message.content.
+ * URLs found there are discovery candidates only: they are never product
+ * evidence. The downstream editorial evidence search independently enforces
+ * the allowlist, retrieves the page server-side and extracts evidence from the
+ * retrieved document before any claim can be accepted.
+ */
+function browserSearchDiscoveryCandidates(
+  payload: GroqSearchResponse,
+): readonly SearchResultItem[] {
+  const content = finalMessageContent(payload);
+  const matches = content.match(/https:\/\/[^\s<>"']+/g) ?? [];
+  const uris = [
+    ...new Set(
+      matches
+        .map(safeHttpsUri)
+        .filter((uri): uri is string => Boolean(uri)),
+    ),
+  ];
+
+  return uris.slice(0, 8).map((uri) => ({
+    title: new URL(uri).hostname,
+    uri,
+    sourceName: 'Groq Browser Search discovery candidate',
+  }));
 }
 
 export function createGroqSearchPort(options: GroqSearchProviderOptions): SearchPort {
@@ -131,7 +184,7 @@ export function createGroqSearchPort(options: GroqSearchProviderOptions): Search
               {
                 role: 'system',
                 content:
-                  'Research the exact requested product. Use browser search only. Do not infer missing product facts. Prefer exact product and brand matches. Return web evidence only; LIHEN will independently verify identity, authority and claims.',
+                  'Research the exact requested product. Use browser search only. Do not infer missing product facts. Prefer exact product and brand matches. Return only concrete HTTPS source URLs that you actually visited, one URL per line, with no prose and no unsupported URLs. LIHEN will independently retrieve each URL and verify identity, authority and claims; your text is discovery only and is never evidence.',
               },
               {
                 role: 'user',
@@ -198,7 +251,7 @@ export function createGroqSearchPort(options: GroqSearchProviderOptions): Search
         };
       }
 
-      const results = browserSearchStructuredResults();
+      const results = browserSearchDiscoveryCandidates(payload);
 
       const inputUnits = numericUsage(payload.usage?.prompt_tokens);
       const outputUnits = numericUsage(payload.usage?.completion_tokens);
