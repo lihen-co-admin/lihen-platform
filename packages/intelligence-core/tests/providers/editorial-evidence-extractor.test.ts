@@ -36,6 +36,95 @@ function document(text: string, contentType = 'text/html') {
 }
 
 describe('Editorial evidence extractor', () => {
+  it.each(['Ingredientes activos', 'Active ingredients'])(
+    'extracts a bounded Shopify sequence under %s',
+    (label) => {
+      const { evidence } = extractEditorialProductEvidence(
+        document(`
+      <h2>Descripción</h2><div class="rte"><p>Primer párrafo.</p><p>Segundo &amp; exacto.</p></div>
+      <h2>${label}</h2><div class="rte"><p><strong>Romero</strong></p><p>Texto de romero.</p><p>Ácido hialurónico</p><p>Texto del ácido.</p><p>Extracto de cebolla</p><p>Texto de cebolla.</p></div>
+      <h2>Beneficios</h2><ul><li>Suavidad.</li><li>Frescura.</li></ul>
+      <h2>Modo de uso</h2><p>Aplicar.</p><p>Enjuagar.</p>
+      <h3>INSTRUCCIONES ADICIONALES</h3><p>No incluir.</p>
+      <p>Size: 500 ml</p><p>500 ml</p>
+    `),
+        identity,
+      );
+      expect(evidence.claims.map(({ field, value }) => ({ field, value }))).toEqual([
+        { field: 'description', value: 'Primer párrafo. Segundo & exacto.' },
+        {
+          field: 'ingredients',
+          value:
+            'Romero Texto de romero. Ácido hialurónico Texto del ácido. Extracto de cebolla Texto de cebolla.',
+        },
+        { field: 'benefits', value: 'Suavidad. Frescura.' },
+        { field: 'usage', value: 'Aplicar. Enjuagar.' },
+        { field: 'presentation', value: '500 ml' },
+      ]);
+      for (const claim of evidence.claims) {
+        expect(evidence.extracts.find(({ id }) => id === claim.evidenceRefs[0])?.text).toBe(
+          claim.value,
+        );
+      }
+    },
+  );
+
+  it.each(['Size', 'Tamaño', 'Tamano'])('accepts only explicit %s presentation labels', (label) => {
+    expect(
+      extractEditorialProductEvidence(document(`<p>${label}: 500 ml</p>`), identity).evidence
+        .claims[0]?.value,
+    ).toBe('500 ml');
+    expect(
+      extractEditorialProductEvidence(
+        document('<p>500 ml</p><p>Romero</p><p>Texto genérico.</p>'),
+        identity,
+      ).evidence.claims,
+    ).toEqual([]);
+  });
+
+  it.each([
+    '<h4>Unknown</h4>',
+    '<summary>Unknown</summary>',
+    '<hr>',
+    '</div>',
+    '<section>',
+    '<div><div>',
+    '<script>hidden</script>',
+    '<style>hidden</style>',
+    '<noscript>hidden</noscript>',
+    '<!-- comment -->',
+    '<p>Unknown: value</p>',
+    '<p><strong>Unknown</strong></p>',
+    '<p hidden>Hidden.</p>',
+    '<p><span aria-hidden="true">Hidden.</span></p>',
+  ])('stops contiguous content at boundary %s', (boundary) => {
+    const { evidence } = extractEditorialProductEvidence(
+      document(`<h2>Usage</h2><p>Exact.</p>${boundary}<p>Outside.</p>`),
+      identity,
+    );
+    expect(evidence.claims).toEqual([
+      { field: 'usage', value: 'Exact.', evidenceRefs: ['claim.usage.0'] },
+    ]);
+  });
+
+  it('does not leave a presentation wrapper or traverse nested containers', () => {
+    const { evidence } = extractEditorialProductEvidence(
+      document(
+        '<h2>Ingredients</h2><div class="rte"><p>Exact.</p></div><p>Outside.</p><h2>Benefits</h2><div><section><p>Nested.</p></section></div>',
+      ),
+      identity,
+    );
+    expect(evidence.claims.map(({ value }) => value)).toEqual(['Exact.']);
+  });
+
+  it('bounds a section to 32 contiguous blocks', () => {
+    const { evidence } = extractEditorialProductEvidence(
+      document('<h2>Usage</h2>' + '<p>Exact.</p>'.repeat(33)),
+      identity,
+    );
+    expect(evidence.claims[0]?.value).toBe(Array(32).fill('Exact.').join(' '));
+  });
+
   it('extracts all five explicit sections verbatim, with exact extract references', () => {
     const result = extractEditorialProductEvidence(
       document(`
@@ -122,15 +211,19 @@ describe('Editorial evidence extractor', () => {
     expect(result.evidence.claims).toEqual([]);
   });
 
-  it('preserves inline wording and only takes immediately associated content', () => {
+  it('preserves inline wording across immediately associated paragraphs', () => {
     const result = extractEditorialProductEvidence(
       document(
-        '<h2>Description</h2><p>Hidra<strong>tante</strong> &amp; suave.</p><p>Unrelated copy.</p>',
+        '<h2>Description</h2><p class="text">Hidra<strong>tante</strong> &amp; suave.</p><p>Second paragraph.</p>',
       ),
       identity,
     );
     expect(result.evidence.claims).toEqual([
-      { field: 'description', value: 'Hidratante & suave.', evidenceRefs: ['claim.description.0'] },
+      {
+        field: 'description',
+        value: 'Hidratante & suave. Second paragraph.',
+        evidenceRefs: ['claim.description.0'],
+      },
     ]);
   });
 
@@ -139,7 +232,7 @@ describe('Editorial evidence extractor', () => {
     const { evidence } = extractEditorialProductEvidence(
       {
         ...document(
-          '<h1>Agua de rosas</h1><p>Marca A PUBLIC-500ML</p><h2>Presentation</h2><p>500 ml</p>',
+          '<h1>Agua de rosas</h1><p>Marca A PUBLIC-500ML</p><h2>Ingredientes activos</h2><div class="rte"><p>Romero</p><p>Texto exacto.</p></div><p>Size: 500 ml</p>',
         ),
         domain: authority.domain,
       },
@@ -153,7 +246,18 @@ describe('Editorial evidence extractor', () => {
     expect(assessEditorialSearchResult(expected, result, [authority]).claims[0]?.usableInCopy).toBe(
       true,
     );
+    expect(assessEditorialSearchResult(expected, result, [authority]).identityMatch).toBe(
+      'VERIFIED',
+    );
+    expect(assessEditorialSearchResult(expected, result, [authority]).authority).toBe(
+      'OFFICIAL_BRAND',
+    );
+    expect(assessEditorialSearchResult(expected, result).authority).toBe('UNVERIFIED');
     expect(assessEditorialSearchResult(expected, result).claims).toEqual([]);
+    expect(
+      assessEditorialSearchResult({ ...expected, category: 'Missing' }, result, [authority])
+        .identityMatch,
+    ).toBe('PARTIALLY_VERIFIED');
     expect(
       assessEditorialSearchResult({ ...expected, category: 'Missing' }, result, [authority]).claims,
     ).toEqual([]);
