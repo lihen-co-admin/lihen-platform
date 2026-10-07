@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 import logo from '../assets/brand/lihen-logo-official.png';
+import { configurationReadiness } from '../domain/configuration-readiness';
 
 interface NavigationItem {
   readonly to: string;
@@ -58,6 +59,7 @@ const navigation: readonly NavigationGroup[] = [
 export function AppShell() {
   const auth = useAuth();
   const isDev = import.meta.env.DEV;
+  const configuration = configurationReadiness(import.meta.env);
 
   return (
     <div className="app-shell">
@@ -125,6 +127,8 @@ export function AppShell() {
         </header>
 
         <main className="content">
+          {configuration.source === 'memory' && <div className="info-state" role="status">SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.</div>}
+          {configuration.auth === 'disabled' && <div className="info-state" role="status">Autenticación deshabilitada · preview local.</div>}
           <Outlet />
         </main>
       </div>
