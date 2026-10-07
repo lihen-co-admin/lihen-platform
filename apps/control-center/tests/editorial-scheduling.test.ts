@@ -1,6 +1,8 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+beforeEach(() => { vi.stubEnv('DEV', true); vi.stubEnv('VITE_EDITORIAL_DEV_SYNC_ENABLED', 'true'); });
+afterEach(() => vi.unstubAllEnvs());
 import { EditorialScheduling } from '../src/components/EditorialScheduling';
 import { EditorialAgenda } from '../src/components/EditorialAgenda';
 import {

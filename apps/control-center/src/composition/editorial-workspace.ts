@@ -1,3 +1,4 @@
+import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import {
   InMemoryMarketingSocialRepository,
   ReviewPreparedPublicationHandler,
@@ -12,7 +13,7 @@ import { getBrowserSupabaseClient } from '@lihen/database';
 import { usesEditorialVideo } from './editorial-video-assets';
 
 export async function syncEditorialDraftInDev(item: EditorialItem): Promise<void> {
-  if (!import.meta.env.DEV || import.meta.env.VITE_EDITORIAL_DEV_SYNC_ENABLED !== 'true')
+  if (!editorialDevSyncEnabled(import.meta.env))
     throw new Error('Sincronización DEV deshabilitada.');
   await saveEditorialDraftToRuntime(item, getBrowserSupabaseClient(import.meta.env));
 }
@@ -401,10 +402,11 @@ export async function saveEditorialItemToRuntime(
 
 export async function saveEditorialItemInDev(
   item: EditorialItem,
-  client: EditorialRuntimeClient = getBrowserSupabaseClient(import.meta.env),
+  client?: EditorialRuntimeClient,
 ): Promise<EditorialItem> {
-  if (!import.meta.env.DEV)
-    throw new Error('La persistencia editorial solo está habilitada en DEV.');
+  if (!editorialDevSyncEnabled(import.meta.env))
+    throw new Error('Persistencia editorial bloqueada: requiere DEV y VITE_EDITORIAL_DEV_SYNC_ENABLED=true.');
+  client ??= getBrowserSupabaseClient(import.meta.env);
   await saveEditorialItemToRuntime(item, client);
   const rows = await readEditorialWorkspace(client, item.publication.id);
   const confirmed = rows.find((row) => row.publication.id === item.publication.id);
