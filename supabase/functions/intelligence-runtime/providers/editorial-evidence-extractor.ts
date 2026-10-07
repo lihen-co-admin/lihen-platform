@@ -53,6 +53,8 @@ const sectionFields: Readonly<Record<string, string>> = {
   descripcion: 'description',
   ingredients: 'ingredients',
   ingredientes: 'ingredients',
+  'ingredientes activos': 'ingredients',
+  'active ingredients': 'ingredients',
   benefits: 'benefits',
   beneficios: 'benefits',
   usage: 'usage',
@@ -60,6 +62,8 @@ const sectionFields: Readonly<Record<string, string>> = {
   'modo de uso': 'usage',
   presentation: 'presentation',
   presentacion: 'presentation',
+  size: 'presentation',
+  tamano: 'presentation',
 };
 
 function sectionField(label: string): string | undefined {
@@ -89,16 +93,37 @@ function exactSectionClaims(
     return sections;
   }
   const html = visibleHtml(document.text);
-  // Deliberately bounded grammar: a heading followed immediately by one paragraph
-  // or list. Unknown headings, intervening elements and container boundaries stop it.
-  const headed =
-    /<(h[1-6]|summary)\b[^>]*>([\s\S]*?)<\/\1\s*>\s*<(p|ul|ol)\b[^>]*>([\s\S]*?)<\/\3\s*>/gi;
+  // A bounded sibling grammar, not a recursive container walk. One optional
+  // presentation-only div may enclose the sequence; its closing tag is a boundary.
+  const headed = /<(h[1-6]|summary)\b[^>]*>([\s\S]*?)<\/\1\s*>/gi;
   const safeContent = (value: string) =>
-    !/<\/?(?!strong\b|em\b|b\b|i\b|span\b|br\b|li\b|a\b)[a-z][^>]*>/i.test(value);
+    !/<\/?(?!strong\b|em\b|b\b|i\b|span\b|br\b|li\b|a\b)[a-z][^>]*>/i.test(value) &&
+    !/\b(?:hidden|style|aria-hidden|role)\s*(?:=|(?=>))/i.test(value);
+  const presentationWrapper = /^\s*<div(?:\s+class\s*=\s*(?:"[\w -]*"|'[\w -]*'))?\s*>/i;
+  const block = /^\s*<(p|ul|ol)(?:\s+class\s*=\s*(?:"[\w -]*"|'[\w -]*'))?\s*>([\s\S]*?)<\/\1\s*>/i;
+  const boundaryLabel = (value: string) =>
+    sectionField(value) !== undefined || /^[^:]+:/.test(value);
   for (const match of html.matchAll(headed)) {
-    if (safeContent(match[2]!) && safeContent(match[4]!)) {
-      add(renderedText(match[2]!), renderedText(match[4]!));
+    if (!safeContent(match[2]!) || !sectionField(renderedText(match[2]!))) continue;
+    let tail = html.slice(match.index! + match[0].length, match.index! + match[0].length + 32768);
+    const wrapper = presentationWrapper.exec(tail);
+    if (wrapper) tail = tail.slice(wrapper[0].length);
+    const values: string[] = [];
+    for (let count = 0; count < 32; count++) {
+      const next = block.exec(tail);
+      if (!next || !safeContent(next[2]!)) break;
+      const value = renderedText(next[2]!);
+      if (!value || boundaryLabel(value)) break;
+      // A standalone bold label is a boundary, except ingredient names within
+      // the explicitly delimited active-ingredients section.
+      const activeIngredients = /^(ingredientes activos|active ingredients)$/i.test(
+        renderedText(match[2]!),
+      );
+      if (!activeIngredients && /^\s*<(strong|b)\b[^>]*>[\s\S]*?<\/\1>\s*$/i.test(next[2]!)) break;
+      values.push(value);
+      tail = tail.slice(next[0].length);
     }
+    add(renderedText(match[2]!), values.join(' '));
   }
   // Explicit inline labels are also sections, e.g. <p>Presentación: 500 ml</p>.
   for (const match of html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p\s*>/gi)) {
