@@ -1,3 +1,4 @@
+import * as providerReadiness from '../../../supabase/functions/marketing-social-runtime/provider-readiness';
 import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -228,7 +229,7 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
                 creator: tiktok.TikTokCreator | null = null,
               ) => (transport ? { ...transport, creator } : null),
             }
-          : policy,
+          : name.includes('provider-readiness') ? providerReadiness : policy,
     {
       env: { get: (name: string) => env[name] },
       serve: (fn: typeof handler) => {
@@ -831,4 +832,25 @@ describe('operational client', () => {
     ).rejects.toThrow('Transport lost');
     expect(invoke).toHaveBeenCalledTimes(1);
   });
+});
+
+describe('configuration-only provider diagnostics through real handler', () => {
+ it('returns sanitized readiness with no RPC mutation or provider fetch', async () => {
+   const r=runtime();
+   const response=await r.call('READ_PROVIDER_READINESS');
+   expect(response.status).toBe(200);
+   expect(response.body.externalPublication).toBe(false);
+   expect(response.body.data.providerCalls).toBe(0);
+   expect(response.body.data.executionAllowed).toBe(false);
+   expect(JSON.stringify(response.body)).not.toContain('fake');
+   expect(r.rpc).not.toHaveBeenCalled();
+   expect(r.fetchMock).not.toHaveBeenCalled();
+ });
+ it('denies unauthenticated and non-admin diagnostic requests', async () => {
+   const r=runtime();
+   expect((await r.call('READ_PROVIDER_READINESS',{},false)).status).toBe(401);
+   r.setRole('STAFF');
+   expect((await r.call('READ_PROVIDER_READINESS')).status).toBe(403);
+   expect(r.fetchMock).not.toHaveBeenCalled();
+ });
 });

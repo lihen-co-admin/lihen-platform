@@ -1,3 +1,5 @@
+import { ControlCenterReadiness } from '../components/ControlCenterReadiness';
+import { useAuth } from '../auth/auth-context';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { AdminPageHero } from '../components/AdminPageHero';
 import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
@@ -50,6 +52,7 @@ function makeOperationKey(operationCode: string): string {
 }
 
 export function OperationsPage() {
+  const auth = useAuth();
   const [checks, setChecks] = useState<readonly OperationalIntegrityCheck[]>([]);
   const [audit, setAudit] = useState<readonly OperationalAuditRow[]>([]);
   const [catalog, setCatalog] = useState<readonly ControlCenterOperationCatalogEntry[]>([]);
@@ -306,6 +309,7 @@ export function OperationsPage() {
 
   return (
     <section className="stack operation-console">
+      <ControlCenterReadiness env={import.meta.env} authorized={auth.authorized} role={auth.profile?.roleCode} integrity={checks} />
       <AdminPageHero
         eyebrow="CONTROL Y GOBERNANZA"
         title="Integridad y auditoría"

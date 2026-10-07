@@ -7,6 +7,7 @@
     "node": ">=24 <27"
   },
   "scripts": {
+    "control-center:preflight": "node tooling/control-center-preflight.mjs",
     "dev": "pnpm --filter @lihen/control-center dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",

@@ -25,7 +25,7 @@ export function AssistantPage() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!prompt.trim() || !productId.trim()) return;
+    if (uiState === 'RUNNING' || !prompt.trim() || !productId.trim()) return;
 
     setUiState('RUNNING');
     setContextSource(null);
@@ -115,7 +115,7 @@ export function AssistantPage() {
               <strong>¿Qué producto necesitas revisar?</strong>
               <p>
                 DEV resolverá primero el Product Master y sus permisos. El modelo
-                permanece desacoplado y todavía no está configurado.
+                se consulta mediante el runtime; su disponibilidad se informa con la respuesta real.
               </p>
             </>
           ) : null}
@@ -148,7 +148,7 @@ export function AssistantPage() {
 
           {uiState === 'PROVIDER_NOT_CONFIGURED' ? (
             <>
-              <strong>Contexto listo · runtime de modelo pendiente</strong>
+              <strong>El runtime informa: proveedor no configurado</strong>
               <p>
                 {contextSource
                   ? `Contexto resuelto desde ${contextSource}.`
@@ -173,11 +173,13 @@ export function AssistantPage() {
           ) : null}
         </div>
 
+        <p role="status">Estado de la consulta: {uiState} ? Sin autoridad de escritura</p>
         <form className="toolbar" onSubmit={submit}>
           <label style={{ flex: 0.55 }}>
             <span className="sr-only">ID del producto</span>
             <input
               type="text"
+              disabled={uiState === 'RUNNING'}
               value={productId}
               onChange={(event) => {
                 setProductId(event.target.value);
@@ -191,6 +193,7 @@ export function AssistantPage() {
             <span className="sr-only">Mensaje para LIHEN Assistant</span>
             <input
               type="text"
+              disabled={uiState === 'RUNNING'}
               value={prompt}
               onChange={(event) => {
                 setPrompt(event.target.value);

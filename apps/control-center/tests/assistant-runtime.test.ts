@@ -201,3 +201,12 @@ describe('Control Center Assistant runtime adapter', () => {
     );
   });
 });
+
+describe('Assistant runtime response truth', () => {
+ it.each(['SUCCESS','PROVIDER_NOT_CONFIGURED','PROVIDER_FAILED','PERMISSION_DENIED','DEPENDENCY_FAILED'] as const)('preserves %s without provider calls', async (status) => {
+   const assistant = {status, messages: ['runtime diagnostic'], recommendations: [], ...(status === 'SUCCESS' ? {answer:'Respuesta'} : {})};
+   const {client, invoke} = fakeClient({data:{runtime:'LIHEN_INTELLIGENCE',action:'ASSISTANT',roleCode:'ADMIN',assistant},error:null});
+   expect(await createAssistantRuntimeInvoker(client).invokeProductTurn({productId:'product-1',prompt:'Consulta'})).toEqual(assistant);
+   expect(invoke).toHaveBeenCalledTimes(1);
+ });
+});

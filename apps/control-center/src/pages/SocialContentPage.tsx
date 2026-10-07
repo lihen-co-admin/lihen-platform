@@ -1,3 +1,5 @@
+import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
+import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
@@ -43,7 +45,7 @@ export function SocialContentPage() {
   const auth = useAuth();
   const cacheKey = `lihen:editorial:v1:${auth.user?.id ?? 'local'}`;
   const canOperate =
-    import.meta.env.DEV &&
+    editorialDevSyncEnabled(import.meta.env) &&
     auth.enabled &&
     auth.authorized &&
     allowedOperatorRoles.includes(auth.profile?.roleCode ?? '') &&
@@ -145,6 +147,7 @@ export function SocialContentPage() {
   }, [cacheKey, refresh]);
 
   async function perform(action: () => Promise<void>) {
+    if (!canOperate || busy) { setError('Persistencia editorial bloqueada o acción en curso.'); return; }
     setBusy(true);
     setError('');
     setNotice('');
@@ -232,10 +235,12 @@ export function SocialContentPage() {
 
   return (
     <div className="stack editorial-workspace">
+      <SocialProviderReadiness allowed={Boolean(import.meta.env.DEV && auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? ''))} />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO | Beauty Care • Style</p>
           <h1>Contenido y calendario</h1>
+          <p role="status">Persistencia: {editorialDevSyncEnabled(import.meta.env) ? 'Supabase DEV · lectura durable después de guardar' : 'BLOQUEADA · VITE_EDITORIAL_DEV_SYNC_ENABLED deshabilitado'}</p>
           <p>Organiza tus ideas, prepara cada canal y decide qué sigue.</p>
         </div>
         <div className="toolbar">

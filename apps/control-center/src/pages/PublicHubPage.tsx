@@ -127,6 +127,7 @@ export function PublicHubPage() {
 
   async function load() {
     if (!publicHubComposition.enabled) return;
+    setError(null);
     try {
       const [hubBlocks, productList] = await Promise.all([
         publicHubComposition.getBlocks.execute(),
@@ -135,7 +136,7 @@ export function PublicHubPage() {
       setBlocks(hubBlocks);
       setProducts(productList.filter((product) => product.status === 'ACTIVE'));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No fue posible cargar el Hub.');
+      setError('Error de lectura: ' + (cause instanceof Error ? cause.message : 'No fue posible cargar el Hub.'));
     }
   }
 
@@ -160,7 +161,7 @@ export function PublicHubPage() {
       resetEditor();
       await load();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No fue posible guardar.');
+      setError('Error de escritura: ' + (cause instanceof Error ? cause.message : 'No fue posible guardar.'));
     } finally {
       setBusy(false);
     }
@@ -175,7 +176,7 @@ export function PublicHubPage() {
       setNotice(`Estado actualizado a ${statusLabels[status].toLocaleLowerCase('es')}.`);
       await load();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No fue posible actualizar.');
+      setError('Error de escritura: ' + (cause instanceof Error ? cause.message : 'No fue posible actualizar.'));
     } finally {
       setBusy(false);
     }
@@ -194,7 +195,7 @@ export function PublicHubPage() {
       setNotice('Orden actualizado.');
       await load();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No fue posible ordenar.');
+      setError('Error de escritura: ' + (cause instanceof Error ? cause.message : 'No fue posible ordenar.'));
     } finally {
       setBusy(false);
     }
@@ -245,7 +246,7 @@ export function PublicHubPage() {
       <IntelligencePanel insights={hubInsights} description="Resume readiness editorial, programación y lifecycle sin publicar ni modificar bloques automáticamente." />
 
 
-      {error ? <div className="error-state" role="alert">{error}</div> : null}
+      {error ? <div className="error-state" role="alert">{error}<button disabled={busy} onClick={() => void load()}>Reintentar lectura</button></div> : null}
       {notice ? <div className="success-state" role="status">{notice}</div> : null}
 
       <div className="hub-admin-grid">

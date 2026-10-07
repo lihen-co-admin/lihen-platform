@@ -1,6 +1,8 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { CapabilityModeNotice } from './CapabilityModeNotice';
 import { useAuth } from '../auth/auth-context';
 import logo from '../assets/brand/lihen-logo-official.png';
+import { configurationReadiness } from '../domain/configuration-readiness';
 
 interface NavigationItem {
   readonly to: string;
@@ -32,6 +34,7 @@ const navigation: readonly NavigationGroup[] = [
       { to: '/suppliers', label: 'Proveedores', icon: '♢' },
       { to: '/purchases', label: 'Compras', icon: '↓' },
       { to: '/orders', label: 'Pedidos', icon: '◎' },
+      { to: '/customers/benefits', label: 'Clientes / Bonos', icon: '%' },
       { to: '/sales', label: 'Ventas / POS', icon: '◈' },
     ],
   },
@@ -56,8 +59,10 @@ const navigation: readonly NavigationGroup[] = [
 ];
 
 export function AppShell() {
+  const location = useLocation();
   const auth = useAuth();
   const isDev = import.meta.env.DEV;
+  const configuration = configurationReadiness(import.meta.env);
 
   return (
     <div className="app-shell">
@@ -125,6 +130,9 @@ export function AppShell() {
         </header>
 
         <main className="content">
+          {configuration.source === 'memory' && <div className="info-state" role="status">SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.</div>}
+          {configuration.auth === 'disabled' && <div className="info-state" role="status">Autenticación deshabilitada · preview local.</div>}
+          <CapabilityModeNotice pathname={location.pathname} env={import.meta.env} />
           <Outlet />
         </main>
       </div>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { FinancialAccount } from '@lihen/finance';
 import { isOrderEligibleForSale, type Order } from '@lihen/orders';
@@ -328,6 +329,7 @@ export function SalesPage() {
 
 
       <div className="card stack">
+      <Link to="/customers/benefits">Clientes / Bonos ? gestión controlada</Link>
         <div>
           <span className="eyebrow">INTEGRIDAD READ-ONLY</span>
           <h2>Order → Sale → Inventory → Finance</h2>
