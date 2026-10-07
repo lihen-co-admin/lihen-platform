@@ -1,3 +1,4 @@
+import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
 import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -234,6 +235,7 @@ export function SocialContentPage() {
 
   return (
     <div className="stack editorial-workspace">
+      <SocialProviderReadiness allowed={Boolean(import.meta.env.DEV && auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? ''))} />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO | Beauty Care • Style</p>

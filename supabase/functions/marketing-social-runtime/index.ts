@@ -1,3 +1,4 @@
+import { readSocialProviderReadiness } from './provider-readiness.ts';
 import { createClient } from 'supabase';
 import {
   tikTokConfig,
@@ -22,6 +23,7 @@ const corsHeaders = {
 };
 
 type Action =
+  | 'READ_PROVIDER_READINESS'
   | 'READ_TIKTOK_CREATOR_INFO'
   | 'ASSESS_PUBLICATION_OPERATION'
   | 'READ_EDITORIAL_WORKSPACE'
@@ -424,6 +426,10 @@ Deno.serve(async (req: Request) => {
     const body = (await req.json()) as RuntimeRequest;
     const action = body.action;
     const payload = body.payload;
+
+    if (action === 'READ_PROVIDER_READINESS') {
+      return json({ data: readSocialProviderReadiness((name) => Deno.env.get(name)), externalPublication: false });
+    }
 
     if (!action || !payload || typeof payload !== 'object') {
       return json({ error: 'LIHEN_MARKETING_SOCIAL_REQUEST_INVALID' }, 400);
