@@ -33,6 +33,7 @@ const navigation: readonly NavigationGroup[] = [
       { to: '/suppliers', label: 'Proveedores', icon: '♢' },
       { to: '/purchases', label: 'Compras', icon: '↓' },
       { to: '/orders', label: 'Pedidos', icon: '◎' },
+      { to: '/customers/benefits', label: 'Clientes / Bonos', icon: '%' },
       { to: '/sales', label: 'Ventas / POS', icon: '◈' },
     ],
   },

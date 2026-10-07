@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { Customer } from '@lihen/customer';
 import { isOrderEligibleForSale, orderChannels, type Order, type OrderChannel } from '@lihen/orders';
@@ -320,6 +321,7 @@ export function OrdersPage() {
       {ordersComposition.canWrite ? (
         <form className="card stack admin-form-card" onSubmit={submit}>
           <div className="card-heading">
+      <Link to="/customers/benefits">Clientes / Bonos ? gesti?n controlada</Link>
             <div>
               <span className="card-label">Nueva operación</span>
               <h2>Nuevo pedido en borrador</h2>
