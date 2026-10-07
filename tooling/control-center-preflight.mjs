@@ -1,3 +1,4 @@
+import { URL } from 'node:url';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { configurationReadiness } from '../apps/control-center/src/domain/configuration-readiness.ts';
