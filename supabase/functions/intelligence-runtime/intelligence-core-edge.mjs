@@ -482,18 +482,13 @@ function editorialIdentityKey(identity) {
   ]);
 }
 function buildEditorialSearchQuery(identity) {
-  if (![
-    identity.productId,
-    identity.productName,
-    identity.sku,
-    identity.brandId,
-    identity.brand
-  ].every((value) => value?.trim()))
+  if (![identity.productId, identity.productName, identity.brandId, identity.brand].every(
+    (value) => value?.trim()
+  ))
     return null;
   return [
     identity.productName,
     identity.brand,
-    identity.sku,
     ...identity.category ? [identity.category] : [],
     ...Object.entries(identity.knownAttributes ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}: ${value}`)
   ].map((value) => JSON.stringify(value)).join(" ");
@@ -506,7 +501,6 @@ function verifyEditorialSourceIdentity(expected, result) {
   const checks = [
     [expected.productName, data.identity.productName],
     [expected.brand, data.identity.brand],
-    [expected.sku, data.identity.sku],
     ...expected.category ? [[expected.category, data.identity.category]] : [],
     ...Object.entries(expected.knownAttributes ?? {}).map(
       ([key, value]) => [
