@@ -26,3 +26,9 @@ describe('AssistantPage provider states', () => {
     expect(page).toContain('Contexto resuelto desde');
   });
 });
+
+it('does not assume a provider is missing before the runtime responds', () => {
+ expect(page).not.toContain('todav?a no est? configurado');
+ expect(page).toContain('Estado de la consulta: {uiState}');
+ expect(page).toContain('El runtime informa: proveedor no configurado');
+});
