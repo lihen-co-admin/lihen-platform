@@ -1,11 +1,10 @@
 import { useState } from 'react';
+import { ConversationPreparation } from '../components/ConversationPreparation';
 import { Link } from 'react-router-dom';
 import {
   buildConversationSummaryReadModel,
   type Conversation,
   type ConversationMessage,
-  type SuggestedReply,
-  type ConversationFollowUp,
 } from '@lihen/conversation';
 import { type Customer } from '@lihen/customer';
 import { readConversations } from '../composition/conversations';
@@ -20,9 +19,6 @@ export function ConversationsPage() {
   const [messages, setMessages] = useState<readonly ConversationMessage[]>([]);
   const [customers, setCustomers] = useState<readonly Customer[]>([]);
   const [selected, setSelected] = useState('');
-  const [reply, setReply] = useState<SuggestedReply | null>(null);
-  const [followUp, setFollowUp] = useState<ConversationFollowUp | null>(null);
-  const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -98,9 +94,6 @@ export function ConversationsPage() {
             key={item.id}
             onClick={() => {
               setSelected(item.id);
-              setReply(null);
-              setFollowUp(null);
-              setBody('');
             }}
           >
             <strong>
@@ -157,74 +150,7 @@ export function ConversationsPage() {
             ))}
         </section>
       )}
-      <section className="card stack">
-        <h2>Preparar respuesta para revisión humana</h2>
-        <p>
-          {current
-            ? 'Preparación vinculada a la conversación seleccionada.'
-            : 'Mesa de preparación sin conversación seleccionada.'}{' '}
-          Solo en esta sesión: las respuestas sugeridas y los seguimientos aún no tienen persistencia
-          durable. Al salir se pierde esta preparación.
-        </p>
-        <label>
-          Respuesta sugerida
-          <textarea
-            rows={5}
-            value={body}
-            onChange={(event) => {
-              setBody(event.target.value);
-              setReply(null);
-            }}
-            placeholder="Escribe una respuesta para revisión; no se enviará."
-          />
-        </label>
-        <div className="toolbar">
-          <button
-            disabled={!body.trim()}
-            onClick={() =>
-              setReply({
-                conversationId: current?.id ?? 'local-preparation',
-                body: body.trim(),
-                status: 'READY_FOR_REVIEW',
-                generatedAt: new Date(),
-              })
-            }
-          >
-            Preparar revisión
-          </button>
-          {reply?.status === 'READY_FOR_REVIEW' && (
-            <button onClick={() => setReply({ ...reply, status: 'APPROVED' })}>
-              Marcar revisada en esta sesión
-            </button>
-          )}
-        </div>
-        {reply && <p role="status">{reply.status} · Sin enviar · Sin persistencia durable</p>}
-        {current && (
-          <>
-            <button
-              onClick={() =>
-                setFollowUp({
-                  conversationId: current.id,
-                  reason: 'Revisar la respuesta y el contexto del cliente',
-                  dueAt: null,
-                  status: 'OPEN',
-                })
-              }
-            >
-              Preparar seguimiento de esta conversación
-            </button>
-            {followUp && (
-              <p>
-                {followUp.reason} · {followUp.status} · Solo en esta sesión{' '}
-                <button onClick={() => setFollowUp({ ...followUp, status: 'DONE' })}>
-                  Marcar realizado
-                </button>
-              </p>
-            )}
-          </>
-        )}
-        <button disabled>Enviar WhatsApp · bloqueado</button>
-      </section>
+      {current ? <ConversationPreparation key={current.id} conversationId={current.id} allowed={auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '')} /> : <p>Selecciona una conversaci?n durable para preparar respuestas y seguimientos. Sin enviar.</p>}
     </div>
   );
 }
