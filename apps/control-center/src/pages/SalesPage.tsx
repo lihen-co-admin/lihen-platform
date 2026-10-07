@@ -329,7 +329,7 @@ export function SalesPage() {
 
 
       <div className="card stack">
-      <Link to="/customers/benefits">Clientes / Bonos ? gesti?n controlada</Link>
+      <Link to="/customers/benefits">Clientes / Bonos ? gestión controlada</Link>
         <div>
           <span className="eyebrow">INTEGRIDAD READ-ONLY</span>
           <h2>Order → Sale → Inventory → Finance</h2>

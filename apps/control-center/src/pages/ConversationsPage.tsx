@@ -150,7 +150,7 @@ export function ConversationsPage() {
             ))}
         </section>
       )}
-      {current ? <ConversationPreparation key={current.id} conversationId={current.id} allowed={auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '')} /> : <p>Selecciona una conversaci?n durable para preparar respuestas y seguimientos. Sin enviar.</p>}
+      {current ? <ConversationPreparation key={current.id} conversationId={current.id} allowed={auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '')} /> : <p>Selecciona una conversación durable para preparar respuestas y seguimientos. Sin enviar.</p>}
     </div>
   );
 }

@@ -321,7 +321,7 @@ export function OrdersPage() {
       {ordersComposition.canWrite ? (
         <form className="card stack admin-form-card" onSubmit={submit}>
           <div className="card-heading">
-      <Link to="/customers/benefits">Clientes / Bonos ? gesti?n controlada</Link>
+      <Link to="/customers/benefits">Clientes / Bonos ? gestión controlada</Link>
             <div>
               <span className="card-label">Nueva operación</span>
               <h2>Nuevo pedido en borrador</h2>
