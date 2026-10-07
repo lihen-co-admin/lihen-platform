@@ -29,13 +29,15 @@ export function ConversationPreparation({ conversationId, allowed }: { conversat
   async function saveDraft(status: ReplyDraft['status']) {
     const previous = draft?.id ?? null;
     const id = operationId(['draft', conversationId, previous, body, status]);
-    setDraft(await conversationPreparationRepository().saveDraft(id, conversationId, previous, body, status));
+    const saved = await conversationPreparationRepository().saveDraft(id, conversationId, previous, body, status);
+    setDraft(saved); setBody(saved.body);
   }
   async function saveFollowUp(status: FollowUp['status']) {
     const previous = followUp?.id ?? null;
     const date = dueAt ? new Date(dueAt).toISOString() : followUp?.due_at ?? null;
     const id = operationId(['followUp', conversationId, previous, reason, date, status]);
-    setFollowUp(await conversationPreparationRepository().saveFollowUp(id, conversationId, previous, reason, date, status));
+    const saved = await conversationPreparationRepository().saveFollowUp(id, conversationId, previous, reason, date, status);
+    setFollowUp(saved); setReason(saved.reason);
   }
   return <section className="card stack"><h2>Preparación durable · Sin enviar</h2>
     <p>WHATSAPP_SENDING_ENABLED=false. Aprobar guarda una revisión; no crea intentos ni envía mensajes. Requiere la migración de preparación instalada.</p>

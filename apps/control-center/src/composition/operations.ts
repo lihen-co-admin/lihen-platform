@@ -63,15 +63,14 @@ export type {
 
 export function createOperationsComposition(env: Record<string, unknown> = import.meta.env) {
   const parsed = parseBrowserEnv(env);
-  if (parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') {
-    throw new Error('Operational observability requires Supabase DEV.');
-  }
-
-  const client = getBrowserSupabaseClient(env);
+  const client = () => {
+    if (parsed.VITE_PRODUCT_READ_SOURCE !== 'supabase') throw new Error('Operational observability requires Supabase DEV.');
+    return getBrowserSupabaseClient(env);
+  };
 
   return {
     async getDashboard(): Promise<OperationalDashboardSummary> {
-      const { data, error } = await client
+      const { data, error } = await client()
         .from('operational_dashboard_summary')
         .select('*')
         .single();
@@ -96,7 +95,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getIntegrityChecks(): Promise<readonly OperationalIntegrityCheck[]> {
-      const { data, error } = await client
+      const { data, error } = await client()
         .from('operational_integrity_checks')
         .select('check_code,issue_count,status')
         .order('check_code');
@@ -109,7 +108,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getAudit(limit = 50): Promise<readonly OperationalAuditRow[]> {
-      const { data, error } = await client
+      const { data, error } = await client()
         .from('operational_audit_log')
         .select('id,module,operation_type,operation_key,actor_id,entity_type,entity_id,occurred_at')
         .order('occurred_at', { ascending: false })
@@ -128,7 +127,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterOperationCatalog(): Promise<readonly ControlCenterOperationCatalogEntry[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_catalog_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_catalog_controlled');
       if (error) throw new Error(`No fue posible leer el catálogo operacional: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -147,7 +146,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterOperationContracts(): Promise<readonly ControlCenterOperationContract[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_contracts_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_contracts_controlled');
       if (error) throw new Error(`No fue posible leer los contratos operacionales: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -175,7 +174,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       operationCode: string,
       requestPayload: Record<string, unknown>,
     ): Promise<ControlCenterOperationPayloadValidation> {
-      const { data, error } = await client.rpc('validate_control_center_operation_payload_controlled', {
+      const { data, error } = await client().rpc('validate_control_center_operation_payload_controlled', {
         p_operation_code: operationCode,
         p_request_payload: requestPayload,
       });
@@ -199,7 +198,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterExecutionReadiness(): Promise<readonly ControlCenterOperationExecutionReadiness[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_execution_readiness_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_execution_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el guard de ejecución: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -218,7 +217,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase64PreExecutionReadiness(): Promise<Phase64PreExecutionReadiness> {
-      const { data, error } = await client.rpc('get_phase6_4_pre_execution_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase6_4_pre_execution_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el gate 6.4: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 6.4 no devolvió resultado.');
@@ -237,7 +236,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
 
 
     async getControlCenterDispatchContracts(): Promise<readonly ControlCenterOperationDispatchContract[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_dispatch_contracts_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_dispatch_contracts_controlled');
       if (error) throw new Error(`No fue posible leer los contratos de dispatch: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -263,7 +262,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase66ControlPlaneClosureReadiness(): Promise<Phase66ControlPlaneClosureReadiness> {
-      const { data, error } = await client.rpc('get_phase6_6_control_plane_closure_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase6_6_control_plane_closure_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el cierre 6.6: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 6.6 no devolvió resultado.');
@@ -281,7 +280,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase7ControlledExecutionEntryReadiness(): Promise<Phase7ControlledExecutionEntryReadiness> {
-      const { data, error } = await client.rpc('get_phase7_controlled_execution_entry_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase7_controlled_execution_entry_readiness_controlled');
       if (error) throw new Error(`No fue posible leer la entrada FASE 7: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('La entrada FASE 7 no devolvió resultado.');
@@ -297,7 +296,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterCanarySimulation(): Promise<readonly ControlCenterOperationCanarySimulation[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_canary_simulation_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_canary_simulation_controlled');
       if (error) throw new Error(`No fue posible leer la simulación canary: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -320,7 +319,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
 
 
     async getControlCenterCanaryExecutionGuard(): Promise<readonly ControlCenterOperationCanaryExecutionGuard[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_canary_execution_guard_controlled');
+      const { data, error } = await client().rpc('get_control_center_operation_canary_execution_guard_controlled');
       if (error) throw new Error(`No fue posible leer el guard canary: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -343,7 +342,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase75CanaryControlPlaneClosureReadiness(): Promise<Phase75CanaryControlPlaneClosureReadiness> {
-      const { data, error } = await client.rpc('get_phase7_5_canary_control_plane_closure_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase7_5_canary_control_plane_closure_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el cierre 7.5: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 7.5 no devolvió resultado.');
@@ -360,7 +359,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase8ControlledReleaseEntryReadiness(): Promise<Phase8ControlledReleaseEntryReadiness> {
-      const { data, error } = await client.rpc('get_phase8_controlled_release_entry_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase8_controlled_release_entry_readiness_controlled');
       if (error) throw new Error(`No fue posible leer la entrada FASE 8: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('La entrada FASE 8 no devolvió resultado.');
@@ -373,7 +372,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getControlCenterReleaseAuthorizationGuard(): Promise<readonly ControlCenterOperationReleaseAuthorizationGuard[]> {
-      const { data, error } = await client.rpc('get_cc_release_auth_guard_controlled');
+      const { data, error } = await client().rpc('get_cc_release_auth_guard_controlled');
       if (error) throw new Error(`No fue posible leer el guard de autorización: ${error.message}`);
       return (Array.isArray(data) ? data : []).map((raw) => {
         const row = rowObject(raw);
@@ -397,7 +396,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase84ReleaseControlPlaneClosureReadiness(): Promise<Phase84ReleaseControlPlaneClosureReadiness> {
-      const { data, error } = await client.rpc('get_phase8_4_release_control_plane_closure_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase8_4_release_control_plane_closure_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el cierre 8.4: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 8.4 no devolvió resultado.');
@@ -417,7 +416,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       operationCode: string,
       requestReason: string,
     ): Promise<ControlCenterOperationReleaseRequest> {
-      const { data, error } = await client.rpc('request_control_center_canary_release_controlled', {
+      const { data, error } = await client().rpc('request_control_center_canary_release_controlled', {
         p_operation_code: operationCode,
         p_request_reason: requestReason,
       });
@@ -437,7 +436,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       releaseRequestId: string,
       decision: 'APPROVED' | 'REJECTED',
     ): Promise<ControlCenterOperationReleaseDecision> {
-      const { data, error } = await client.rpc('decide_control_center_canary_release_controlled', {
+      const { data, error } = await client().rpc('decide_control_center_canary_release_controlled', {
         p_release_request_id: releaseRequestId,
         p_decision: decision,
       });
@@ -456,7 +455,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
 
 
     async getGovernanceAuditTimeline(limit = 50): Promise<readonly ControlCenterGovernanceAuditEvent[]> {
-      const { data, error } = await client.rpc('get_control_center_governance_audit_timeline_controlled', {
+      const { data, error } = await client().rpc('get_control_center_governance_audit_timeline_controlled', {
         p_limit: limit,
         p_offset: 0,
         p_event_source: null,
@@ -480,7 +479,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
     },
 
     async getPhase87ReleaseGovernanceHardeningClosureReadiness(): Promise<Phase87ReleaseGovernanceHardeningClosureReadiness> {
-      const { data, error } = await client.rpc('get_phase87_release_readiness_controlled');
+      const { data, error } = await client().rpc('get_phase87_release_readiness_controlled');
       if (error) throw new Error(`No fue posible leer el cierre 8.7: ${error.message}`);
       const row = firstRpcRow(data);
       if (!row) throw new Error('El gate 8.7 no devolvió resultado.');
@@ -506,7 +505,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       operationCode: string,
       requestPayload: Record<string, unknown>,
     ): Promise<ControlCenterOperationPreview> {
-      const { data, error } = await client.rpc('prepare_control_center_operation_controlled', {
+      const { data, error } = await client().rpc('prepare_control_center_operation_controlled', {
         p_operation_key: operationKey,
         p_operation_code: operationCode,
         p_request_payload: requestPayload,
@@ -534,7 +533,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       intentId: string,
       confirmationToken: string,
     ): Promise<ControlCenterOperationConfirmation> {
-      const { data, error } = await client.rpc('confirm_control_center_operation_controlled', {
+      const { data, error } = await client().rpc('confirm_control_center_operation_controlled', {
         p_intent_id: intentId,
         p_confirmation_token: confirmationToken,
       });
@@ -556,7 +555,7 @@ export function createOperationsComposition(env: Record<string, unknown> = impor
       offset = 0,
       domainCode: string | null = null,
     ): Promise<readonly ControlCenterOperationTimelineRow[]> {
-      const { data, error } = await client.rpc('get_control_center_operation_audit_timeline_controlled', {
+      const { data, error } = await client().rpc('get_control_center_operation_audit_timeline_controlled', {
         p_limit: limit,
         p_offset: offset,
         p_domain_code: domainCode,

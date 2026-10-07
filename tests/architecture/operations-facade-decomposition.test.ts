@@ -70,6 +70,7 @@ describe('WAVE 3 / GAP-009 Operations Facade decomposition', () => {
     expect(facade).toContain(
       "import { getBrowserSupabaseClient, parseBrowserEnv } from '@lihen/database';",
     );
-    expect(facade).toContain('const client = getBrowserSupabaseClient(env);');
+    expect(facade).toContain('return getBrowserSupabaseClient(env);');
+    expect(facade).toContain('const client = () => {');
   });
 });
