@@ -21,7 +21,6 @@ import {
   customerBenefitImageFileName,
   customerBenefitWhatsAppUrl,
   type CustomerBenefitCreativeInput,
-  type CustomerBenefitCreativeTheme,
 } from '../domain/customer-benefit-creative';
 
 

@@ -1,351 +1,567 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import {
+  readFileSync,
+} from 'node:fs';
 
-const root = process.cwd();
+import {
+  join,
+} from 'node:path';
 
-const page = readFileSync(
-  join(root, 'apps/control-center/src/pages/CustomerBenefitsPage.tsx'),
-  'utf8',
-);
-
-const creative = readFileSync(
-  join(root, 'apps/control-center/src/components/CustomerBenefitCreative.tsx'),
-  'utf8',
-);
-
-const domain = readFileSync(
-  join(root, 'apps/control-center/src/domain/customer-benefit-creative.ts'),
-  'utf8',
-);
-
-describe('Customer Benefits creative experience architecture', () => {
-  it('keeps lifecycle and Creative separated', () => {
-    expect(page).toContain('CustomerBenefitCreative');
-    expect(creative).not.toMatch(/\.rpc\s*\(/);
-    expect(creative).not.toContain('benefitActions');
-    expect(domain).not.toMatch(/\.rpc\s*\(/);
-  });
-
-  it('uses browser-local PNG generation and file sharing', () => {
-    expect(creative).toMatch(/canvas\s*\.\s*toBlob\s*\(/);
-    expect(creative).toMatch(/new\s+File\s*\(\s*\[blob\]/);
-    expect(creative).toMatch(/navigator\s*\.\s*canShare/);
-    expect(creative).toMatch(/navigator\s*\.\s*share/);
-    expect(creative).toContain('downloadBlob');
-  });
-
-  it('keeps WhatsApp text-only and manual', () => {
-    expect(creative).toContain('customerBenefitWhatsAppUrl');
-    expect(creative).toMatch(/window\s*\.\s*open\s*\(/);
-    expect(creative).not.toContain('conversation-whatsapp-runtime');
-    expect(creative).not.toContain('WHATSAPP_SENDING_ENABLED');
-    expect(creative).not.toMatch(/\bfetch\s*\(/);
-    expect(domain).toContain('https://wa.me/');
-  });
-
-  it('supports clipboard copy without automatic sending', () => {
-    expect(creative).toMatch(
-      /navigator\s*\.\s*clipboard\s*\.\s*writeText\s*\(/,
-    );
-    expect(creative).toContain('Copiar mensaje');
-    expect(creative).toContain('Abrir WhatsApp');
-  });
-
-  it('prevents the historic number/percent overlap contract', () => {
-
-    expect(creative).toMatch(
-      /context\s*\.\s*fillText\s*\(\s*model\s*\.\s*discountLabel/,
-    );
-
-    expect(domain).toMatch(
-      /`\$\{benefit\.discount_percent\}%`/,
-    );
-  });
-
-  it('scrolls and focuses benefit detail after Ver bono', () => {
-    expect(page).toMatch(
-      /detailRef\s*\.\s*current\?\.\s*scrollIntoView\s*\(/,
-    );
-    expect(page).toContain("behavior: 'smooth'");
-    expect(page).toMatch(
-      /detailRef\s*\.\s*current\?\.\s*focus\s*\(/,
-    );
-    expect(page).toContain('Ver bono');
-  });
-
-  it('does not expose technical IDs in the visual card component', () => {
-    expect(creative).not.toContain('customer_id');
-    expect(creative).not.toContain('source_sale_id');
-    expect(creative).not.toContain('source_order_id');
-    expect(creative).not.toContain('redeemed_sale_id');
-    expect(creative).not.toContain('redeemed_order_id');
-  });
-
-  it('retains the official LIHEN logo asset', () => {
-    expect(creative).toContain(
-      "../assets/brand/lihen-logo-official.png",
-    );
-  });
-});
-
-describe('Customer Benefits safe DEV preview', () => {
-  it('provides a non-persistent Creative preview only in local DEV', () => {
-    expect(page).toContain('import.meta.env.DEV');
-    expect(page).toContain('DEV · PREVIEW SEGURO');
-    expect(page).toContain(
-      'no crea Customer Benefits ni ejecuta RPCs',
-    );
-    expect(page).toMatch(
-      /setDevPreviewLine\s*\(\s*'BEAUTY_CARE'\s*\)/,
-    );
-    expect(page).toMatch(
-      /setDevPreviewLine\s*\(\s*'STYLE'\s*\)/,
-    );
-  });
-
-  it('keeps the preview synthetic and outside lifecycle execution', () => {
-    expect(page).toContain('LIHENBC-DEV-PREVIEW');
-    expect(page).toContain('LIHENST-DEV-PREVIEW');
-    expect(page).toContain('CustomerBenefitCreative');
-  });
-});
-
-describe('LIHEN dreamy-luxury visual refinement', () => {
-  it('centralizes Beauty Care and Style creative tokens', () => {
-    expect(domain).toContain('benefitCreativeThemes');
-    expect(domain).toContain('limeGlow');
-    expect(domain).toContain('emotionalCopy');
-    expect(domain).toContain('validityValue');
-  });
-
-  it('uses the same visual model for HTML and Canvas', () => {
-    expect(creative).toContain('buildCustomerBenefitVisualModel');
-    expect(creative).toMatch(
-      /visual\s*\.\s*themeTokens/,
-    );
-    expect(creative).toMatch(
-      /model\s*\.\s*emotionalCopy/,
-    );
-    expect(creative).toMatch(
-      /model\s*\.\s*validityValue/,
-    );
-  });
-
-  it('preserves the official LIHEN logo and single-token percentage', () => {
-    expect(creative).toContain(
-      "../assets/brand/lihen-logo-official.png",
-    );
+import {
+  describe,
+  expect,
+  it,
+} from 'vitest';
 
 
-    expect(creative).toMatch(
-      /context\s*\.\s*fillText\s*\(/,
-    );
+const root =
+  process.cwd();
 
-    expect(creative).toMatch(
-      /model\s*\.\s*discountLabel/,
-    );
-  });
 
-  it('keeps Creative isolated from lifecycle and sending', () => {
-    expect(creative).not.toMatch(/\.rpc\s*\(/);
-    expect(creative).not.toContain('WHATSAPP_SENDING_ENABLED');
-    expect(creative).not.toContain('conversation-whatsapp-runtime');
-    expect(domain).toContain('https://wa.me/');
-  });
-});
+const page =
+  readFileSync(
+    join(
+      root,
+      'apps/control-center/src/pages/CustomerBenefitsPage.tsx',
+    ),
+    'utf8',
+  );
 
-describe('Customer Benefits LIHEN brand governance integration', () => {
-  it('uses governed Creative QA in the benefit experience', () => {
-    expect(creative).toContain(
-      'auditLihenCreativeRequest',
-    );
 
-    expect(creative).toContain(
-      'LIHEN_BRAND_CONTEXT',
-    );
+const creative =
+  readFileSync(
+    join(
+      root,
+      'apps/control-center/src/components/CustomerBenefitCreative.tsx',
+    ),
+    'utf8',
+  );
 
-    expect(creative).toContain(
-      'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED',
-    );
 
-    expect(creative).toContain(
-      'benefit-brand-audit',
-    );
-  });
+const canvas =
+  readFileSync(
+    join(
+      root,
+      'apps/control-center/src/components/customer-benefit-reference-canvas.ts',
+    ),
+    'utf8',
+  );
 
-  it('neutralizes the official logo background without replacing the asset', () => {
-    expect(creative).toContain(
-      "../assets/brand/lihen-logo-official.png",
-    );
 
-    expect(creative).toContain(
-      "globalCompositeOperation = 'multiply'",
-    );
-
-    expect(creative).not.toContain(
-      'lihen-logo-transparent',
-    );
-  });
-});
-
-describe('Customer Benefits restored card composition', () => {
-  it('keeps the official logo constrained as a header instead of primary content', () => {
-    expect(creative).toContain(
-      "../assets/brand/lihen-logo-official.png",
-    );
-
-    expect(creative).toContain(
-      'const logoWidth =',
-    );
-
-    expect(creative).toMatch(
-      /const\s+logoWidth\s*=\s*190/,
-    );
-
-    expect(creative).toContain(
-      "globalCompositeOperation = 'multiply'",
-    );
-  });
-
-  it('preserves every customer-facing card layer', () => {
-    expect(creative).toContain('brand-header');
-    expect(creative).toContain('brand-header');
-    expect(creative).toContain('intro-copy');
-    expect(creative).toContain('script-headline');
-    expect(creative).toContain('discount-ticket');
-    expect(creative).toContain('discount-ticket');
-    expect(creative).toContain('exclusive-code');
-    expect(creative).toContain('validity-benefit');
-    expect(creative).toContain('closing');
-    expect(creative).toContain('brand-footer');
-
-    expect(creative).toContain(
-      'LIHEN.CO | Beauty Care • Style',
-    );
-  });
-
-  it('uses separate organic and editorial Canvas decoration treatments', () => {
-    expect(creative).toContain(
-      'drawOrganicContours',
-    );
-
-    expect(creative).toContain(
-      'drawEditorialContours',
-    );
-
-    expect(creative).toContain(
-      "model.theme === 'style'",
-    );
-  });
-
-  it('retains Creative QA and PREPARED_ONLY governance', () => {
-    expect(creative).toContain(
-      'benefit-brand-audit',
-    );
-
-    expect(creative).toContain(
-      'brandAudit.executionState',
-    );
-
-    expect(creative).toContain(
-      'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED',
-    );
-  });
-});
-
-describe('Customer Benefits premium coupon presentation', () => {
-  it('renders a complete customer-facing coupon hierarchy', () => {
-    expect(creative).toContain('benefit-coupon__header');
-    expect(creative).toContain('intro-copy');
-    expect(creative).toContain('discount-ticket');
-    expect(creative).toContain('exclusive-code');
-    expect(creative).toContain('validity-benefit');
-    expect(creative).toContain('closing');
-    expect(creative).toContain('brand-footer');
-  });
-
-  it('keeps technical Creative QA outside the customer-facing benefit card', () => {
-    const cardStart =
-      creative.indexOf('className={`benefit-visual');
-
-    const cardEnd =
-      creative.indexOf('className="card stack benefit-share-panel"');
-
-    const customerCard =
-      creative.slice(cardStart, cardEnd);
-
-    expect(customerCard)
-      .not.toContain('benefit-brand-audit');
-
-    expect(creative.slice(cardEnd))
-      .toContain('benefit-brand-audit');
-  });
-
-  it('keeps customer-facing facts sourced from the visual model', () => {
-    expect(creative).toContain('visual.discountLabel');
-    expect(creative).toContain('visual.codeLabel');
-    expect(creative).toContain('visual.validityValue');
-    expect(creative).toContain('visual.statusLabel');
-    expect(creative).toContain('visual.emotionalHeadline');
-    expect(creative).toContain('visual.closingCopy');
-  });
-
-  it('does not introduce technical identifiers into the coupon', () => {
-    expect(creative).not.toContain('source_sale_id');
-    expect(creative).not.toContain('source_order_id');
-    expect(creative).not.toContain('redeemed_sale_id');
-    expect(creative).not.toContain('redeemed_order_id');
-  });
-
-  it('retains safe logo integration and single-token percentage', () => {
-    expect(creative).toContain(
-      "globalCompositeOperation = 'multiply'",
-    );
-
-  });
-});
+const domain =
+  readFileSync(
+    join(
+      root,
+      'apps/control-center/src/domain/customer-benefit-creative.ts',
+    ),
+    'utf8',
+  );
 
 
 describe(
-  'Customer Benefits reference-aligned render contract',
+  'Customer Benefits Creative architecture',
   () => {
     it(
-      'uses one renderer for preview and downloaded PNG',
+      'keeps lifecycle mutation outside Creative',
       () => {
-        expect(
-          creative,
-        ).toContain(
-          'CustomerBenefitReferencePreview',
-        );
+        expect(page)
+          .toContain(
+            'CustomerBenefitCreative',
+          );
 
-        expect(
-          creative,
-        ).toContain(
-          'createReferenceBenefitPng',
-        );
+        expect(creative)
+          .not.toMatch(
+            /\.rpc\s*\(/,
+          );
 
-        expect(
-          creative,
-        ).toContain(
-          'data-customer-benefit-reference-preview="true"',
-        );
+        expect(canvas)
+          .not.toMatch(
+            /\.rpc\s*\(/,
+          );
+
+        expect(domain)
+          .not.toMatch(
+            /\.rpc\s*\(/,
+          );
       },
     );
 
+
     it(
-      'keeps the complete customer-facing hierarchy explicit',
+      'keeps Customer Benefit actions outside Creative',
       () => {
-        expect(
-          creative,
-        ).toContain(
-          'brand-header script-headline intro-copy discount-ticket exclusive-code validity-benefit closing brand-footer',
-        );
+        expect(creative)
+          .not.toContain(
+            'benefitActions',
+          );
+
+        expect(canvas)
+          .not.toContain(
+            'benefitActions',
+          );
       },
     );
 
+
     it(
-      'keeps operator controls separate from customer preview',
+      'uses browser-local PNG generation',
+      () => {
+        expect(canvas)
+          .toContain(
+            "document.createElement(\n      'canvas'",
+          );
+
+        expect(canvas)
+          .toMatch(
+            /canvas\s*\.\s*toBlob\s*\(/,
+          );
+
+        expect(creative)
+          .toContain(
+            'createReferenceBenefitPng',
+          );
+      },
+    );
+
+
+    it(
+      'supports browser file sharing with fallback download',
+      () => {
+        expect(creative)
+          .toMatch(
+            /new\s+File\s*\(\s*\[blob\]/,
+          );
+
+        expect(creative)
+          .toMatch(
+            /navigator\s*\.\s*canShare/,
+          );
+
+        expect(creative)
+          .toMatch(
+            /navigator\s*\.\s*share/,
+          );
+
+        expect(creative)
+          .toContain(
+            'downloadBlob',
+          );
+      },
+    );
+
+
+    it(
+      'keeps WhatsApp text-only and manual',
+      () => {
+        expect(creative)
+          .toContain(
+            'customerBenefitWhatsAppUrl',
+          );
+
+        expect(creative)
+          .toMatch(
+            /window\s*\.\s*open\s*\(/,
+          );
+
+        expect(creative)
+          .not.toContain(
+            'conversation-whatsapp-runtime',
+          );
+
+        expect(creative)
+          .not.toContain(
+            'WHATSAPP_SENDING_ENABLED',
+          );
+
+        expect(creative)
+          .not.toMatch(
+            /\bfetch\s*\(/,
+          );
+
+        expect(domain)
+          .toContain(
+            'https://wa.me/',
+          );
+      },
+    );
+
+
+    it(
+      'supports clipboard copy without automatic sending',
+      () => {
+        expect(creative)
+          .toMatch(
+            /navigator\s*\.\s*clipboard\s*\.\s*writeText\s*\(/,
+          );
+
+        expect(creative)
+          .toContain(
+            'Copiar mensaje',
+          );
+
+        expect(creative)
+          .toContain(
+            'Abrir WhatsApp',
+          );
+
+        expect(creative)
+          .not.toContain(
+            'Enviar WhatsApp',
+          );
+      },
+    );
+
+
+    it(
+      'keeps the percentage as one model-driven token',
+      () => {
+        expect(domain)
+          .toMatch(
+            /`\$\{benefit\.discount_percent\}%`/,
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.discountLabel',
+          );
+      },
+    );
+
+
+    it(
+      'keeps customer-facing values sourced from the visual model',
+      () => {
+        expect(canvas)
+          .toContain(
+            'model.discountLabel',
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.codeLabel',
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.validityValue',
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.statusLabel',
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.emotionalHeadline',
+          );
+
+        expect(canvas)
+          .toContain(
+            'model.closingCopy',
+          );
+      },
+    );
+
+
+    it(
+      'does not expose technical IDs in the customer creative',
+      () => {
+        for (
+          const technicalId
+          of [
+            'customer_id',
+            'source_sale_id',
+            'source_order_id',
+            'redeemed_sale_id',
+            'redeemed_order_id',
+          ]
+        ) {
+          expect(creative)
+            .not.toContain(
+              technicalId,
+            );
+
+          expect(canvas)
+            .not.toContain(
+              technicalId,
+            );
+        }
+      },
+    );
+  },
+);
+
+
+describe(
+  'Customer Benefits safe DEV preview',
+  () => {
+    it(
+      'keeps preview local-only and non-persistent',
+      () => {
+        expect(page)
+          .toContain(
+            'import.meta.env.DEV',
+          );
+
+        expect(page)
+          .toContain(
+            'DEV · PREVIEW SEGURO',
+          );
+
+        expect(page)
+          .toContain(
+            'no crea Customer Benefits ni ejecuta RPCs',
+          );
+      },
+    );
+
+
+    it(
+      'provides Beauty Care and Style preview variants',
+      () => {
+        expect(page)
+          .toMatch(
+            /setDevPreviewLine\s*\(\s*'BEAUTY_CARE'\s*\)/,
+          );
+
+        expect(page)
+          .toMatch(
+            /setDevPreviewLine\s*\(\s*'STYLE'\s*\)/,
+          );
+
+        expect(page)
+          .toContain(
+            'LIHENBC-DEV-PREVIEW',
+          );
+
+        expect(page)
+          .toContain(
+            'LIHENST-DEV-PREVIEW',
+          );
+      },
+    );
+
+
+    it(
+      'keeps Ver bono navigation visible and focused',
+      () => {
+        expect(page)
+          .toMatch(
+            /detailRef\s*\.\s*current\?\.\s*scrollIntoView\s*\(/,
+          );
+
+        expect(page)
+          .toContain(
+            "behavior: 'smooth'",
+          );
+
+        expect(page)
+          .toMatch(
+            /detailRef\s*\.\s*current\?\.\s*focus\s*\(/,
+          );
+
+        expect(page)
+          .toContain(
+            'Ver bono',
+          );
+      },
+    );
+  },
+);
+
+
+describe(
+  'LIHEN Customer Benefit visual governance',
+  () => {
+    it(
+      'centralizes Beauty Care and Style theme tokens',
+      () => {
+        expect(domain)
+          .toContain(
+            'benefitCreativeThemes',
+          );
+
+        expect(domain)
+          .toContain(
+            'BEAUTY_CARE',
+          );
+
+        expect(domain)
+          .toContain(
+            'STYLE',
+          );
+
+        expect(canvas)
+          .toContain(
+            'BEAUTY_PALETTE',
+          );
+
+        expect(canvas)
+          .toContain(
+            'STYLE_PALETTE',
+          );
+      },
+    );
+
+
+    it(
+      'preserves the official LIHEN logo asset',
+      () => {
+        expect(canvas)
+          .toContain(
+            "../assets/brand/lihen-logo-official.png",
+          );
+
+        expect(canvas)
+          .not.toContain(
+            'lihen-logo-transparent',
+          );
+      },
+    );
+
+
+    it(
+      'neutralizes the opaque logo background at presentation time',
+      () => {
+        expect(canvas)
+          .toMatch(
+            /globalCompositeOperation\s*=\s*[\r\n\s]*'multiply'/,
+          );
+
+        expect(creative)
+          .toContain(
+            'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED',
+          );
+      },
+    );
+
+
+    it(
+      'keeps canonical LIHEN Brand Context governance',
+      () => {
+        expect(creative)
+          .toContain(
+            'auditLihenCreativeRequest',
+          );
+
+        expect(creative)
+          .toContain(
+            'LIHEN_BRAND_CONTEXT',
+          );
+
+        expect(creative)
+          .toContain(
+            'LIHEN_BRAND_CONTEXT.brand',
+          );
+      },
+    );
+
+
+    it(
+      'keeps PASS and PREPARED_ONLY audit state operator-facing',
+      () => {
+        expect(creative)
+          .toContain(
+            'benefit-operator-qa',
+          );
+
+        expect(creative)
+          .toContain(
+            'brandAudit.overall',
+          );
+
+        expect(creative)
+          .toContain(
+            'brandAudit.logoIntegrity',
+          );
+
+        expect(creative)
+          .toContain(
+            'brandAudit.executionState',
+          );
+
+        expect(creative)
+          .toContain(
+            "'PREPARED_ONLY'",
+          );
+
+        expect(creative)
+          .toContain(
+            "'PREPARED ONLY'",
+          );
+      },
+    );
+  },
+);
+
+
+describe(
+  'Reference-aligned single-source coupon',
+  () => {
+    it(
+      'uses one Canvas renderer for preview and download',
+      () => {
+        expect(creative)
+          .toContain(
+            'CustomerBenefitReferencePreview',
+          );
+
+        expect(creative)
+          .toContain(
+            'createReferenceBenefitPng',
+          );
+
+        expect(creative)
+          .toContain(
+            'data-customer-benefit-reference-preview="true"',
+          );
+      },
+    );
+
+
+    it(
+      'keeps the full customer-facing hierarchy explicit',
+      () => {
+        expect(creative)
+          .toContain(
+            'brand-header script-headline intro-copy discount-ticket exclusive-code validity-benefit closing brand-footer',
+          );
+
+        expect(canvas)
+          .toContain(
+            'DE DESCUENTO',
+          );
+
+        expect(canvas)
+          .toContain(
+            'TU CÓDIGO EXCLUSIVO',
+          );
+
+        expect(canvas)
+          .toContain(
+            'VÁLIDO HASTA',
+          );
+
+        expect(canvas)
+          .toContain(
+            'BENEFICIO',
+          );
+
+        expect(canvas)
+          .toContain(
+            '¡Te esperamos!',
+          );
+
+        expect(canvas)
+          .toContain(
+            'LIHEN.CO',
+          );
+      },
+    );
+
+
+    it(
+      'keeps customer preview separate from operator controls',
       () => {
         const preview =
           creative.indexOf(
@@ -358,10 +574,14 @@ describe(
           );
 
         expect(preview)
-          .toBeGreaterThanOrEqual(0);
+          .toBeGreaterThanOrEqual(
+            0,
+          );
 
         expect(operator)
-          .toBeGreaterThan(preview);
+          .toBeGreaterThan(
+            preview,
+          );
       },
     );
   },
@@ -369,60 +589,11 @@ describe(
 
 
 describe(
-  'Customer Benefits single-source commercial-value contract',
+  'Customer Benefits operator share panel refinement',
   () => {
     it(
-      'keeps percentage and commercial values model-driven in the reference renderer',
+      'keeps Creative QA outside the customer-facing creative',
       () => {
-        const canvasSource =
-          readFileSync(
-            resolve(
-              process.cwd(),
-              'apps/control-center/src/components/customer-benefit-reference-canvas.ts',
-            ),
-            'utf8',
-          );
-
-        expect(canvasSource)
-          .toContain(
-            'model.discountLabel',
-          );
-
-        expect(canvasSource)
-          .toContain(
-            'model.codeLabel',
-          );
-
-        expect(canvasSource)
-          .toContain(
-            'model.validityValue',
-          );
-
-        expect(canvasSource)
-          .toContain(
-            'model.statusLabel',
-          );
-      },
-    );
-  },
-);
-
-describe(
-  'Customer Benefits operator share panel',
-  () => {
-    it(
-      'keeps Creative QA operator-facing and separate from the customer creative',
-      () => {
-        expect(creative)
-          .toContain(
-            'benefit-operator-qa',
-          );
-
-        expect(creative)
-          .toContain(
-            'CustomerBenefitReferencePreview',
-          );
-
         const preview =
           creative.indexOf(
             'CustomerBenefitReferencePreview',
@@ -434,39 +605,15 @@ describe(
           );
 
         expect(operatorQa)
-          .toBeGreaterThan(preview);
-      },
-    );
-
-
-    it(
-      'retains the governed audit states',
-      () => {
-        expect(creative)
-          .toContain(
-            'brandAudit.brandCheck',
-          );
-
-        expect(creative)
-          .toContain(
-            'brandAudit.logoIntegrity',
-          );
-
-        expect(creative)
-          .toContain(
-            'brandAudit.executionState',
-          );
-
-        expect(creative)
-          .toContain(
-            "'PREPARED_ONLY'",
+          .toBeGreaterThan(
+            preview,
           );
       },
     );
 
 
     it(
-      'keeps the manual sharing workflow explicit',
+      'renders the three-step sharing workflow',
       () => {
         expect(creative)
           .toContain(
@@ -492,169 +639,63 @@ describe(
 
 
     it(
-      'keeps all four operator actions',
+      'provides a governed suggested-message workspace',
       () => {
         expect(creative)
           .toContain(
-            'Compartir imagen',
+            'benefit-share-message',
           );
 
         expect(creative)
           .toContain(
-            'Descargar PNG',
+            'benefit-share-message__textarea',
           );
 
-        expect(creative)
-          .toContain(
-            'Copiar mensaje',
-          );
-
-        expect(creative)
-          .toContain(
-            'Abrir WhatsApp',
-          );
-
-        expect(creative)
-          .not.toContain(
-            'Enviar WhatsApp',
-          );
-      },
-    );
-
-
-    it(
-      'states that the prepared message is not automatically sent',
-      () => {
         expect(creative)
           .toContain(
             'El mensaje no se envía automáticamente.',
           );
       },
     );
-  },
-);
-
-describe(
-  'Customer Benefits operator share panel',
-  () => {
-    it(
-      'keeps Creative QA operator-facing and separate from the customer creative',
-      () => {
-        expect(creative)
-          .toContain(
-            'benefit-operator-qa',
-          );
-
-        expect(creative)
-          .toContain(
-            'CustomerBenefitReferencePreview',
-          );
-
-        const preview =
-          creative.indexOf(
-            'CustomerBenefitReferencePreview',
-          );
-
-        const operatorQa =
-          creative.indexOf(
-            'benefit-operator-qa',
-          );
-
-        expect(operatorQa)
-          .toBeGreaterThan(preview);
-      },
-    );
 
 
     it(
-      'retains the governed audit states',
+      'retains all explicit user-controlled sharing actions',
       () => {
-        expect(creative)
-          .toContain(
-            'brandAudit.brandCheck',
-          );
-
-        expect(creative)
-          .toContain(
-            'brandAudit.logoIntegrity',
-          );
-
-        expect(creative)
-          .toContain(
-            'brandAudit.executionState',
-          );
-
-        expect(creative)
-          .toContain(
-            "'PREPARED_ONLY'",
-          );
-      },
-    );
-
-
-    it(
-      'keeps the manual sharing workflow explicit',
-      () => {
-        expect(creative)
-          .toContain(
-            'benefit-share-workflow',
-          );
-
-        expect(creative)
-          .toContain(
-            'Comparte o descarga el PNG.',
-          );
-
-        expect(creative)
-          .toContain(
-            'Copia el texto preparado.',
-          );
-
-        expect(creative)
-          .toContain(
-            'Abre el chat y decide si deseas enviarlo.',
-          );
-      },
-    );
-
-
-    it(
-      'keeps all four operator actions',
-      () => {
-        expect(creative)
-          .toContain(
+        for (
+          const action
+          of [
             'Compartir imagen',
-          );
-
-        expect(creative)
-          .toContain(
             'Descargar PNG',
-          );
-
-        expect(creative)
-          .toContain(
             'Copiar mensaje',
+            'Abrir WhatsApp',
+          ]
+        ) {
+          expect(creative)
+            .toContain(
+              action,
+            );
+        }
+      },
+    );
+
+
+    it(
+      'keeps WhatsApp as open-chat rather than automatic send',
+      () => {
+        expect(creative)
+          .toContain(
+            'customerBenefitWhatsAppUrl',
           );
 
         expect(creative)
           .toContain(
-            'Abrir WhatsApp',
+            'window.open',
           );
 
         expect(creative)
           .not.toContain(
-            'Enviar WhatsApp',
-          );
-      },
-    );
-
-
-    it(
-      'states that the prepared message is not automatically sent',
-      () => {
-        expect(creative)
-          .toContain(
-            'El mensaje no se envía automáticamente.',
+            'sendWhatsApp',
           );
       },
     );
