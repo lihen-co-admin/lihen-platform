@@ -2226,3 +2226,8 @@ button:focus-visible,
     width: 100%;
   }
 }
+
+/* CONTROL CENTER UX NAVIGATION */
+.admin-form-card {
+  scroll-margin-top: 6rem;
+}
