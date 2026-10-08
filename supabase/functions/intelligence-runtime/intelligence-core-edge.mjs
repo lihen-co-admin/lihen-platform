@@ -1167,6 +1167,82 @@ async function resolveAssistantContextBundle(dependencies, request) {
   };
 }
 
+// packages/intelligence-core/src/brand/brand-context.ts
+var LIHEN_BRAND_CONTEXT = {
+  brand: "LIHEN.CO | Beauty Care \u2022 Style",
+  signature: "Tu cuidado, tu estilo, tu esencia.",
+  officialLogoAsset: "LIHEN_LOGO_OFFICIAL",
+  personality: [
+    "feminine",
+    "delicate",
+    "clean",
+    "premium",
+    "elegant",
+    "warm",
+    "modern",
+    "aspirational"
+  ],
+  palette: [
+    "pastel blush",
+    "dusty pink",
+    "soft lavender",
+    "warm cream",
+    "warm white",
+    "soft lime accent",
+    "gold/copper detail"
+  ],
+  hardRules: [
+    "Preserve the official LIHEN logo exactly.",
+    "Do not redesign, distort or recolor the official logo arbitrarily.",
+    "Remove only accidental background around a logo when safe and reversible.",
+    "Keep generous negative space and clear hierarchy.",
+    "Avoid generic coupon, template or low-cost visual language.",
+    "Do not invent prices, discounts, claims or commercial facts.",
+    "GENERATED != OFFICIAL.",
+    "RECOMMENDATION != EXECUTION.",
+    "MESSAGE GENERATION != SENDING."
+  ],
+  beautyCare: [
+    "soft luminous beauty-boutique direction",
+    "blush, cream and lavender",
+    "subtle gold/copper detail",
+    "organic soft forms",
+    "delicate glow"
+  ],
+  style: [
+    "editorial fashion direction",
+    "lavender, nude and cream",
+    "soft gold/copper detail",
+    "delicate geometry",
+    "premium fashion composition"
+  ]
+};
+function lihenBrandConstraints(businessLine) {
+  const line = businessLine === "BEAUTY_CARE" ? LIHEN_BRAND_CONTEXT.beautyCare : businessLine === "STYLE" ? LIHEN_BRAND_CONTEXT.style : [];
+  return [
+    `Brand: ${LIHEN_BRAND_CONTEXT.brand}`,
+    `Signature: ${LIHEN_BRAND_CONTEXT.signature}`,
+    ...LIHEN_BRAND_CONTEXT.hardRules,
+    ...line
+  ];
+}
+function formatLihenBrandContextForModel(businessLine) {
+  return [
+    `BRAND: ${LIHEN_BRAND_CONTEXT.brand}`,
+    `SIGNATURE: ${LIHEN_BRAND_CONTEXT.signature}`,
+    `OFFICIAL_LOGO: ${LIHEN_BRAND_CONTEXT.officialLogoAsset}`,
+    `PERSONALITY: ${LIHEN_BRAND_CONTEXT.personality.join(", ")}`,
+    `PALETTE: ${LIHEN_BRAND_CONTEXT.palette.join(", ")}`,
+    "",
+    "BRAND_RULES:",
+    ...lihenBrandConstraints(
+      businessLine
+    ).map(
+      (item) => `- ${item}`
+    )
+  ].join("\n");
+}
+
 // packages/intelligence-core/src/assistant.ts
 function assistantIntent(prompt) {
   return {
@@ -1192,6 +1268,14 @@ function modelMessages(prompt, context) {
         "Use only the governed context supplied below.",
         "Do not invent missing business facts.",
         "Do not claim authority to mutate master data, publish, post finance, change inventory or execute controlled operations.",
+        "Respect the canonical LIHEN brand context for creative, visual and editorial recommendations.",
+        "Preserve the official LIHEN logo. Detect or warn about obvious integration defects such as an accidental opaque white background, distortion or unsafe recoloring.",
+        "Brand-aware recommendations remain PREPARED_ONLY and require human review before canonical use, publication or sending.",
+        "",
+        "LIHEN_BRAND_CONTEXT:",
+        formatLihenBrandContextForModel(
+          context.businessLine
+        ),
         "",
         "GOVERNED_CONTEXT:",
         governedContext
@@ -3805,6 +3889,121 @@ function analyzeOrdersSalesIntelligence(input) {
   });
 }
 
+// packages/intelligence-core/src/creative/creative-audit.ts
+function logoAudit(observation) {
+  switch (observation) {
+    case "OFFICIAL_TRANSPARENT":
+      return {
+        state: "PASS",
+        messages: [
+          "Official LIHEN logo is integrated without an accidental opaque background."
+        ],
+        recommendations: []
+      };
+    case "OPAQUE_WHITE_BACKGROUND":
+      return {
+        state: "WARNING",
+        messages: [
+          "Visible opaque white background detected around the LIHEN logo."
+        ],
+        recommendations: [
+          "Use the official transparent logo asset when available.",
+          "If transformation is required, remove only the accidental background without altering the symbol, wordmark, color or proportions."
+        ]
+      };
+    case "DISTORTED":
+      return {
+        state: "FAIL",
+        messages: [
+          "LIHEN logo appears distorted or materially altered."
+        ],
+        recommendations: [
+          "Restore the official logo asset without reinterpretation."
+        ]
+      };
+    case "NOT_PRESENT":
+      return {
+        state: "WARNING",
+        messages: [
+          "No LIHEN logo was observed in a context that may require brand attribution."
+        ],
+        recommendations: [
+          "Confirm whether the intended channel requires the official logo."
+        ]
+      };
+    case "UNVERIFIED":
+    case void 0:
+      return {
+        state: "NOT_ASSESSED",
+        messages: [
+          "Logo integrity requires visual observation before final creative approval."
+        ],
+        recommendations: []
+      };
+  }
+}
+function auditLihenCreativeRequest(input) {
+  const instruction = input.instruction.trim();
+  const intendedUse = input.intendedUse.trim();
+  const messages = [];
+  const recommendations = [];
+  const attemptsLogoRedesign = /\b(redesign|recreate|replace|reinterpret)\b.{0,30}\blogo\b/i.test(
+    instruction
+  ) || /\blogo\b.{0,30}\b(redesign|recreate|replace|reinterpret)\b/i.test(
+    instruction
+  );
+  const brandMatch = input.businessLine === "BEAUTY_CARE" || input.businessLine === "STYLE" ? "PASS" : "WARNING";
+  if (brandMatch === "WARNING") {
+    messages.push(
+      "Beauty Care or Style context was not resolved; use shared LIHEN identity only."
+    );
+  }
+  let copy = instruction && intendedUse ? "PASS" : "FAIL";
+  if (attemptsLogoRedesign) {
+    copy = "FAIL";
+    messages.push(
+      "Creative brief attempts to redesign or reinterpret the official LIHEN logo."
+    );
+    recommendations.push(
+      "Preserve the official LIHEN logo asset exactly."
+    );
+  }
+  const logo = logoAudit(
+    input.logoObservation
+  );
+  messages.push(
+    ...logo.messages
+  );
+  recommendations.push(
+    ...logo.recommendations
+  );
+  const overall = copy === "FAIL" || logo.state === "FAIL" ? "FAIL" : brandMatch === "WARNING" || logo.state === "WARNING" || logo.state === "NOT_ASSESSED" ? "WARNING" : "PASS";
+  return {
+    brandMatch,
+    logoIntegrity: logo.state,
+    layout: "NOT_ASSESSED",
+    copy,
+    channelFit: intendedUse ? "PASS" : "FAIL",
+    evidence: "NOT_REQUIRED",
+    executionState: "PREPARED_ONLY",
+    overall,
+    messages,
+    recommendations
+  };
+}
+function withLihenBrandConstraints(existing, businessLine) {
+  return [
+    ...existing,
+    ...lihenBrandConstraints(
+      businessLine
+    ).filter(
+      (constraint) => !existing.includes(
+        constraint
+      )
+    )
+  ];
+}
+
 // packages/intelligence-core/src/capabilities/creative-intelligence.ts
 function compactId(value) {
   const compact = value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
@@ -3902,6 +4101,29 @@ async function generateCreativeCandidates(dependencies, request) {
       ]
     };
   }
+  const brandAudit = auditLihenCreativeRequest({
+    instruction,
+    intendedUse,
+    ...request.context.businessLine === void 0 ? {} : {
+      businessLine: request.context.businessLine
+    }
+  });
+  if (brandAudit.overall === "FAIL") {
+    return {
+      status: "NO_RESULT",
+      evidence: [],
+      candidates: [],
+      messages: [
+        "LIHEN_BRAND_GOVERNANCE_BLOCKED",
+        ...brandAudit.messages,
+        ...brandAudit.recommendations
+      ]
+    };
+  }
+  const governedConstraints = withLihenBrandConstraints(
+    request.brief.constraints,
+    request.context.businessLine
+  );
   const result = await dependencies.imageGeneration.generate({
     correlationId: request.correlationId,
     requestedBy: request.requestedBy,
@@ -3909,7 +4131,7 @@ async function generateCreativeCandidates(dependencies, request) {
     instruction,
     sourceAssetRefs: request.brief.sourceAssetRefs,
     intendedUse,
-    constraints: request.brief.constraints
+    constraints: governedConstraints
   });
   if (result.status !== "SUCCESS" && result.status !== "PARTIAL") {
     return {
@@ -3932,18 +4154,46 @@ async function generateCreativeCandidates(dependencies, request) {
     };
   }
   const providerName = dependencies.imageGeneration.descriptor.name;
-  const evidence = generated.map(
+  const rawEvidence = generated.map(
     (image, index) => generatedEvidence(request, image, providerName, index)
   );
-  const candidates = generated.map(
-    (image, index) => generatedCandidate(request, image, evidence[index], index)
-  );
+  const evidence = rawEvidence.map((item) => ({
+    ...item,
+    payload: {
+      ...item.payload,
+      brandContext: "LIHEN",
+      brandAudit,
+      executionState: "PREPARED_ONLY",
+      constraints: governedConstraints
+    }
+  }));
+  const candidates = generated.map((image, index) => {
+    const candidate = generatedCandidate(
+      request,
+      image,
+      evidence[index],
+      index
+    );
+    return {
+      ...candidate,
+      payload: {
+        ...candidate.payload,
+        brandContext: "LIHEN",
+        brandAudit,
+        executionState: "PREPARED_ONLY",
+        constraints: governedConstraints
+      }
+    };
+  });
   return {
     status: result.status === "PARTIAL" ? "PARTIAL_SUCCESS" : "SUCCESS",
     evidence,
     candidates,
     messages: [
       ...result.messages,
+      "LIHEN_BRAND_CONTEXT_APPLIED",
+      "CREATIVE_QA_REQUIRES_VISUAL_REVIEW",
+      "EXECUTION_PREPARED_ONLY",
       `${generated.length} generated creative candidate(s) require human review before canonical use or publication.`
     ]
   };
@@ -5609,12 +5859,14 @@ export {
   GOVERNED_PERMISSION,
   INTELLIGENCE_AUTONOMY_ALLOWED_CLASSES,
   INTELLIGENCE_PERMISSION,
+  LIHEN_BRAND_CONTEXT,
   PROVIDER_CAPABILITY_MATRIX,
   analyzeInventoryIntelligence,
   analyzeOrdersSalesIntelligence,
   analyzeProcurementIntelligence,
   assertReviewItemDoesNotAuthorizeExecution,
   assessEditorialSearchResult,
+  auditLihenCreativeRequest,
   buildControlledActionRequest,
   buildEditorialSearchQuery,
   buildIntelligenceOrchestrationPlan,
@@ -5637,9 +5889,11 @@ export {
   evaluateRecommendationAssurance,
   evidenceFromPersistedReconciliation,
   executeDocumentIntelligence,
+  formatLihenBrandContextForModel,
   generateCreativeCandidates,
   generateGovernedReportCandidates,
   getProviderCapabilityBinding,
+  lihenBrandConstraints,
   orchestrateIntelligenceRequest,
   prepareApprovedRecommendationForControlPlane,
   prepareBrandAssetCandidate,
@@ -5660,5 +5914,6 @@ export {
   reviewItemFromReconciliation,
   runLihenAssistantTurn,
   validateToolDescriptor,
-  verifyEditorialSourceIdentity
+  verifyEditorialSourceIdentity,
+  withLihenBrandConstraints
 };

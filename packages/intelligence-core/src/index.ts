@@ -25,3 +25,6 @@ export * from './capabilities/audit-intelligence';
 export * from './capabilities/customer-intelligence';
 export * from './capabilities/marketing-intelligence';
 export * from './capabilities/conversation-intelligence';
+
+export * from './brand/brand-context';
+export * from './creative/creative-audit';

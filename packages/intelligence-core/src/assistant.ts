@@ -40,6 +40,9 @@ import type {
 import type {
   IntelligenceDecision,
 } from './contracts';
+import {
+  formatLihenBrandContextForModel,
+} from './brand/brand-context';
 
 export interface LihenAssistantTurnRequest {
   readonly requestId: string;
@@ -104,6 +107,14 @@ function modelMessages(
         'Do not invent missing business facts.',
         'Do not claim authority to mutate master data, publish, post finance, '
           + 'change inventory or execute controlled operations.',
+        'Respect the canonical LIHEN brand context for creative, visual and editorial recommendations.',
+        'Preserve the official LIHEN logo. Detect or warn about obvious integration defects such as an accidental opaque white background, distortion or unsafe recoloring.',
+        'Brand-aware recommendations remain PREPARED_ONLY and require human review before canonical use, publication or sending.',
+        '',
+        'LIHEN_BRAND_CONTEXT:',
+        formatLihenBrandContextForModel(
+          context.businessLine,
+        ),
         '',
         'GOVERNED_CONTEXT:',
         governedContext,

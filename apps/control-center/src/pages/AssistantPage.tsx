@@ -100,6 +100,47 @@ export function AssistantPage() {
         </p>
       </OperationalNotice>
 
+      <div className="card stack intelligence-brand-context">
+        <div className="card-heading">
+          <div>
+            <span className="card-label">Brand governance</span>
+            <h2>LIHEN Brand Context</h2>
+            <p>
+              La identidad LIHEN se aplica como contexto canónico a recomendaciones
+              creativas, visuales y editoriales.
+            </p>
+          </div>
+        </div>
+
+        <div className="intelligence-brand-context__grid">
+          <div>
+            <span>Brand context</span>
+            <strong>LIHEN · READY</strong>
+          </div>
+
+          <div>
+            <span>Creative QA</span>
+            <strong>GOVERNED</strong>
+          </div>
+
+          <div>
+            <span>Logo integrity</span>
+            <strong>VISUAL REVIEW</strong>
+          </div>
+
+          <div>
+            <span>Execution</span>
+            <strong>PREPARED ONLY</strong>
+          </div>
+        </div>
+
+        <p className="muted-text">
+          Intelligence puede detectar o advertir defectos visuales reversibles,
+          como un fondo blanco accidental alrededor del logo. Nunca rediseña el
+          logo oficial ni publica, envía o ejecuta por sí sola.
+        </p>
+      </div>
+
       <div className="card stack">
         <div className="card-heading">
           <div>
