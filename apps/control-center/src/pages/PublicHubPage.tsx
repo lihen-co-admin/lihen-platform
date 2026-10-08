@@ -95,6 +95,10 @@ function changeDraftType(draft: PublicHubBlockDraft, blockType: PublicHubBlockTy
 }
 
 export function PublicHubPage() {
+  const storefrontPublicUrl =
+    typeof import.meta.env.VITE_STOREFRONT_PUBLIC_URL === 'string'
+      ? import.meta.env.VITE_STOREFRONT_PUBLIC_URL.trim()
+      : '';
   const [blocks, setBlocks] = useState<readonly PublicHubBlockProps[]>([]);
   const [products, setProducts] = useState<readonly ProductListItemDTO[]>([]);
   const [draft, setDraft] = useState<PublicHubBlockDraft>(emptyDraft);
@@ -239,7 +243,25 @@ export function PublicHubPage() {
 
   return (
     <section className="public-hub-admin stack">
-      <AdminPageHero eyebrow="PRESENCIA PÚBLICA" title="Hub público" description="Organiza contenido, redes, productos y campañas desde una fuente administrable conectada al Product Master." accent="pink" actions={<a className="button-link" href="/#descubre" target="_blank" rel="noreferrer">Abrir Hub público ↗</a>} status={<span className="status-pass">CONTROLLED</span>} />
+      <AdminPageHero
+        eyebrow="PRESENCIA PÚBLICA"
+        title="Hub público"
+        description="Organiza contenido, redes, productos y campañas desde una fuente administrable conectada al Product Master."
+        accent="pink"
+        actions={
+          storefrontPublicUrl ? (
+            <a
+              className="button-link"
+              href={storefrontPublicUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir Hub público ↗
+            </a>
+          ) : undefined
+        }
+        status={<span className="status-pass">CONTROLLED</span>}
+      />
 
       <SummaryStrip items={[{label:'Activos',value:counts.active},{label:'Publicados ahora',value:counts.published},{label:'Programados',value:counts.scheduled},{label:'Archivados',value:counts.archived}]} />
       <OperationalNotice title="Publicación controlada" tone="info">Los productos del Hub se resuelven desde Product Master. Archivar u ocultar contenido no debe borrar su historia administrativa.</OperationalNotice>

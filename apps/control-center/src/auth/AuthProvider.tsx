@@ -131,7 +131,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
     },
     async signInWithGitHub(redirectTo?: string) {
       if (!client) throw new Error('Supabase Auth is disabled.');
-      const safeRedirect = redirectTo ?? `${window.location.origin}/dev-auth-probe`;
+      const defaultRedirect = new URL(import.meta.env.BASE_URL, window.location.href);
+      defaultRedirect.hash = '/dev-auth-probe';
+      const safeRedirect = redirectTo ?? defaultRedirect.href;
       const { error } = await client.auth.signInWithOAuth({
         provider: 'github',
         options: { redirectTo: safeRedirect },
