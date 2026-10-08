@@ -26,6 +26,7 @@ jobs:
       VITE_SUPABASE_URL: ${{ vars.SUPABASE_DEV_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_DEV_PUBLISHABLE_KEY }}
       VITE_PUBLIC_HUB_MODE: controlled
+      VITE_SUPPLIER_WRITE_MODE: controlled
       VITE_STOREFRONT_PUBLIC_URL: https://lihen-co-admin.github.io/lihen-platform/storefront/#descubre
       VITE_EDITORIAL_DEV_SYNC_ENABLED: "false"
 
