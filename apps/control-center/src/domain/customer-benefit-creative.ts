@@ -49,35 +49,35 @@ export interface CustomerBenefitCreativeTheme {
 export const benefitCreativeThemes:
 Record<CustomerBenefitCreativeLine, CustomerBenefitCreativeTheme> = {
   BEAUTY_CARE: {
-    start: '#fffaf5',
-    middle: '#f4d9ef',
-    end: '#eef7cf',
-    accent: '#b97856',
-    accentSoft: '#f2d8ce',
-    text: '#392b27',
-    muted: '#75645e',
-    border: '#d8b48b',
-    glow: '#f5bce8',
-    limeGlow: '#dcff91',
-    contour: '#ffffff',
-    codeSurface: 'rgba(255,255,255,.64)',
-    statusSurface: 'rgba(255,250,246,.76)',
+    start: '#fffaf7',
+    middle: '#f5d8ec',
+    end: '#f7eee8',
+    accent: '#b87555',
+    accentSoft: '#f4d7df',
+    text: '#392b2d',
+    muted: '#79656a',
+    border: '#d9b1a3',
+    glow: '#f4badd',
+    limeGlow: '#e7ffb3',
+    contour: '#fffdfc',
+    codeSurface: 'rgba(255,255,255,.70)',
+    statusSurface: 'rgba(255,248,248,.82)',
   },
 
   STYLE: {
-    start: '#fbf8ff',
-    middle: '#e9d8f6',
-    end: '#fae4d9',
-    accent: '#a66f55',
-    accentSoft: '#ead9ee',
-    text: '#342a31',
-    muted: '#71646f',
-    border: '#d2b19a',
-    glow: '#d9b8f2',
-    limeGlow: '#e4ffad',
-    contour: '#ffffff',
-    codeSurface: 'rgba(255,255,255,.66)',
-    statusSurface: 'rgba(252,248,255,.78)',
+    start: '#faf7ff',
+    middle: '#dfd1f2',
+    end: '#f5e8e2',
+    accent: '#966d83',
+    accentSoft: '#ddcdeb',
+    text: '#342b36',
+    muted: '#716675',
+    border: '#c9b1d5',
+    glow: '#cbb1ef',
+    limeGlow: '#eef6d4',
+    contour: '#fffefe',
+    codeSurface: 'rgba(255,255,255,.69)',
+    statusSurface: 'rgba(249,245,255,.84)',
   },
 };
 
@@ -89,7 +89,9 @@ export interface CustomerBenefitVisualModel {
   readonly codeLabel: string;
   readonly validityLabel: string;
   readonly validityValue: string;
+  readonly emotionalHeadline: string;
   readonly emotionalCopy: string;
+  readonly closingCopy: string;
   readonly cta: string;
   readonly redeemable: boolean;
   readonly theme: 'beauty-care' | 'style';
@@ -105,13 +107,31 @@ const typeLabels: Record<
   RETURN_AFTER_EXPIRED: 'Bono para volver a LIHEN',
 };
 
+const emotionalHeadline: Record<
+  CustomerBenefitCreativeType,
+  string
+> = {
+  WELCOME: 'Gracias por elegir LIHEN.CO',
+  PURCHASE_THRESHOLD: 'Gracias por elegirnos',
+  RETURN_AFTER_EXPIRED: 'Queremos volver a consentirte',
+};
+
 const emotionalCopy: Record<
   CustomerBenefitCreativeType,
   string
 > = {
-  WELCOME: 'Un detalle para darte la bienvenida.',
-  PURCHASE_THRESHOLD: 'Gracias por elegirnos una vez más.',
-  RETURN_AFTER_EXPIRED: 'Queremos volver a consentirte.',
+  WELCOME: 'Como muestra de bienvenida, tenemos un detalle especial para ti.',
+  PURCHASE_THRESHOLD: 'Tu confianza merece un detalle especial.',
+  RETURN_AFTER_EXPIRED: 'Tenemos un beneficio especial para darte la bienvenida nuevamente.',
+};
+
+const closingCopy: Record<
+  CustomerBenefitCreativeType,
+  string
+> = {
+  WELCOME: 'Esperamos acompañarte muy pronto.',
+  PURCHASE_THRESHOLD: 'Disfruta tu beneficio en tu próxima compra.',
+  RETURN_AFTER_EXPIRED: 'Te esperamos en LIHEN.',
 };
 
 const statusLabels: Record<
@@ -215,8 +235,18 @@ export function buildCustomerBenefitVisualModel(
         benefit.valid_until,
       ),
 
+    emotionalHeadline:
+      emotionalHeadline[
+        benefit.benefit_type
+      ],
+
     emotionalCopy:
       emotionalCopy[
+        benefit.benefit_type
+      ],
+
+    closingCopy:
+      closingCopy[
         benefit.benefit_type
       ],
 

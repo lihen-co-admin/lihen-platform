@@ -173,3 +173,31 @@ describe(
     );
   },
 );
+
+describe('official logo safe presentation correction', () => {
+  it('passes when the official asset background is neutralized without redesign', () => {
+    const audit =
+      auditLihenCreativeRequest({
+        instruction:
+          'Render a LIHEN customer benefit with the official logo.',
+        intendedUse:
+          'CUSTOMER_BENEFIT_SHARE',
+        businessLine:
+          'BEAUTY_CARE',
+        logoObservation:
+          'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED',
+      });
+
+    expect(audit.logoIntegrity)
+      .toBe('PASS');
+
+    expect(audit.overall)
+      .toBe('PASS');
+
+    expect(audit.executionState)
+      .toBe('PREPARED_ONLY');
+
+    expect(audit.messages.join(' '))
+      .toContain('preserved');
+  });
+});

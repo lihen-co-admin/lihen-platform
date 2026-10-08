@@ -1,3 +1,4 @@
+import * as CouponReact from 'react';
 import {
   useState,
   type CSSProperties,
@@ -7,7 +8,12 @@ import type {
   Customer,
 } from '@lihen/customer';
 
-import logo from '../assets/brand/lihen-logo-official.png';
+import {
+  auditLihenCreativeRequest,
+  LIHEN_BRAND_CONTEXT,
+} from '@lihen/intelligence-core';
+
+import { createBenefitPng as createReferenceBenefitPng } from './customer-benefit-reference-canvas';
 
 import {
   buildCustomerBenefitMessage,
@@ -25,692 +31,6 @@ interface CustomerBenefitCreativeProps {
 
   readonly customer:
     Customer | null;
-}
-
-
-function loadImage(
-  src: string,
-) {
-  return new Promise<
-    HTMLImageElement
-  >(
-    (
-      resolve,
-      reject,
-    ) => {
-      const image =
-        new Image();
-
-      image.onload =
-        () => resolve(image);
-
-      image.onerror =
-        () => reject(
-          new Error(
-            'No fue posible cargar el logo oficial de LIHEN.',
-          ),
-        );
-
-      image.src =
-        src;
-    },
-  );
-}
-
-
-function wrapCanvasText(
-  context:
-    CanvasRenderingContext2D,
-
-  text:
-    string,
-
-  x:
-    number,
-
-  y:
-    number,
-
-  maxWidth:
-    number,
-
-  lineHeight:
-    number,
-) {
-  const words =
-    text.split(/\s+/);
-
-  let line =
-    '';
-
-  let nextY =
-    y;
-
-  for (
-    const word
-    of words
-  ) {
-    const candidate =
-      line
-        ? `${line} ${word}`
-        : word;
-
-    if (
-      context
-        .measureText(
-          candidate,
-        )
-        .width >
-        maxWidth &&
-      line
-    ) {
-      context.fillText(
-        line,
-        x,
-        nextY,
-      );
-
-      line =
-        word;
-
-      nextY +=
-        lineHeight;
-    } else {
-      line =
-        candidate;
-    }
-  }
-
-  if (line) {
-    context.fillText(
-      line,
-      x,
-      nextY,
-    );
-  }
-}
-
-
-function roundedRect(
-  context:
-    CanvasRenderingContext2D,
-
-  x:
-    number,
-
-  y:
-    number,
-
-  width:
-    number,
-
-  height:
-    number,
-
-  radius:
-    number,
-) {
-  const r =
-    Math.min(
-      radius,
-      width / 2,
-      height / 2,
-    );
-
-  context.beginPath();
-
-  context.moveTo(
-    x + r,
-    y,
-  );
-
-  context.lineTo(
-    x + width - r,
-    y,
-  );
-
-  context.quadraticCurveTo(
-    x + width,
-    y,
-    x + width,
-    y + r,
-  );
-
-  context.lineTo(
-    x + width,
-    y + height - r,
-  );
-
-  context.quadraticCurveTo(
-    x + width,
-    y + height,
-    x + width - r,
-    y + height,
-  );
-
-  context.lineTo(
-    x + r,
-    y + height,
-  );
-
-  context.quadraticCurveTo(
-    x,
-    y + height,
-    x,
-    y + height - r,
-  );
-
-  context.lineTo(
-    x,
-    y + r,
-  );
-
-  context.quadraticCurveTo(
-    x,
-    y,
-    x + r,
-    y,
-  );
-
-  context.closePath();
-}
-
-
-function drawSoftBlob(
-  context:
-    CanvasRenderingContext2D,
-
-  x:
-    number,
-
-  y:
-    number,
-
-  radiusX:
-    number,
-
-  radiusY:
-    number,
-
-  color:
-    string,
-
-  alpha:
-    number,
-) {
-  context.save();
-
-  context.globalAlpha =
-    alpha;
-
-  context.filter =
-    'blur(48px)';
-
-  context.fillStyle =
-    color;
-
-  context.beginPath();
-
-  context.ellipse(
-    x,
-    y,
-    radiusX,
-    radiusY,
-    0,
-    0,
-    Math.PI * 2,
-  );
-
-  context.fill();
-
-  context.restore();
-}
-
-
-function drawOrganicContours(
-  context:
-    CanvasRenderingContext2D,
-
-  theme:
-    CustomerBenefitCreativeTheme,
-) {
-  context.save();
-
-  context.strokeStyle =
-    theme.contour;
-
-  context.globalAlpha =
-    0.46;
-
-  context.lineWidth =
-    3;
-
-  for (
-    let index = 0;
-    index < 5;
-    index += 1
-  ) {
-    const inset =
-      index * 20;
-
-    context.beginPath();
-
-    context.bezierCurveTo(
-      230 + inset,
-      245 + inset,
-      390 - inset,
-      165 + inset,
-      520,
-      245 + inset,
-    );
-
-    context.bezierCurveTo(
-      700 + inset,
-      340 - inset,
-      880 - inset,
-      210 + inset,
-      895 - inset,
-      345 + inset,
-    );
-
-    context.stroke();
-  }
-
-  context.restore();
-}
-
-
-async function createBenefitPng(
-  benefit:
-    CustomerBenefitCreativeInput,
-) {
-  const model =
-    buildCustomerBenefitVisualModel(
-      benefit,
-    );
-
-  const theme =
-    model.themeTokens;
-
-  const canvas =
-    document.createElement(
-      'canvas',
-    );
-
-  canvas.width =
-    1080;
-
-  canvas.height =
-    1350;
-
-  const context =
-    canvas.getContext(
-      '2d',
-    );
-
-  if (!context) {
-    throw new Error(
-      'El navegador no permite generar la imagen del bono.',
-    );
-  }
-
-
-  const background =
-    context.createLinearGradient(
-      0,
-      0,
-      1080,
-      1350,
-    );
-
-  background.addColorStop(
-    0,
-    theme.start,
-  );
-
-  background.addColorStop(
-    0.52,
-    theme.middle,
-  );
-
-  background.addColorStop(
-    1,
-    theme.end,
-  );
-
-  context.fillStyle =
-    background;
-
-  context.fillRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-  );
-
-
-  drawSoftBlob(
-    context,
-    185,
-    230,
-    230,
-    180,
-    theme.glow,
-    0.47,
-  );
-
-  drawSoftBlob(
-    context,
-    915,
-    330,
-    250,
-    210,
-    theme.limeGlow,
-    0.34,
-  );
-
-  drawSoftBlob(
-    context,
-    815,
-    1160,
-    270,
-    160,
-    theme.accentSoft,
-    0.37,
-  );
-
-  drawOrganicContours(
-    context,
-    theme,
-  );
-
-
-  context.strokeStyle =
-    theme.border;
-
-  context.globalAlpha =
-    0.58;
-
-  context.lineWidth =
-    2;
-
-  roundedRect(
-    context,
-    48,
-    48,
-    984,
-    1254,
-    50,
-  );
-
-  context.stroke();
-
-  context.globalAlpha =
-    1;
-
-
-  const officialLogo =
-    await loadImage(
-      logo,
-    );
-
-  const logoWidth =
-    220;
-
-  const logoRatio =
-    officialLogo.height /
-    officialLogo.width;
-
-  context.drawImage(
-    officialLogo,
-    (
-      canvas.width -
-      logoWidth
-    ) / 2,
-    88,
-    logoWidth,
-    logoWidth *
-      logoRatio,
-  );
-
-
-  context.textAlign =
-    'center';
-
-
-  context.fillStyle =
-    theme.accent;
-
-  context.font =
-    '700 27px Arial, sans-serif';
-
-  context.fillText(
-    model.lineLabel
-      .toUpperCase(),
-    540,
-    370,
-  );
-
-
-  context.fillStyle =
-    theme.muted;
-
-  context.font =
-    'italic 28px Georgia, serif';
-
-  context.fillText(
-    model.emotionalCopy,
-    540,
-    430,
-  );
-
-
-  context.fillStyle =
-    theme.text;
-
-  context.font =
-    '700 51px Georgia, serif';
-
-  context.fillText(
-    model.typeLabel,
-    540,
-    510,
-  );
-
-
-  /*
-   * The number and percentage sign remain one Canvas text token.
-   * This is the anti-overlap contract.
-   */
-  context.fillStyle =
-    theme.accent;
-
-  context.font =
-    '700 170px Georgia, serif';
-
-  context.fillText(
-    model.discountLabel,
-    540,
-    715,
-  );
-
-
-  roundedRect(
-    context,
-    270,
-    780,
-    540,
-    118,
-    28,
-  );
-
-  context.fillStyle =
-    'rgba(255,255,255,.62)';
-
-  context.fill();
-
-  context.strokeStyle =
-    theme.border;
-
-  context.globalAlpha =
-    0.42;
-
-  context.stroke();
-
-  context.globalAlpha =
-    1;
-
-
-  context.fillStyle =
-    theme.muted;
-
-  context.font =
-    '700 18px Arial, sans-serif';
-
-  context.fillText(
-    'TU CÓDIGO',
-    540,
-    818,
-  );
-
-  context.fillStyle =
-    theme.text;
-
-  context.font =
-    '700 31px Arial, sans-serif';
-
-  context.fillText(
-    model.codeLabel,
-    540,
-    862,
-  );
-
-
-  context.fillStyle =
-    theme.muted;
-
-  context.font =
-    '700 18px Arial, sans-serif';
-
-  context.fillText(
-    'VÁLIDO HASTA',
-    540,
-    958,
-  );
-
-  context.fillStyle =
-    theme.text;
-
-  context.font =
-    '700 31px Georgia, serif';
-
-  context.fillText(
-    model.validityValue,
-    540,
-    1000,
-  );
-
-
-  roundedRect(
-    context,
-    455,
-    1032,
-    170,
-    48,
-    24,
-  );
-
-  context.fillStyle =
-    'rgba(255,255,255,.58)';
-
-  context.fill();
-
-  context.fillStyle =
-    theme.accent;
-
-  context.font =
-    '700 17px Arial, sans-serif';
-
-  context.fillText(
-    model.statusLabel
-      .toUpperCase(),
-    540,
-    1063,
-  );
-
-
-  context.fillStyle =
-    theme.muted;
-
-  context.font =
-    '500 25px Arial, sans-serif';
-
-  wrapCanvasText(
-    context,
-    model.cta,
-    540,
-    1136,
-    760,
-    34,
-  );
-
-
-  context.fillStyle =
-    theme.accent;
-
-  context.font =
-    '700 25px Georgia, serif';
-
-  context.fillText(
-    '✨ LIHEN.CO | Beauty Care • Style',
-    540,
-    1232,
-  );
-
-
-  context.fillStyle =
-    theme.muted;
-
-  context.font =
-    'italic 23px Georgia, serif';
-
-  context.fillText(
-    'Tu cuidado, tu estilo, tu esencia.',
-    540,
-    1272,
-  );
-
-
-  const blob =
-    await new Promise<
-      Blob
-    >(
-      (
-        resolve,
-        reject,
-      ) => {
-        canvas.toBlob(
-          (
-            result,
-          ) => {
-            if (result) {
-              resolve(
-                result,
-              );
-            } else {
-              reject(
-                new Error(
-                  'No fue posible convertir el bono a PNG.',
-                ),
-              );
-            }
-          },
-          'image/png',
-        );
-      },
-    );
-
-  return blob;
 }
 
 
@@ -749,6 +69,153 @@ function downloadBlob(
 }
 
 
+
+type CustomerBenefitPreviewInput =
+  Parameters<
+    typeof buildCustomerBenefitVisualModel
+  >[0];
+
+
+function CustomerBenefitReferencePreview(
+  {
+    benefit,
+    visualStyle,
+  }:
+  {
+    readonly benefit:
+      CustomerBenefitPreviewInput;
+
+    readonly visualStyle:
+      CouponReact.CSSProperties;
+  },
+) {
+  const model =
+    buildCustomerBenefitVisualModel(
+      benefit,
+    );
+
+  const [
+    previewUrl,
+    setPreviewUrl,
+  ] =
+    CouponReact.useState<
+      string | null
+    >(null);
+
+  const [
+    previewError,
+    setPreviewError,
+  ] =
+    CouponReact.useState<
+      string | null
+    >(null);
+
+
+  CouponReact.useEffect(
+    () => {
+      let active =
+        true;
+
+      let objectUrl:
+        string | null =
+          null;
+
+      setPreviewUrl(
+        null,
+      );
+
+      setPreviewError(
+        null,
+      );
+
+
+      void createReferenceBenefitPng(
+        benefit,
+      )
+        .then(
+          (blob) => {
+            if (!active) {
+              return;
+            }
+
+            objectUrl =
+              URL.createObjectURL(
+                blob,
+              );
+
+            setPreviewUrl(
+              objectUrl,
+            );
+          },
+        )
+        .catch(
+          () => {
+            if (!active) {
+              return;
+            }
+
+            setPreviewError(
+              'No fue posible generar la vista previa del bono.',
+            );
+          },
+        );
+
+
+      return () => {
+        active =
+          false;
+
+        if (objectUrl) {
+          URL.revokeObjectURL(
+            objectUrl,
+          );
+        }
+      };
+    },
+    [benefit],
+  );
+
+
+  return (
+    <figure
+      className="benefit-reference-card"
+      style={visualStyle}
+      data-customer-benefit-reference-preview="true"
+      data-layout-contract="brand-header script-headline intro-copy discount-ticket exclusive-code validity-benefit closing brand-footer"
+    >
+      {previewUrl ? (
+        <img
+          className="benefit-reference-card__image"
+          src={previewUrl}
+          alt={
+            `Bono LIHEN ${model.lineLabel}: ` +
+            `${model.discountLabel}, código ${model.codeLabel}`
+          }
+        />
+      ) : null}
+
+      {!previewUrl && !previewError ? (
+        <div
+          className="benefit-reference-card__loading"
+          aria-live="polite"
+        >
+          Preparando bono LIHEN…
+        </div>
+      ) : null}
+
+      {previewError ? (
+        <div
+          className="benefit-reference-card__error"
+          role="alert"
+        >
+          {previewError}
+        </div>
+      ) : null}
+    </figure>
+  );
+}
+
+
 export function CustomerBenefitCreative({
   benefit,
   customer,
@@ -770,6 +237,18 @@ export function CustomerBenefitCreative({
     buildCustomerBenefitVisualModel(
       benefit,
     );
+
+  const brandAudit =
+    auditLihenCreativeRequest({
+      instruction:
+        `Render ${visual.typeLabel} for ${visual.lineLabel} using the official LIHEN brand identity.`,
+      intendedUse:
+        'CUSTOMER_BENEFIT_SHARE',
+      businessLine:
+        benefit.business_line,
+      logoObservation:
+        'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED',
+    });
 
   const message =
     buildCustomerBenefitMessage(
@@ -850,7 +329,7 @@ export function CustomerBenefitCreative({
 
     try {
       const blob =
-        await createBenefitPng(
+        await createReferenceBenefitPng(
           benefit,
         );
 
@@ -880,7 +359,7 @@ export function CustomerBenefitCreative({
 
     try {
       const blob =
-        await createBenefitPng(
+        await createReferenceBenefitPng(
           benefit,
         );
 
@@ -967,99 +446,97 @@ export function CustomerBenefitCreative({
 
   return (
     <div className="benefit-creative-layout">
-      <section
-        className={
-          `benefit-visual benefit-visual--${visual.theme} ` +
-          `benefit-visual--${benefit.status.toLowerCase()}`
-        }
-        style={visualStyle}
-        aria-label={`Vista del bono ${benefit.benefit_code}`}
-      >
-        <div
-          className="benefit-visual__orb benefit-visual__orb--one"
-          aria-hidden="true"
-        />
-
-        <div
-          className="benefit-visual__orb benefit-visual__orb--two"
-          aria-hidden="true"
-        />
-
-        <div
-          className="benefit-visual__contours"
-          aria-hidden="true"
-        >
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-
-        <div className="benefit-visual__brand-aura">
-          <img
-            className="benefit-visual__logo"
-            src={logo}
-            alt="LIHEN"
-          />
-        </div>
-
-        <span className="benefit-visual__line">
-          {visual.lineLabel}
-        </span>
-
-        <p className="benefit-visual__emotion">
-          {visual.emotionalCopy}
-        </p>
-
-        <h3>
-          {visual.typeLabel}
-        </h3>
-
-        <strong
-          className="benefit-visual__discount"
-          data-layout-contract="single-token-percentage"
-        >
-          {visual.discountLabel}
-        </strong>
-
-        <div className="benefit-visual__code">
-          <span>Tu código</span>
-          <strong>
-            {visual.codeLabel}
-          </strong>
-        </div>
-
-        <div className="benefit-visual__validity">
-          <span>
-            Válido hasta
-          </span>
-
-          <strong>
-            {visual.validityValue}
-          </strong>
-        </div>
-
-        <span className="benefit-visual__status">
-          {visual.statusLabel}
-        </span>
-
-        <p className="benefit-visual__cta">
-          {visual.cta}
-        </p>
-
-        <footer>
-          <strong>
-            ✨ LIHEN.CO | Beauty Care • Style
-          </strong>
-
-          <span>
-            Tu cuidado, tu estilo, tu esencia.
-          </span>
-        </footer>
-      </section>
+      <CustomerBenefitReferencePreview
+        benefit={benefit}
+        visualStyle={visualStyle}
+      />
 
 
       <section className="card stack benefit-share-panel">
+        <section
+          className="benefit-operator-qa"
+          aria-label="Creative QA"
+        >
+          <div className="benefit-operator-qa__heading">
+            <div>
+              <span className="benefit-operator-eyebrow">
+                Creative QA
+              </span>
+
+              <strong>
+                Control de marca y ejecución
+              </strong>
+            </div>
+
+            <span className="benefit-operator-qa__ready">
+              READY
+            </span>
+          </div>
+
+          <div className="benefit-operator-qa__brand">
+            <span>Brand</span>
+            <strong>{LIHEN_BRAND_CONTEXT.brand}</strong>
+          </div>
+
+          <div className="benefit-operator-qa__statuses">
+            <div className="benefit-operator-status">
+              <span
+                className="benefit-operator-status__icon"
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+
+              <div>
+                <span>Brand check</span>
+
+                <strong className="benefit-operator-badge benefit-operator-badge--pass">
+                  {brandAudit.overall}
+                </strong>
+              </div>
+            </div>
+
+            <div className="benefit-operator-status">
+              <span
+                className="benefit-operator-status__icon"
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+
+              <div>
+                <span>Logo integrity</span>
+
+                <strong className="benefit-operator-badge benefit-operator-badge--pass">
+                  {brandAudit.logoIntegrity}
+                </strong>
+              </div>
+            </div>
+
+            <div className="benefit-operator-status">
+              <span
+                className="benefit-operator-status__icon benefit-operator-status__icon--prepared"
+                aria-hidden="true"
+              >
+                ◇
+              </span>
+
+              <div>
+                <span>Execution</span>
+
+                <strong
+                  className="benefit-operator-badge benefit-operator-badge--prepared"
+                  data-execution-state={brandAudit.executionState}
+                >
+                  {brandAudit.executionState === 'PREPARED_ONLY'
+                    ? 'PREPARED ONLY'
+                    : brandAudit.executionState}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="benefit-share-panel__heading">
           <span className="eyebrow">
             COMPARTIR CON CLIENTE
@@ -1092,63 +569,70 @@ export function CustomerBenefitCreative({
         ) : null}
 
 
-        <div className="benefit-share-steps">
-          <div>
-            <span>01</span>
+        <div
+          className="benefit-share-workflow"
+          aria-label="Flujo para compartir con cliente"
+        >
+          <article className="benefit-share-step">
+            <div className="benefit-share-step__topline">
+              <span className="benefit-share-step__number">01</span>
+              <span className="benefit-share-step__icon" aria-hidden="true">✦</span>
+            </div>
 
-            <p>
-              <strong>
-                Imagen
-              </strong>
+            <strong>Imagen</strong>
+            <p>Comparte o descarga el PNG.</p>
+          </article>
 
-              <small>
-                Comparte o descarga el PNG.
-              </small>
-            </p>
-          </div>
+          <article className="benefit-share-step">
+            <div className="benefit-share-step__topline">
+              <span className="benefit-share-step__number">02</span>
+              <span className="benefit-share-step__icon" aria-hidden="true">◇</span>
+            </div>
 
-          <div>
-            <span>02</span>
+            <strong>Mensaje</strong>
+            <p>Copia el texto preparado.</p>
+          </article>
 
-            <p>
-              <strong>
-                Mensaje
-              </strong>
+          <article className="benefit-share-step">
+            <div className="benefit-share-step__topline">
+              <span className="benefit-share-step__number">03</span>
+              <span className="benefit-share-step__icon" aria-hidden="true">↗</span>
+            </div>
 
-              <small>
-                Copia el texto preparado.
-              </small>
-            </p>
-          </div>
-
-          <div>
-            <span>03</span>
-
-            <p>
-              <strong>
-                WhatsApp
-              </strong>
-
-              <small>
-                Abre el chat y decide si deseas enviarlo.
-              </small>
-            </p>
-          </div>
+            <strong>WhatsApp</strong>
+            <p>Abre el chat y decide si deseas enviarlo.</p>
+          </article>
         </div>
 
 
-        <label className="benefit-message-block">
-          <span>
-            Mensaje sugerido
-          </span>
+        <section className="benefit-share-message">
+          <div className="benefit-share-message__heading">
+            <span className="benefit-operator-eyebrow">
+              MENSAJE SUGERIDO
+            </span>
 
-          <textarea
-            className="benefit-message-preview"
-            readOnly
-            value={message}
-            aria-label="Mensaje sugerido para WhatsApp"
-          />
-        </label>
+            <span className="benefit-share-message__status">
+              PREPARADO
+            </span>
+          </div>
+
+          <label className="benefit-message-block">
+            <span className="sr-only">
+              Mensaje sugerido para WhatsApp
+            </span>
+
+            <textarea
+              className="benefit-message-preview benefit-share-message__textarea"
+              readOnly
+              value={message}
+              aria-label="Mensaje sugerido para WhatsApp"
+            />
+          </label>
+
+          <p className="benefit-share-message__note">
+            El mensaje no se envía automáticamente.
+          </p>
+        </section>
 
 
         <div className="benefit-share-actions">
@@ -1164,7 +648,7 @@ export function CustomerBenefitCreative({
           </button>
 
           <button
-            className="benefit-share-action"
+            className="benefit-share-action benefit-share-action--secondary"
             type="button"
             disabled={busy}
             onClick={() =>
@@ -1175,7 +659,7 @@ export function CustomerBenefitCreative({
           </button>
 
           <button
-            className="benefit-share-action"
+            className="benefit-share-action benefit-share-action--secondary"
             type="button"
             onClick={() =>
               void copyMessage()
@@ -1185,7 +669,7 @@ export function CustomerBenefitCreative({
           </button>
 
           <button
-            className="benefit-share-action benefit-share-action--outline"
+            className="benefit-share-action benefit-share-action--outbound"
             type="button"
             onClick={
               openWhatsApp

@@ -72,7 +72,7 @@ describe(
             base,
           ).emotionalCopy,
         ).toBe(
-          'Un detalle para darte la bienvenida.',
+          'Como muestra de bienvenida, tenemos un detalle especial para ti.',
         );
 
         expect(
@@ -82,7 +82,7 @@ describe(
               'PURCHASE_THRESHOLD',
           }).emotionalCopy,
         ).toBe(
-          'Gracias por elegirnos una vez más.',
+          'Tu confianza merece un detalle especial.',
         );
 
         expect(
@@ -92,7 +92,7 @@ describe(
               'RETURN_AFTER_EXPIRED',
           }).emotionalCopy,
         ).toBe(
-          'Queremos volver a consentirte.',
+          'Tenemos un beneficio especial para darte la bienvenida nuevamente.',
         );
       },
     );
@@ -156,3 +156,16 @@ describe(
     );
   },
 );
+
+describe('premium LIHEN coupon hierarchy', () => {
+  it('provides customer-facing emotional headline and closing copy', () => {
+    const model =
+      buildCustomerBenefitVisualModel(base);
+
+    expect(model.emotionalHeadline)
+      .toBe('Gracias por elegir LIHEN.CO');
+
+    expect(model.closingCopy)
+      .toBe('Esperamos acompañarte muy pronto.');
+  });
+});

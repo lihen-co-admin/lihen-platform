@@ -3900,6 +3900,14 @@ function logoAudit(observation) {
         ],
         recommendations: []
       };
+    case "OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED":
+      return {
+        state: "PASS",
+        messages: [
+          "Official LIHEN logo asset is preserved and its accidental opaque background is neutralized at presentation time."
+        ],
+        recommendations: []
+      };
     case "OPAQUE_WHITE_BACKGROUND":
       return {
         state: "WARNING",

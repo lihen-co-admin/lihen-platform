@@ -12,6 +12,7 @@ export type CreativeAuditState =
 
 export type LogoVisualObservation =
   | 'OFFICIAL_TRANSPARENT'
+  | 'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED'
   | 'OPAQUE_WHITE_BACKGROUND'
   | 'DISTORTED'
   | 'UNVERIFIED'
@@ -90,6 +91,15 @@ function logoAudit(
         state: 'PASS',
         messages: [
           'Official LIHEN logo is integrated without an accidental opaque background.',
+        ],
+        recommendations: [],
+      };
+
+    case 'OFFICIAL_ASSET_BACKGROUND_NEUTRALIZED':
+      return {
+        state: 'PASS',
+        messages: [
+          'Official LIHEN logo asset is preserved and its accidental opaque background is neutralized at presentation time.',
         ],
         recommendations: [],
       };

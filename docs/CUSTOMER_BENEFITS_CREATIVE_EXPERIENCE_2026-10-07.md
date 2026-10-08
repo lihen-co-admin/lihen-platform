@@ -184,3 +184,185 @@ tokens.
 
 The percentage remains one text token to protect the historic number/percent
 overlap contract.
+
+## LIHEN Intelligence brand governance integration
+
+The Customer Benefits Creative experience now consumes the canonical
+brand-governance contract from `@lihen/intelligence-core`.
+
+Creative QA exposes:
+
+- canonical LIHEN brand context;
+- brand check;
+- logo integrity;
+- PREPARED_ONLY execution state.
+
+The official LIHEN logo source asset remains unchanged.
+
+The source PNG contains an opaque light canvas that is visually undesirable
+over the LIHEN pastel treatment. The presentation layer therefore uses
+multiply composition in both HTML and Canvas export.
+
+This neutralizes the accidental light background while preserving the original
+logo artwork, colors and proportions.
+
+No alternate or redesigned logo is introduced.
+
+`BACKGROUND NEUTRALIZATION != LOGO REDESIGN`.
+
+## Card composition restoration and line differentiation
+
+The benefit card now enforces an explicit brand-safe logo scale.
+
+The official LIHEN logo remains unchanged and continues using presentation-time
+background neutralization, but it is constrained to a header role rather than
+dominating the creative.
+
+The HTML preview targets roughly 25–36% of the card width for the logo
+container, while Canvas export uses a 190px logo width on the 1080px canvas.
+
+The complete benefit hierarchy remains visible:
+
+- official logo;
+- Beauty Care / Style line;
+- emotional copy;
+- benefit type;
+- discount;
+- code;
+- validity;
+- status;
+- CTA;
+- LIHEN signature.
+
+Beauty Care now emphasizes blush, warm cream, organic curves and a subtle soft
+lime glow.
+
+Style now emphasizes lavender, nude, editorial geometry and finer fashion-like
+line work.
+
+Both variants remain under the canonical LIHEN brand context and preserve
+`PREPARED_ONLY`.
+
+## Premium coupon redesign
+
+The previous flat customer-facing representation was rejected during manual
+visual review.
+
+The Customer Benefit now renders as a complete promotional coupon rather than a
+series of loose labels.
+
+The coupon contains:
+
+- official LIHEN header;
+- emotional headline;
+- benefit title;
+- dedicated discount ticket;
+- prominent exclusive-code panel;
+- validity and status panel;
+- emotional closing;
+- official LIHEN signature.
+
+Creative QA and sharing controls remain operator-facing and are not part of the
+customer-facing coupon.
+
+Beauty Care uses blush / warm cream / organic decoration.
+
+Style keeps the same architecture while using lavender / nude / editorial
+geometry.
+
+The supplied LIHEN promotional coupon reference is the visual authority for
+hierarchy and rhythm, without copying its commercial values or unsupported
+conditions.
+
+## Reference-aligned single-source rendering
+
+Manual review demonstrated that maintaining an independent HTML composition
+and Canvas composition allowed the two outputs to drift.
+
+The customer-facing browser preview now displays the exact PNG produced by the
+same reference-aligned Canvas renderer used by download/share.
+
+This intentionally makes:
+
+PREVIEW == PNG
+
+for the customer-facing creative.
+
+The operator-facing Creative QA and sharing controls remain normal Control
+Center UI and are not embedded inside the customer creative.
+
+The approved visual hierarchy is:
+
+1. official LIHEN brand header;
+2. emotional script headline;
+3. short introduction;
+4. dedicated discount-ticket block;
+5. prominent exclusive-code panel;
+6. validity / benefit-status panel;
+7. emotional closing;
+8. LIHEN footer.
+
+Beauty Care preserves the approved blush / cream direction.
+
+Style preserves the approved lavender / nude direction.
+
+The official logo source remains unchanged. Its accidental opaque background
+continues to be neutralized only at presentation time.
+
+## Operator share panel refinement
+
+The customer-facing coupon remains visually frozen after approval.
+
+Only the operator-facing share panel was refined.
+
+The panel is now divided into four clear zones:
+
+1. Creative QA / brand governance;
+2. three-step customer sharing workflow;
+3. suggested-message workspace;
+4. explicit user-controlled actions.
+
+The underlying governance values remain unchanged:
+
+- Brand check = PASS;
+- Logo integrity = PASS;
+- Execution = PREPARED_ONLY.
+
+The user-facing label may render `PREPARED ONLY` for readability while the
+underlying state remains `PREPARED_ONLY`.
+
+WhatsApp remains user-controlled. The action continues to open WhatsApp rather
+than sending a message automatically.
+
+No Customer Benefit lifecycle, Supabase persistence, RPC, Canvas creative,
+customer-facing PNG, scheduler, social execution, or production behavior was
+changed by this UI refinement.
+
+## Operator share panel refinement
+
+The customer-facing coupon remains visually frozen after approval.
+
+Only the operator-facing share panel was refined.
+
+The panel is now divided into four clear zones:
+
+1. Creative QA / brand governance;
+2. three-step customer sharing workflow;
+3. suggested-message workspace;
+4. explicit user-controlled actions.
+
+The underlying governance values remain unchanged:
+
+- Brand check = PASS;
+- Logo integrity = PASS;
+- Execution = PREPARED_ONLY.
+
+The user-facing label may render `PREPARED ONLY` for readability while the
+underlying state remains `PREPARED_ONLY`.
+
+WhatsApp remains user-controlled. The action continues to open WhatsApp rather
+than sending a message automatically.
+
+No Customer Benefit lifecycle, Supabase persistence, RPC, Canvas creative,
+customer-facing PNG, scheduler, social execution, or production behavior was
+changed by this UI refinement.
