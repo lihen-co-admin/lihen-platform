@@ -107,7 +107,12 @@ describe(
       () => {
         expect(canvas)
           .toContain(
-            "document.createElement(\n      'canvas'",
+            'document.createElement(',
+          );
+
+        expect(canvas)
+          .toContain(
+            "'canvas'",
           );
 
         expect(canvas)

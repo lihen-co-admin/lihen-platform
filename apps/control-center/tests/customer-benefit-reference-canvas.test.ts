@@ -35,8 +35,8 @@ describe(
           );
 
         expect(source)
-          .toContain(
-            "globalCompositeOperation =\n    'multiply'",
+          .toMatch(
+            /globalCompositeOperation\s*=\s*['"]multiply['"]/,
           );
       },
     );
