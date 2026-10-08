@@ -6005,3 +6005,290 @@ button:focus-visible,
       1fr;
   }
 }
+
+/* ==========================================================
+   CUSTOMER BENEFITS · OPERATOR LOOKUP UX
+   Human-readable selection over durable IDs.
+   No lifecycle or Creative behavior is changed here.
+   ========================================================== */
+
+.benefit-lookup-block {
+  display: grid;
+
+  gap:
+    .7rem;
+
+  min-width:
+    0;
+
+  padding:
+    1rem;
+
+  border:
+    1px solid
+    #eadbd3;
+
+  border-radius:
+    18px;
+
+  background:
+    #fffdfb;
+}
+
+
+.benefit-lookup-block--lifecycle {
+  margin:
+    .15rem 0;
+
+  background:
+    #fffaf7;
+}
+
+
+.benefit-lookup-heading {
+  display: flex;
+
+  align-items:
+    flex-start;
+
+  justify-content:
+    space-between;
+
+  gap:
+    1rem;
+}
+
+
+.benefit-lookup-heading > div {
+  display: grid;
+
+  gap:
+    .18rem;
+}
+
+
+.benefit-lookup-heading strong {
+  color:
+    #49362d;
+
+  font-size:
+    .94rem;
+}
+
+
+.benefit-lookup-eyebrow {
+  color:
+    #986d57;
+
+  font-size:
+    .66rem;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .11em;
+
+  text-transform:
+    uppercase;
+}
+
+
+.benefit-lookup-block input,
+.benefit-lookup-block select {
+  box-sizing:
+    border-box;
+
+  width:
+    100%;
+
+  min-height:
+    44px;
+
+  padding:
+    .68rem
+    .78rem;
+
+  border:
+    1px solid
+    #dfcfc6;
+
+  border-radius:
+    12px;
+
+  background:
+    #fff;
+
+  color:
+    #49362d;
+}
+
+
+.benefit-lookup-block input:focus,
+.benefit-lookup-block select:focus {
+  outline:
+    none;
+
+  border-color:
+    #b98973;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(185, 137, 115, .11);
+}
+
+
+.benefit-lookup-selection {
+  display: grid;
+
+  gap:
+    .7rem;
+
+  padding:
+    .85rem;
+
+  border:
+    1px solid
+    #e7d8cf;
+
+  border-radius:
+    14px;
+
+  background:
+    #fbf5f1;
+}
+
+
+.benefit-lookup-selection > div {
+  display: grid;
+
+  gap:
+    .12rem;
+}
+
+
+.benefit-lookup-selection > div > span {
+  color:
+    #816c61;
+
+  font-size:
+    .68rem;
+
+  font-weight:
+    700;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .06em;
+}
+
+
+.benefit-lookup-selection > div > strong {
+  color:
+    #49362d;
+
+  font-size:
+    1rem;
+}
+
+
+.benefit-lookup-selection dl {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(130px, 1fr)
+    );
+
+  gap:
+    .55rem;
+
+  margin:
+    0;
+}
+
+
+.benefit-lookup-selection dl > div {
+  display: grid;
+
+  gap:
+    .14rem;
+
+  min-width:
+    0;
+}
+
+
+.benefit-lookup-selection dt {
+  color:
+    #8a7468;
+
+  font-size:
+    .64rem;
+
+  font-weight:
+    700;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .04em;
+}
+
+
+.benefit-lookup-selection dd {
+  min-width:
+    0;
+
+  margin:
+    0;
+
+  color:
+    #49362d;
+
+  font-size:
+    .78rem;
+
+  overflow-wrap:
+    anywhere;
+}
+
+
+.benefit-lookup-help {
+  margin:
+    0;
+
+  color:
+    #7e6a60;
+
+  font-size:
+    .72rem;
+
+  line-height:
+    1.45;
+}
+
+
+@media (max-width: 720px) {
+  .benefit-lookup-heading {
+    align-items:
+      stretch;
+
+    flex-direction:
+      column;
+  }
+
+  .benefit-lookup-heading button {
+    width:
+      100%;
+  }
+
+  .benefit-lookup-selection dl {
+    grid-template-columns:
+      1fr;
+  }
+}

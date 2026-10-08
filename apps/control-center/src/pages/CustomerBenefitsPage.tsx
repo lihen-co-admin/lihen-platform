@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import type { Customer } from '@lihen/customer';
+import type { Order } from '@lihen/orders';
+import type { Sale } from '@lihen/sales';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 import { AdminPageHero } from '../components/AdminPageHero';
@@ -14,6 +16,8 @@ import {
   type CustomerBenefit,
 } from '../composition/customer-benefits';
 import { customersComposition } from '../composition/customers';
+import { ordersComposition } from '../composition/orders';
+import { salesComposition } from '../composition/sales';
 
 const labels: Record<BenefitAction, string> = {
   WELCOME: 'Emitir bienvenida',
@@ -55,6 +59,28 @@ function formatDate(value: string | null) {
   }).format(parsed);
 }
 
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat(
+    'es-CO',
+    {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    },
+  ).format(value);
+}
+
+
+function normalizeLookupText(value: unknown) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+
 export function CustomerBenefitsPage() {
   const auth = useAuth();
 
@@ -77,6 +103,30 @@ export function CustomerBenefitsPage() {
   const [selected, setSelected] = useState('');
   const [selectedCustomer, setSelectedCustomer] =
     useState<Customer | null>(null);
+
+  const [customerOptions, setCustomerOptions] =
+    useState<Customer[]>([]);
+
+  const [customerLookup, setCustomerLookup] =
+    useState('');
+
+  const [orderOptions, setOrderOptions] =
+    useState<Order[]>([]);
+
+  const [orderLookup, setOrderLookup] =
+    useState('');
+
+  const [saleOptions, setSaleOptions] =
+    useState<Sale[]>([]);
+
+  const [saleLookup, setSaleLookup] =
+    useState('');
+
+  const [lookupBusy, setLookupBusy] =
+    useState(false);
+
+  const [lookupError, setLookupError] =
+    useState('');
 
   const [devPreviewLine, setDevPreviewLine] =
     useState<'BEAUTY_CARE' | 'STYLE'>('BEAUTY_CARE');
@@ -150,6 +200,213 @@ export function CustomerBenefitsPage() {
     ['WELCOME', 'PURCHASE_THRESHOLD', 'RETURN_AFTER_EXPIRED']
       .includes(action);
 
+
+  const customerLookupNeedle =
+    normalizeLookupText(
+      customerLookup,
+    );
+
+  const visibleCustomerOptions =
+    customerOptions
+      .filter((candidate) => {
+        if (!customerLookupNeedle) {
+          return true;
+        }
+
+        return [
+          candidate.customerCode,
+          candidate.fullName,
+          candidate.phone,
+          candidate.phoneNormalized,
+          candidate.whatsappPhone,
+          candidate.city,
+        ].some((value) =>
+          normalizeLookupText(value)
+            .includes(
+              customerLookupNeedle,
+            ),
+        );
+      })
+      .slice(
+        0,
+        50,
+      );
+
+
+  const saleLookupNeedle =
+    normalizeLookupText(
+      saleLookup,
+    );
+
+  const visibleSaleOptions =
+    saleOptions
+      .filter((candidate) => {
+        if (!saleLookupNeedle) {
+          return true;
+        }
+
+        return [
+          candidate.saleNumber,
+          candidate.customerName,
+          candidate.channel,
+          candidate.status,
+          candidate.totalAmount,
+        ].some((value) =>
+          normalizeLookupText(value)
+            .includes(
+              saleLookupNeedle,
+            ),
+        );
+      })
+      .slice(
+        0,
+        100,
+      );
+
+
+  const orderLookupNeedle =
+    normalizeLookupText(
+      orderLookup,
+    );
+
+  const visibleOrderOptions =
+    orderOptions
+      .filter((candidate) => {
+        if (!orderLookupNeedle) {
+          return true;
+        }
+
+        return [
+          candidate.orderNumber,
+          candidate.customerName,
+          candidate.customerPhone,
+          candidate.channel,
+          candidate.status,
+        ].some((value) =>
+          normalizeLookupText(value)
+            .includes(
+              orderLookupNeedle,
+            ),
+        );
+      })
+      .slice(
+        0,
+        100,
+      );
+
+
+  const selectedQueryCustomer =
+    customerOptions.find(
+      (candidate) =>
+        candidate.id === customer,
+    ) ?? null;
+
+
+  const selectedSaleLookup =
+    saleOptions.find(
+      (candidate) =>
+        candidate.id === sale,
+    ) ?? null;
+
+
+  const selectedOrderLookup =
+    orderOptions.find(
+      (candidate) =>
+        candidate.id === order,
+    ) ?? null;
+
+
+  const actionLookupReady =
+    issuance ||
+    action === 'REDEEM'
+      ? Boolean(
+          selectedSaleLookup,
+        )
+      : (
+          action === 'APPLY' ||
+          action === 'REMOVE'
+        )
+        ? Boolean(
+            selectedOrderLookup,
+          )
+        : true;
+
+
+  async function loadCustomerOptions() {
+    setLookupBusy(true);
+    setLookupError('');
+
+    try {
+      const nextCustomers =
+        await customersComposition
+          .repository
+          .list();
+
+      setCustomerOptions(
+        [...nextCustomers],
+      );
+    } catch (cause) {
+      setLookupError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible cargar clientes.',
+      );
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
+
+  async function loadSaleOptions() {
+    setLookupBusy(true);
+    setLookupError('');
+
+    try {
+      const nextSales =
+        await salesComposition
+          .repository
+          .list();
+
+      setSaleOptions(
+        [...nextSales],
+      );
+    } catch (cause) {
+      setLookupError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible cargar ventas.',
+      );
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
+
+  async function loadOrderOptions() {
+    setLookupBusy(true);
+    setLookupError('');
+
+    try {
+      const nextOrders =
+        await ordersComposition
+          .repository
+          .list();
+
+      setOrderOptions(
+        [...nextOrders],
+      );
+    } catch (cause) {
+      setLookupError(
+        cause instanceof Error
+          ? cause.message
+          : 'No fue posible cargar pedidos.',
+      );
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
+
   async function refresh(page = offset) {
     setBusy(true);
     setError('');
@@ -209,6 +466,7 @@ export function CustomerBenefitsPage() {
     if (
       busy ||
       !allowed ||
+      !actionLookupReady ||
       !benefitActionAllowed(action, benefit)
     ) {
       return;
@@ -393,16 +651,118 @@ export function CustomerBenefitsPage() {
         </div>
 
         <div className="form-grid">
-          <label className="form-field--wide">
-            <span>Customer ID (vacío: todos)</span>
+          <div className="form-field--wide benefit-lookup-block">
+            <div className="benefit-lookup-heading">
+              <div>
+                <span className="benefit-lookup-eyebrow">
+                  CLIENTE
+                </span>
+
+                <strong>
+                  Buscar por nombre, código o teléfono
+                </strong>
+              </div>
+
+              <button
+                type="button"
+                className="button-link button-link--secondary"
+                disabled={
+                  busy ||
+                  lookupBusy ||
+                  !allowed
+                }
+                onClick={() =>
+                  void loadCustomerOptions()
+                }
+              >
+                {customerOptions.length
+                  ? 'Actualizar clientes'
+                  : 'Cargar clientes'}
+              </button>
+            </div>
+
             <input
-              value={customer}
-              disabled={busy}
+              value={customerLookup}
+              disabled={
+                busy ||
+                lookupBusy
+              }
+              placeholder="Ej. LIH-001, Laura, 300..."
+              aria-label="Buscar cliente"
               onChange={(event) =>
-                setCustomer(event.target.value)
+                setCustomerLookup(
+                  event.target.value,
+                )
               }
             />
-          </label>
+
+            <select
+              value={customer}
+              disabled={
+                busy ||
+                lookupBusy ||
+                customerOptions.length === 0
+              }
+              aria-label="Seleccionar cliente para consultar bonos"
+              onChange={(event) =>
+                setCustomer(
+                  event.target.value,
+                )
+              }
+            >
+              <option value="">
+                Todos los clientes
+              </option>
+
+              {visibleCustomerOptions.map(
+                (candidate) => (
+                  <option
+                    key={candidate.id}
+                    value={candidate.id}
+                  >
+                    {candidate.customerCode} · {candidate.fullName}
+                    {candidate.phone
+                      ? ` · ${candidate.phone}`
+                      : ''}
+                  </option>
+                ),
+              )}
+            </select>
+
+            {selectedQueryCustomer ? (
+              <div className="benefit-lookup-selection">
+                <div>
+                  <span>Cliente seleccionado</span>
+                  <strong>
+                    {selectedQueryCustomer.fullName}
+                  </strong>
+                </div>
+
+                <dl>
+                  <div>
+                    <dt>Código</dt>
+                    <dd>
+                      {selectedQueryCustomer.customerCode}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Teléfono</dt>
+                    <dd>
+                      {selectedQueryCustomer.phone || '—'}
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt>Ciudad</dt>
+                    <dd>
+                      {selectedQueryCustomer.city || '—'}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ) : null}
+          </div>
 
           <label>
             <span>Estado</span>
@@ -774,11 +1134,17 @@ export function CustomerBenefitsPage() {
             <span>Acción</span>
             <select
               value={action}
-              onChange={(event) =>
+              onChange={(event) => {
                 setAction(
                   event.target.value as BenefitAction,
-                )
-              }
+                );
+
+                setSale('');
+                setOrder('');
+                setSaleLookup('');
+                setOrderLookup('');
+                setLookupError('');
+              }}
             >
               {(Object.keys(benefitActions) as BenefitAction[])
                 .map((candidate) => (
@@ -793,27 +1159,278 @@ export function CustomerBenefitsPage() {
           </label>
 
           {(issuance || action === 'REDEEM') ? (
-            <label>
-              <span>Venta durable ID</span>
+            <div className="benefit-lookup-block benefit-lookup-block--lifecycle">
+              <div className="benefit-lookup-heading">
+                <div>
+                  <span className="benefit-lookup-eyebrow">
+                    {issuance
+                      ? 'VENTA DE ORIGEN'
+                      : 'VENTA DE REDENCIÓN'}
+                  </span>
+
+                  <strong>
+                    Selecciona la venta correcta
+                  </strong>
+                </div>
+
+                <button
+                  type="button"
+                  className="button-link button-link--secondary"
+                  disabled={lookupBusy}
+                  onClick={() =>
+                    void loadSaleOptions()
+                  }
+                >
+                  {saleOptions.length
+                    ? 'Actualizar ventas'
+                    : 'Cargar ventas'}
+                </button>
+              </div>
+
               <input
-                value={sale}
+                value={saleLookup}
+                disabled={lookupBusy}
+                placeholder="Buscar por número, cliente, canal o total"
+                aria-label="Buscar venta"
                 onChange={(event) =>
-                  setSale(event.target.value)
+                  setSaleLookup(
+                    event.target.value,
+                  )
                 }
               />
-            </label>
+
+              <select
+                value={sale}
+                disabled={
+                  lookupBusy ||
+                  saleOptions.length === 0
+                }
+                aria-label={
+                  issuance
+                    ? 'Seleccionar venta de origen'
+                    : 'Seleccionar venta de redención'
+                }
+                onChange={(event) =>
+                  setSale(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="">
+                  Selecciona una venta
+                </option>
+
+                {visibleSaleOptions.map(
+                  (candidate) => (
+                    <option
+                      key={candidate.id}
+                      value={candidate.id}
+                    >
+                      {candidate.saleNumber}
+                      {' · '}
+                      {candidate.customerName ?? 'Cliente sin nombre'}
+                      {' · '}
+                      {formatCurrency(candidate.totalAmount)}
+                      {' · '}
+                      {candidate.status}
+                    </option>
+                  ),
+                )}
+              </select>
+
+              {selectedSaleLookup ? (
+                <div className="benefit-lookup-selection">
+                  <div>
+                    <span>Venta seleccionada</span>
+                    <strong>
+                      {selectedSaleLookup.saleNumber}
+                    </strong>
+                  </div>
+
+                  <dl>
+                    <div>
+                      <dt>Cliente</dt>
+                      <dd>
+                        {selectedSaleLookup.customerName ?? '—'}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Total</dt>
+                      <dd>
+                        {formatCurrency(
+                          selectedSaleLookup.totalAmount,
+                        )}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Fecha</dt>
+                      <dd>
+                        {formatDate(
+                          selectedSaleLookup
+                            .occurredAt
+                            .toISOString(),
+                        )}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Estado</dt>
+                      <dd>
+                        {selectedSaleLookup.status}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Canal</dt>
+                      <dd>
+                        {selectedSaleLookup.channel}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : (
+                <p className="benefit-lookup-help">
+                  El UUID durable se obtiene internamente al seleccionar
+                  una venta. La elegibilidad sigue validándose en el servidor.
+                </p>
+              )}
+            </div>
           ) : null}
 
           {(action === 'APPLY' || action === 'REMOVE') ? (
-            <label>
-              <span>Pedido durable ID</span>
+            <div className="benefit-lookup-block benefit-lookup-block--lifecycle">
+              <div className="benefit-lookup-heading">
+                <div>
+                  <span className="benefit-lookup-eyebrow">
+                    PEDIDO
+                  </span>
+
+                  <strong>
+                    Selecciona el pedido correcto
+                  </strong>
+                </div>
+
+                <button
+                  type="button"
+                  className="button-link button-link--secondary"
+                  disabled={lookupBusy}
+                  onClick={() =>
+                    void loadOrderOptions()
+                  }
+                >
+                  {orderOptions.length
+                    ? 'Actualizar pedidos'
+                    : 'Cargar pedidos'}
+                </button>
+              </div>
+
               <input
-                value={order}
+                value={orderLookup}
+                disabled={lookupBusy}
+                placeholder="Buscar por número, cliente, teléfono, canal o estado"
+                aria-label="Buscar pedido"
                 onChange={(event) =>
-                  setOrder(event.target.value)
+                  setOrderLookup(
+                    event.target.value,
+                  )
                 }
               />
-            </label>
+
+              <select
+                value={order}
+                disabled={
+                  lookupBusy ||
+                  orderOptions.length === 0
+                }
+                aria-label="Seleccionar pedido"
+                onChange={(event) =>
+                  setOrder(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="">
+                  Selecciona un pedido
+                </option>
+
+                {visibleOrderOptions.map(
+                  (candidate) => (
+                    <option
+                      key={candidate.id}
+                      value={candidate.id}
+                    >
+                      {candidate.orderNumber}
+                      {' · '}
+                      {candidate.customerName ?? 'Cliente sin nombre'}
+                      {' · '}
+                      {candidate.status}
+                      {' · '}
+                      {candidate.channel}
+                    </option>
+                  ),
+                )}
+              </select>
+
+              {selectedOrderLookup ? (
+                <div className="benefit-lookup-selection">
+                  <div>
+                    <span>Pedido seleccionado</span>
+                    <strong>
+                      {selectedOrderLookup.orderNumber}
+                    </strong>
+                  </div>
+
+                  <dl>
+                    <div>
+                      <dt>Cliente</dt>
+                      <dd>
+                        {selectedOrderLookup.customerName ?? '—'}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Teléfono</dt>
+                      <dd>
+                        {selectedOrderLookup.customerPhone ?? '—'}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Estado</dt>
+                      <dd>
+                        {selectedOrderLookup.status}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Canal</dt>
+                      <dd>
+                        {selectedOrderLookup.channel}
+                      </dd>
+                    </div>
+
+                    <div>
+                      <dt>Creado</dt>
+                      <dd>
+                        {formatDate(
+                          selectedOrderLookup
+                            .createdAt
+                            .toISOString(),
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              ) : (
+                <p className="benefit-lookup-help">
+                  El UUID durable se obtiene internamente al seleccionar
+                  un pedido. La acción sigue protegida por el lifecycle
+                  y la política del servidor.
+                </p>
+              )}
+            </div>
           ) : null}
 
           {issuance ? (
@@ -856,6 +1473,7 @@ export function CustomerBenefitsPage() {
 
           <button
             disabled={
+              !actionLookupReady ||
               !benefitActionAllowed(action, benefit)
             }
             onClick={() => void execute()}
@@ -864,6 +1482,21 @@ export function CustomerBenefitsPage() {
           </button>
         </fieldset>
       </section>
+
+      {lookupError ? (
+        <div
+          className="warning-state"
+          role="status"
+        >
+          <strong>
+            No fue posible cargar opciones
+          </strong>
+
+          <p>
+            {lookupError}
+          </p>
+        </div>
+      ) : null}
 
       {error ? (
         <div className="error-state" role="alert">
