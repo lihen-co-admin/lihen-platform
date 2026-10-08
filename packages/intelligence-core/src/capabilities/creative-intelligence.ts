@@ -14,6 +14,10 @@ import type {
   IntelligenceCapabilityExecutionOutput,
   IntelligenceCapabilityHandler,
 } from '../orchestrator';
+import {
+  auditLihenCreativeRequest,
+  withLihenBrandConstraints,
+} from '../creative/creative-audit';
 
 export interface CreativeBrief {
   readonly briefId: string;
@@ -176,6 +180,39 @@ export async function generateCreativeCandidates(
     };
   }
 
+  const brandAudit =
+    auditLihenCreativeRequest({
+      instruction,
+      intendedUse,
+      ...(request.context.businessLine === undefined
+        ? {}
+        : {
+            businessLine:
+              request.context.businessLine,
+          }),
+    });
+
+  if (
+    brandAudit.overall === 'FAIL'
+  ) {
+    return {
+      status: 'NO_RESULT',
+      evidence: [],
+      candidates: [],
+      messages: [
+        'LIHEN_BRAND_GOVERNANCE_BLOCKED',
+        ...brandAudit.messages,
+        ...brandAudit.recommendations,
+      ],
+    };
+  }
+
+  const governedConstraints =
+    withLihenBrandConstraints(
+      request.brief.constraints,
+      request.context.businessLine,
+    );
+
   const result = await dependencies.imageGeneration.generate({
     correlationId: request.correlationId,
     requestedBy: request.requestedBy,
@@ -183,7 +220,7 @@ export async function generateCreativeCandidates(
     instruction,
     sourceAssetRefs: request.brief.sourceAssetRefs,
     intendedUse,
-    constraints: request.brief.constraints,
+    constraints: governedConstraints,
   });
 
   if (
@@ -212,12 +249,41 @@ export async function generateCreativeCandidates(
   }
 
   const providerName = dependencies.imageGeneration.descriptor.name;
-  const evidence = generated.map((image, index) =>
+  const rawEvidence = generated.map((image, index) =>
     generatedEvidence(request, image, providerName, index),
   );
-  const candidates = generated.map((image, index) =>
-    generatedCandidate(request, image, evidence[index]!, index),
-  );
+
+  const evidence = rawEvidence.map((item) => ({
+    ...item,
+    payload: {
+      ...item.payload,
+      brandContext: 'LIHEN',
+      brandAudit,
+      executionState: 'PREPARED_ONLY',
+      constraints: governedConstraints,
+    },
+  }));
+
+  const candidates = generated.map((image, index) => {
+    const candidate =
+      generatedCandidate(
+        request,
+        image,
+        evidence[index]!,
+        index,
+      );
+
+    return {
+      ...candidate,
+      payload: {
+        ...candidate.payload,
+        brandContext: 'LIHEN',
+        brandAudit,
+        executionState: 'PREPARED_ONLY',
+        constraints: governedConstraints,
+      },
+    };
+  });
 
   return {
     status: result.status === 'PARTIAL' ? 'PARTIAL_SUCCESS' : 'SUCCESS',
@@ -225,6 +291,9 @@ export async function generateCreativeCandidates(
     candidates,
     messages: [
       ...result.messages,
+      'LIHEN_BRAND_CONTEXT_APPLIED',
+      'CREATIVE_QA_REQUIRES_VISUAL_REVIEW',
+      'EXECUTION_PREPARED_ONLY',
       `${generated.length} generated creative candidate(s) require human review before canonical use or publication.`,
     ],
   };
