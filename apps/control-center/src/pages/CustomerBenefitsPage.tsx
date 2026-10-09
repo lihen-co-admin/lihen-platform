@@ -1117,23 +1117,22 @@ export function CustomerBenefitsPage() {
         </section>
       ) : null}
 
-      <section className="card stack">
-        <div>
+      <section className="card stack benefit-lifecycle">
+        <div className="benefit-lifecycle__header">
           <span className="eyebrow">LIFECYCLE CONTROLADO</span>
           <h2>Acción controlada</h2>
-          <p>
-            Bono seleccionado:{' '}
-            <strong>
-              {benefit?.benefit_code ?? 'Ninguno'}
-            </strong>
-          </p>
+          <p className="benefit-lifecycle__intro">Selecciona una operación y verifica los datos antes de ejecutarla.</p>
+          <div className="benefit-lifecycle__selection">
+            <span>Bono seleccionado</span>
+            <strong>{benefit?.benefit_code ?? 'Ninguno'}</strong>
+          </div>
         </div>
 
         <fieldset
-          className="stack"
+          className="stack benefit-lifecycle__form"
           disabled={busy || !allowed}
         >
-          <label>
+          <label className="benefit-lifecycle__action">
             <span>Acción</span>
             <select
               value={action}
@@ -1438,6 +1437,7 @@ export function CustomerBenefitsPage() {
 
           {issuance ? (
             <>
+              <div className="benefit-lifecycle__two-col">
               <label>
                 <span>Línea comercial</span>
                 <select
@@ -1466,8 +1466,9 @@ export function CustomerBenefitsPage() {
                   }
                 />
               </label>
+              </div>
 
-              <p>
+              <p className="benefit-lifecycle__note">
                 El cliente se obtiene de la venta de origen;
                 no se sustituye con texto libre.
               </p>
@@ -1475,6 +1476,8 @@ export function CustomerBenefitsPage() {
           ) : null}
 
           <button
+            className="benefit-lifecycle__submit"
+            type="button"
             disabled={
               !actionLookupReady ||
               !benefitActionAllowed(action, benefit)
