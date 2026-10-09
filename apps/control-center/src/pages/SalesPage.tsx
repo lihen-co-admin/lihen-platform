@@ -7,6 +7,7 @@ import { AdminPageHero } from '../components/AdminPageHero';
 import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
+import { customersComposition } from '../composition/customers';
 import { financeComposition } from '../composition/finance';
 import { inventoryComposition } from '../composition/inventory';
 import { ordersComposition } from '../composition/orders';
@@ -45,6 +46,7 @@ function createEmptyLine(): PosLine {
 
 export function SalesPage() {
   const [sales, setSales] = useState<readonly Sale[]>([]);
+  const [customers, setCustomers] = useState<Awaited<ReturnType<typeof customersComposition.getCustomers.execute>>>([]);
   const [accounts, setAccounts] = useState<readonly FinancialAccount[]>([]);
   const [orders, setOrders] = useState<readonly Order[]>([]);
   const [products, setProducts] = useState<readonly { id: string; name: string; sku: string | null; salePrice: number }[]>([]);
@@ -52,6 +54,7 @@ export function SalesPage() {
   const [accountId, setAccountId] = useState('');
   const [channel, setChannel] = useState('IN_PERSON');
   const [customer, setCustomer] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [lines, setLines] = useState<PosLine[]>([createEmptyLine()]);
   const [orderId, setOrderId] = useState('');
   const [orderSaleNumber, setOrderSaleNumber] = useState('');
@@ -62,11 +65,12 @@ export function SalesPage() {
   const [cancellationChecks, setCancellationChecks] = useState<readonly CancellationCheck[]>([]);
 
   async function refresh() {
-    const [nextSales, nextAccounts, nextOrders, nextProducts] = await Promise.all([
+    const [nextSales, nextAccounts, nextOrders, nextProducts, nextCustomers] = await Promise.all([
       salesComposition.repository.list(),
       financeComposition.repository.listAccounts(),
       ordersComposition.getOrders.execute(),
       productsComposition.repository.findAll(),
+      customersComposition.getCustomers.execute(),
     ]);
 
     const activeAccounts = nextAccounts.filter((account) => account.status === 'ACTIVE');
@@ -111,6 +115,7 @@ export function SalesPage() {
     })));
 
     setSales(nextSales);
+    setCustomers(nextCustomers.filter((item) => item.status === 'ACTIVE'));
     setAccounts(activeAccounts);
     setOrders(nextOrders.filter((order) => isOrderEligibleForSale(order.status)));
     setProducts(nextProducts.map((product) => ({
@@ -144,14 +149,18 @@ export function SalesPage() {
     setError('');
     setMessage('');
     try {
+      if (selectedCustomerId && !customers.some((item) => item.id === selectedCustomerId && item.status === 'ACTIVE')) {
+        throw new Error('LIHEN_ACTIVE_CUSTOMER_REQUIRED');
+      }
       await salesComposition.repository.createPos({
         operationKey: `pos-sale:${crypto.randomUUID()}`,
         saleId: salesComposition.ids.generate(),
         saleNumber: number,
         financialAccountId: accountId,
         channel,
-        customerName: customer.trim() || null,
+        customerName: selectedCustomerId ? null : customer.trim() || null,
         customerPhone: null,
+        customerId: selectedCustomerId || null,
         occurredAt: new Date(),
         notes: null,
         items: lines.map((line) => ({
@@ -164,6 +173,7 @@ export function SalesPage() {
       setMessage('Venta POS completada. Inventario y finanzas se actualizaron mediante una sola operación controlada.');
       setNumber('');
       setCustomer('');
+      setSelectedCustomerId('');
       setLines([createEmptyLine()]);
       await refresh();
     } catch (cause) {
@@ -198,6 +208,7 @@ export function SalesPage() {
     }
   }
 
+  const selectedPosCustomer = customers.find((item) => item.id === selectedCustomerId) ?? null;
   const completedSales = sales.filter((sale) => sale.status === 'COMPLETED');
   const reversedSales = sales.filter((sale) => sale.status === 'REVERSED');
   const totalCompleted = completedSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
@@ -408,7 +419,8 @@ export function SalesPage() {
               <label><span>Número de venta</span><input required value={number} onChange={(event) => setNumber(event.target.value)} /></label>
               <label><span>Cuenta de ingreso</span><select required value={accountId} onChange={(event) => setAccountId(event.target.value)}><option value="">Seleccionar…</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>
               <label><span>Canal</span><select value={channel} onChange={(event) => setChannel(event.target.value)}>{salesChannels.map((candidate) => <option key={candidate} value={candidate}>{candidate}</option>)}</select></label>
-              <label><span>Cliente</span><input value={customer} onChange={(event) => setCustomer(event.target.value)} /></label>
+              <label><span>Cliente registrado</span><select value={selectedCustomerId} onChange={(event) => setSelectedCustomerId(event.target.value)}><option value="">Sin cliente registrado · venta manual</option>{customers.map((item) => <option key={item.id} value={item.id}>{item.customerCode} · {item.fullName}</option>)}</select></label>
+              <label><span>Nombre para venta manual</span><input value={selectedPosCustomer?.fullName ?? customer} readOnly={Boolean(selectedPosCustomer)} onChange={(event) => setCustomer(event.target.value)} /></label>
             </div>
 
             {lines.map((line, index) => (
