@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_PRODUCT_READ_SOURCE: supabase
-      VITE_SALE_WRITE_MODE: controlled
       VITE_AUTH_MODE: supabase
       VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: "false"
       VITE_SUPABASE_URL: ${{ vars.SUPABASE_DEV_URL }}
@@ -29,7 +28,7 @@ jobs:
       VITE_PUBLIC_HUB_MODE: controlled
       VITE_SUPPLIER_WRITE_MODE: controlled
       VITE_STOREFRONT_PUBLIC_URL: https://lihen-co-admin.github.io/lihen-platform/storefront/#descubre
-      VITE_EDITORIAL_DEV_SYNC_ENABLED: "false"
+      VITE_EDITORIAL_DEV_SYNC_ENABLED: "true"
       VITE_CUSTOMER_BENEFIT_DEMO_ENABLED: "true"
 
     steps:
