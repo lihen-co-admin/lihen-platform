@@ -305,7 +305,7 @@ describe(
       () => {
         expect(page)
           .toContain(
-            'import.meta.env.DEV',
+            "import.meta.env.VITE_CUSTOMER_BENEFIT_DEMO_ENABLED === 'true'",
           );
 
         expect(page)
@@ -315,7 +315,7 @@ describe(
 
         expect(page)
           .toContain(
-            'no crea Customer Benefits ni ejecuta RPCs',
+            'sin crear bonos ni ejecutar RPCs',
           );
       },
     );
@@ -336,12 +336,12 @@ describe(
 
         expect(page)
           .toContain(
-            'LIHENBC-DEV-PREVIEW',
+            "benefit_code: 'DEMO-NO-CANJE'",
           );
 
         expect(page)
           .toContain(
-            'LIHENST-DEV-PREVIEW',
+            "status: 'GENERATED'",
           );
       },
     );
