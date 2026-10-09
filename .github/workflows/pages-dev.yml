@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_PRODUCT_READ_SOURCE: supabase
+      VITE_SALE_WRITE_MODE: controlled
       VITE_AUTH_MODE: supabase
       VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: "false"
       VITE_SUPABASE_URL: ${{ vars.SUPABASE_DEV_URL }}
