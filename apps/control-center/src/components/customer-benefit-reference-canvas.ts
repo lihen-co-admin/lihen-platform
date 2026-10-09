@@ -803,6 +803,7 @@ function canvasToBlob(
 export async function createBenefitPng(
   benefit:
     CustomerBenefitCreativeInput,
+  demonstration = false,
 ): Promise<Blob> {
   const model =
     buildCustomerBenefitVisualModel(
@@ -1553,6 +1554,19 @@ export async function createBenefitPng(
     palette.gold,
   );
 
+
+  if (demonstration) {
+    context.save();
+    context.fillStyle = 'rgba(70, 29, 53, 0.94)';
+    context.fillRect(0, 615, canvas.width, 112);
+    context.fillStyle = '#ffffff';
+    context.textAlign = 'center';
+    context.font = 'bold 36px Arial, sans-serif';
+    context.fillText('VISTA DE EJEMPLO', canvas.width / 2, 660);
+    context.font = 'bold 29px Arial, sans-serif';
+    context.fillText('NO VÁLIDO PARA CANJE', canvas.width / 2, 700);
+    context.restore();
+  }
 
   return canvasToBlob(
     canvas,

@@ -30,6 +30,8 @@ interface CustomerBenefitCreativeProps {
 
   readonly customer:
     Customer | null;
+
+  readonly demonstration?: boolean;
 }
 
 
@@ -79,8 +81,10 @@ function CustomerBenefitReferencePreview(
   {
     benefit,
     visualStyle,
+    demonstration = false,
   }:
   {
+    readonly demonstration?: boolean;
     readonly benefit:
       CustomerBenefitPreviewInput;
 
@@ -130,6 +134,7 @@ function CustomerBenefitReferencePreview(
 
       void createReferenceBenefitPng(
         benefit,
+        demonstration,
       )
         .then(
           (blob) => {
@@ -171,7 +176,7 @@ function CustomerBenefitReferencePreview(
         }
       };
     },
-    [benefit],
+    [benefit, demonstration],
   );
 
 
@@ -218,6 +223,7 @@ function CustomerBenefitReferencePreview(
 export function CustomerBenefitCreative({
   benefit,
   customer,
+  demonstration = false,
 }: CustomerBenefitCreativeProps) {
   const [
     feedback,
@@ -254,6 +260,17 @@ export function CustomerBenefitCreative({
       benefit,
       customer,
     );
+
+  const [editedMessage, setEditedMessage] = useState(message);
+
+  CouponReact.useEffect(() => {
+    setEditedMessage(message);
+  }, [message]);
+
+  const mayShareRealBenefit = !demonstration &&
+    benefit.status === 'ACTIVE' &&
+    (!benefit.valid_from || new Date(benefit.valid_from).getTime() <= Date.now()) &&
+    (!benefit.valid_until || new Date(benefit.valid_until).getTime() >= Date.now());
 
   const fileName =
     customerBenefitImageFileName(
@@ -304,11 +321,12 @@ export function CustomerBenefitCreative({
 
 
   async function copyMessage() {
+    if (!mayShareRealBenefit) return;
     try {
       await navigator
         .clipboard
         .writeText(
-          message,
+          editedMessage,
         );
 
       setFeedback(
@@ -330,6 +348,7 @@ export function CustomerBenefitCreative({
       const blob =
         await createReferenceBenefitPng(
           benefit,
+          demonstration,
         );
 
       downloadBlob(
@@ -353,6 +372,7 @@ export function CustomerBenefitCreative({
 
 
   async function shareImage() {
+    if (!mayShareRealBenefit) return;
     setBusy(true);
     setFeedback('');
 
@@ -360,6 +380,7 @@ export function CustomerBenefitCreative({
       const blob =
         await createReferenceBenefitPng(
           benefit,
+          demonstration,
         );
 
       const file =
@@ -425,9 +446,10 @@ export function CustomerBenefitCreative({
 
 
   function openWhatsApp() {
+    if (!mayShareRealBenefit) return;
     const url =
       customerBenefitWhatsAppUrl(
-        message,
+        editedMessage,
         customer,
       );
 
@@ -448,6 +470,7 @@ export function CustomerBenefitCreative({
       <CustomerBenefitReferencePreview
         benefit={benefit}
         visualStyle={visualStyle}
+        demonstration={demonstration}
       />
 
 
@@ -536,6 +559,14 @@ export function CustomerBenefitCreative({
           </div>
         </section>
 
+        {demonstration ? (
+          <p className="benefit-share-warning" role="status">
+            VISTA DE EJEMPLO · NO VÁLIDO PARA CANJE.
+            El PNG puede descargarse para revisar el diseño,
+            pero no se habilita el envío de esta demostración.
+          </p>
+        ) : null}
+
         <div className="benefit-share-panel__heading">
           <span className="eyebrow">
             COMPARTIR CON CLIENTE
@@ -622,8 +653,8 @@ export function CustomerBenefitCreative({
 
             <textarea
               className="benefit-message-preview benefit-share-message__textarea"
-              readOnly
-              value={message}
+              value={editedMessage}
+              onChange={(event) => setEditedMessage(event.target.value)}
               aria-label="Mensaje sugerido para WhatsApp"
             />
           </label>
@@ -638,7 +669,7 @@ export function CustomerBenefitCreative({
           <button
             className="benefit-share-action benefit-share-action--primary"
             type="button"
-            disabled={busy}
+            disabled={busy || !mayShareRealBenefit}
             onClick={() =>
               void shareImage()
             }
@@ -660,6 +691,7 @@ export function CustomerBenefitCreative({
           <button
             className="benefit-share-action benefit-share-action--secondary"
             type="button"
+            disabled={!mayShareRealBenefit}
             onClick={() =>
               void copyMessage()
             }
@@ -670,6 +702,7 @@ export function CustomerBenefitCreative({
           <button
             className="benefit-share-action benefit-share-action--outbound"
             type="button"
+            disabled={!mayShareRealBenefit}
             onClick={
               openWhatsApp
             }

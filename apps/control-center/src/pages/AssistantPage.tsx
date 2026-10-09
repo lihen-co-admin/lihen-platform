@@ -106,8 +106,8 @@ export function AssistantPage() {
             <span className="card-label">Brand governance</span>
             <h2>LIHEN Brand Context</h2>
             <p>
-              La identidad LIHEN se aplica como contexto canónico a recomendaciones
-              creativas, visuales y editoriales.
+              Vista informativa de los criterios de identidad LIHEN para piezas
+              creativas, visuales y editoriales. No certifica el estado del runtime.
             </p>
           </div>
         </div>
@@ -115,12 +115,12 @@ export function AssistantPage() {
         <div className="intelligence-brand-context__grid">
           <div>
             <span>Brand context</span>
-            <strong>LIHEN · READY</strong>
+            <strong>REFERENCIA DEV</strong>
           </div>
 
           <div>
             <span>Creative QA</span>
-            <strong>GOVERNED</strong>
+            <strong>REVISIÓN HUMANA</strong>
           </div>
 
           <div>

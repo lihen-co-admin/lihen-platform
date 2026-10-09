@@ -2282,6 +2282,9 @@ button:focus-visible,
 
 @media (max-width: 520px) {
   .intelligence-brand-context__grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* CUSTOMER BENEFITS · CREATIVE EXPERIENCE */
 .customer-benefits-page {
@@ -6291,4 +6294,63 @@ button:focus-visible,
     grid-template-columns:
       1fr;
   }
+}
+
+/* BONOS · LIFECYCLE CONTROLADO — scoped UI only, no behavior changes */
+.customer-benefits-page .benefit-lifecycle {
+  gap: 1.25rem;
+  padding: clamp(1.15rem, 2vw, 1.85rem);
+  background: linear-gradient(140deg, #fffdfb, #fff9f7);
+}
+.customer-benefits-page .benefit-lifecycle__header {
+  display: grid;
+  gap: .35rem;
+}
+.customer-benefits-page .benefit-lifecycle__header h2 { margin: 0; }
+.customer-benefits-page .benefit-lifecycle__intro { margin: 0; color: var(--text-muted); line-height: 1.5; }
+.customer-benefits-page .benefit-lifecycle__selection {
+  display: grid; gap: .35rem; min-width: 0;
+  margin-top: .65rem; padding: .85rem 1rem; border: 1px solid #eadbd3;
+  border-radius: 12px; background: #faf2ee;
+}
+.customer-benefits-page .benefit-lifecycle__selection span { font-size: .77rem; color: #745c50; }
+.customer-benefits-page .benefit-lifecycle__selection strong { overflow-wrap: anywhere; }
+.customer-benefits-page .benefit-lifecycle__form {
+  display: grid; gap: 1.15rem; min-width: 0;
+}
+.customer-benefits-page .benefit-lifecycle__form label {
+  display: grid; gap: .48rem; min-width: 0; font-weight: 650;
+}
+.customer-benefits-page .benefit-lifecycle__form label > span { display: block; font-size: .86rem; }
+.customer-benefits-page .benefit-lifecycle__form input,
+.customer-benefits-page .benefit-lifecycle__form select {
+  display: block; box-sizing: border-box; width: 100%; min-width: 0;
+  min-height: 44px; padding: .65rem .8rem; border: 1px solid #dfcfc6;
+  border-radius: 11px; background: #fff; color: #49362d; font: inherit;
+}
+.customer-benefits-page .benefit-lifecycle__form .benefit-lookup-block {
+  display: grid; gap: .85rem; min-width: 0; padding: clamp(.85rem, 2vw, 1.2rem);
+}
+.customer-benefits-page .benefit-lifecycle__form .benefit-lookup-heading {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .7rem;
+}
+.customer-benefits-page .benefit-lifecycle__form .benefit-lookup-heading > div { display: grid; gap: .3rem; min-width: 0; }
+.customer-benefits-page .benefit-lifecycle__form .benefit-lookup-heading button { max-width: 100%; }
+.customer-benefits-page .benefit-lifecycle__two-col {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
+}
+.customer-benefits-page .benefit-lifecycle__note {
+  margin: 0; font-size: .82rem; line-height: 1.55; color: var(--text-muted);
+}
+.customer-benefits-page .benefit-lifecycle__submit {
+  display: block; width: 100%; min-height: 46px; padding: .75rem 1rem;
+  border-radius: 12px; font-weight: 750;
+}
+.customer-benefits-page .benefit-lifecycle__form :is(input, select, button):focus-visible {
+  outline: 2px solid #b98973; outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .customer-benefits-page .benefit-lifecycle__two-col { grid-template-columns: minmax(0, 1fr); }
+  .customer-benefits-page .benefit-lifecycle__form .benefit-lookup-heading { align-items: stretch; flex-direction: column; }
+  .customer-benefits-page .benefit-lifecycle__form .benefit-lookup-heading button { width: 100%; }
 }

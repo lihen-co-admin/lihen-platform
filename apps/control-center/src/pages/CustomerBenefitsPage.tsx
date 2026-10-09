@@ -128,19 +128,21 @@ export function CustomerBenefitsPage() {
   const [lookupError, setLookupError] =
     useState('');
 
+  const demoPreviewEnabled =
+    import.meta.env.VITE_CUSTOMER_BENEFIT_DEMO_ENABLED === 'true' &&
+    window.location.hostname === 'lihen-co-admin.github.io' &&
+    window.location.pathname.startsWith('/lihen-platform/control-center/');
+
   const [devPreviewLine, setDevPreviewLine] =
     useState<'BEAUTY_CARE' | 'STYLE'>('BEAUTY_CARE');
 
   const devPreviewBenefit: CustomerBenefit = {
     id: '00000000-0000-4000-8000-000000000001',
     customer_id: '00000000-0000-4000-8000-000000000002',
-    benefit_code:
-      devPreviewLine === 'BEAUTY_CARE'
-        ? 'LIHENBC-DEV-PREVIEW'
-        : 'LIHENST-DEV-PREVIEW',
+    benefit_code: 'DEMO-NO-CANJE',
     business_line: devPreviewLine,
     benefit_type: 'WELCOME',
-    status: 'ACTIVE',
+    status: 'GENERATED',
     discount_percent: 15,
     created_at: '2026-10-07T12:00:00-05:00',
     issued_at: '2026-10-07T12:00:00-05:00',
@@ -878,14 +880,14 @@ export function CustomerBenefitsPage() {
               </p>
             </div>
 
-            {import.meta.env.DEV ? (
+            {demoPreviewEnabled ? (
               <section className="card stack benefit-dev-preview">
                 <div>
                   <span className="eyebrow">DEV · PREVIEW SEGURO</span>
-                  <h3>Probar experiencia Creative sin persistencia</h3>
+                  <h3>Diseña y previsualiza tu bono</h3>
                   <p>
-                    Este preview es sintético, vive solo en el navegador local
-                    y no crea Customer Benefits ni ejecuta RPCs.
+                    VISTA DE EJEMPLO · NO VÁLIDO PARA CANJE. Se genera en tu
+                    navegador, sin crear bonos ni ejecutar RPCs.
                   </p>
                 </div>
 
@@ -910,6 +912,7 @@ export function CustomerBenefitsPage() {
                 <CustomerBenefitCreative
                   benefit={devPreviewBenefit}
                   customer={devPreviewCustomer}
+                  demonstration
                 />
               </section>
             ) : null}
@@ -1114,23 +1117,22 @@ export function CustomerBenefitsPage() {
         </section>
       ) : null}
 
-      <section className="card stack">
-        <div>
+      <section className="card stack benefit-lifecycle">
+        <div className="benefit-lifecycle__header">
           <span className="eyebrow">LIFECYCLE CONTROLADO</span>
           <h2>Acción controlada</h2>
-          <p>
-            Bono seleccionado:{' '}
-            <strong>
-              {benefit?.benefit_code ?? 'Ninguno'}
-            </strong>
-          </p>
+          <p className="benefit-lifecycle__intro">Selecciona una operación y verifica los datos antes de ejecutarla.</p>
+          <div className="benefit-lifecycle__selection">
+            <span>Bono seleccionado</span>
+            <strong>{benefit?.benefit_code ?? 'Ninguno'}</strong>
+          </div>
         </div>
 
         <fieldset
-          className="stack"
+          className="stack benefit-lifecycle__form"
           disabled={busy || !allowed}
         >
-          <label>
+          <label className="benefit-lifecycle__action">
             <span>Acción</span>
             <select
               value={action}
@@ -1435,6 +1437,7 @@ export function CustomerBenefitsPage() {
 
           {issuance ? (
             <>
+              <div className="benefit-lifecycle__two-col">
               <label>
                 <span>Línea comercial</span>
                 <select
@@ -1463,8 +1466,9 @@ export function CustomerBenefitsPage() {
                   }
                 />
               </label>
+              </div>
 
-              <p>
+              <p className="benefit-lifecycle__note">
                 El cliente se obtiene de la venta de origen;
                 no se sustituye con texto libre.
               </p>
@@ -1472,6 +1476,8 @@ export function CustomerBenefitsPage() {
           ) : null}
 
           <button
+            className="benefit-lifecycle__submit"
+            type="button"
             disabled={
               !actionLookupReady ||
               !benefitActionAllowed(action, benefit)

@@ -393,6 +393,41 @@ export function SalesPage() {
       {message ? <div className="info-state">{message}</div> : null}
       {error ? <div className="error-state">{error}</div> : null}
 
+      {!salesComposition.canWrite ? (
+        <div className="card stack" data-testid="sales-pos-readonly-preview">
+          <div>
+            <span className="eyebrow">PREVISUALIZACIÓN · SOLO LECTURA</span>
+            <h2>Cliente registrado · Venta POS</h2>
+            <p>
+              Comprueba la selección de clientes sin crear ventas.
+              La escritura, el inventario y las finanzas permanecen bloqueados.
+            </p>
+          </div>
+          <div className="form-grid">
+            <label>
+              <span>Cliente registrado</span>
+              <select
+                value={selectedCustomerId}
+                onChange={(event) => setSelectedCustomerId(event.target.value)}
+              >
+                <option value="">Sin cliente registrado · venta manual</option>
+                {customers.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.customerCode} · {item.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <p>
+            {selectedPosCustomer
+              ? `Cliente seleccionado: ${selectedPosCustomer.customerCode} · ${selectedPosCustomer.fullName}`
+              : 'Ningún cliente seleccionado. La venta manual sigue disponible solo en modo controlado.'}
+          </p>
+          <p><strong>Vista de consulta: no registra ventas ni ejecuta escrituras.</strong></p>
+        </div>
+      ) : null}
+
       {salesComposition.canWrite && accounts.length > 0 ? (
         <>
           <form className="card stack" onSubmit={submitOrder}>
