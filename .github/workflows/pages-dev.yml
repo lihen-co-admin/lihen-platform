@@ -29,6 +29,7 @@ jobs:
       VITE_SUPPLIER_WRITE_MODE: controlled
       VITE_STOREFRONT_PUBLIC_URL: https://lihen-co-admin.github.io/lihen-platform/storefront/#descubre
       VITE_EDITORIAL_DEV_SYNC_ENABLED: "false"
+      VITE_CUSTOMER_BENEFIT_DEMO_ENABLED: "true"
 
     steps:
       - name: Checkout

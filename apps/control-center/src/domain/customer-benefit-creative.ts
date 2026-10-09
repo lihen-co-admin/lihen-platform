@@ -20,6 +20,7 @@ export interface CustomerBenefitCreativeInput {
   readonly benefit_type: CustomerBenefitCreativeType;
   readonly status: CustomerBenefitCreativeStatus;
   readonly discount_percent: number;
+  readonly valid_from?: string | null;
   readonly valid_until: string | null;
 }
 
