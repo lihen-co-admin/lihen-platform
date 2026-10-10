@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 const ROOT = process.cwd();
 const REPORT_DIR = path.join(os.tmpdir(), 'lihen-platform-quality-gate');
@@ -91,9 +92,20 @@ export function classifyTestFile(fileName) {
   return 'PLATFORM FOUNDATION';
 }
 
-function quoteForShell(value) {
-  if (process.platform === 'win32') return `"${String(value).replaceAll('"', '""')}"`;
-  return `'${String(value).replaceAll("'", "'\\''")}'`;
+function runVitest(outputFile, filters = []) {
+  // Pass paths as literal arguments, without shell quoting on either platform.
+  return spawnSync(process.execPath, [
+    path.join(path.dirname(fileURLToPath(import.meta.resolve('vitest/package.json'))), 'vitest.mjs'),
+    'run',
+    ...filters,
+    '--reporter=json',
+    '--outputFile',
+    outputFile,
+  ], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
 }
 
 function runShell(command) {
@@ -119,7 +131,14 @@ function printFailure(label, result) {
 
 function gate(label, command) {
   process.stdout.write(`${label.padEnd(18)} `);
-  const result = runShell(command);
+  // Reuse the pnpm CLI that launched check instead of resolving another shim on PATH.
+  const pnpmCli = process.env.npm_execpath;
+  if (!pnpmCli) throw new Error('Run this gate through pnpm check using the project packageManager version.');
+  const result = spawnSync(process.execPath, [pnpmCli, command], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
   const passed = result.status === 0;
   console.log(passed ? 'PASS' : 'FAIL');
   if (!passed) printFailure(label, result);
@@ -533,18 +552,16 @@ rmSync(VITEST_JSON, { force: true });
 console.log('LIHEN consolidated validation');
 console.log('-----------------------------');
 
-const typecheck = gate('Typecheck', 'pnpm typecheck');
-const lint = gate('Lint', 'pnpm lint');
+const typecheck = gate('Typecheck', 'typecheck');
+const lint = gate('Lint', 'lint');
 
 process.stdout.write(`${'Tests'.padEnd(18)} `);
-const testResult = runShell(
-  `pnpm exec vitest run --reporter=json --outputFile=${quoteForShell(VITEST_JSON)}`
-);
+const testResult = runVitest(VITEST_JSON);
 const testsCommandPassed = testResult.status === 0;
 console.log(testsCommandPassed ? 'PASS' : 'FAIL');
 if (!testsCommandPassed && !existsSync(VITEST_JSON)) printFailure('Tests', testResult);
 
-const build = gate('Build', 'pnpm build');
+const build = gate('Build', 'build');
 
 let vitest;
 try {

@@ -1,7 +1,9 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-beforeEach(() => { vi.stubEnv('DEV', true); vi.stubEnv('VITE_EDITORIAL_DEV_SYNC_ENABLED', 'true'); });
+beforeEach(() => { vi.stubEnv('DEV', true); vi.stubEnv('VITE_EDITORIAL_DEV_SYNC_ENABLED', 'true');
+  vi.stubEnv('VITE_PRODUCT_READ_SOURCE', 'supabase');
+  vi.stubEnv('VITE_SUPABASE_URL', 'https://vnmkupzptujtywnnabkp.supabase.co'); });
 afterEach(() => vi.unstubAllEnvs());
 import { EditorialScheduling } from '../src/components/EditorialScheduling';
 import { EditorialAgenda } from '../src/components/EditorialAgenda';
