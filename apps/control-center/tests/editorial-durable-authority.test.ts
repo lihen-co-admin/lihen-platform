@@ -9,6 +9,9 @@ describe('editorial durable authority', () => {
     expect(editorialDevSyncEnabled(env)).toBe(false);
     vi.stubEnv('DEV', env.DEV === true);
     vi.stubEnv('VITE_EDITORIAL_DEV_SYNC_ENABLED', env.VITE_EDITORIAL_DEV_SYNC_ENABLED ?? '');
+    // Match the fixture's missing project configuration instead of inheriting CI values.
+    vi.stubEnv('VITE_PRODUCT_READ_SOURCE', '');
+    vi.stubEnv('VITE_SUPABASE_URL', '');
     const invoke = vi.fn();
     await expect(saveEditorialItemInDev({} as EditorialItem,{functions:{invoke}})).rejects.toThrow('Persistencia editorial bloqueada');
     expect(invoke).not.toHaveBeenCalled();
