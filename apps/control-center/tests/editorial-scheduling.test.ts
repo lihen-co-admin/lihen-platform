@@ -16,6 +16,7 @@ import {
 } from '../src/composition/editorial-workspace';
 import { isEditorialScheduled, type EditorialItem } from '../src/domain/editorial-planning';
 
+const resolveProducts = async (items: readonly EditorialItem[]) => items.map((item) => ({ ...item, productId: item.publication.creativeAssetIds[0] === 'durable-media' ? 'product' : '' }));
 const now = new Date('2026-09-29T16:00:00Z');
 function draft() {
   let sequence = 0;
@@ -109,7 +110,7 @@ describe('editorial scheduling UX', () => {
       })
       .mockResolvedValueOnce({ data: null, error: { message: 'Read unavailable' } });
     await expect(
-      saveEditorialItemInDev(await scheduled(), { functions: { invoke } }),
+      saveEditorialItemInDev(await scheduled(), { functions: { invoke } }, resolveProducts),
     ).rejects.toThrow('Read unavailable');
     expect(invoke).toHaveBeenCalledTimes(3);
   });
@@ -185,7 +186,7 @@ describe('editorial scheduling UX', () => {
         error: null,
       }),
     );
-    const confirmed = await saveEditorialItemInDev(item, { functions: { invoke } });
+    const confirmed = await saveEditorialItemInDev(item, { functions: { invoke } }, resolveProducts);
     expect(confirmed).not.toBe(item);
     expect(isEditorialScheduled(confirmed)).toBe(true);
     expect(invoke.mock.calls.map((call) => call[1].body.action)).toEqual([
@@ -216,7 +217,7 @@ describe('editorial scheduling UX', () => {
           error: null,
         }),
       );
-      await expect(saveEditorialItemInDev(item, { functions: { invoke } })).rejects.toThrow(
+      await expect(saveEditorialItemInDev(item, { functions: { invoke } }, resolveProducts)).rejects.toThrow(
         'DEV no confirmó',
       );
     },
@@ -224,7 +225,7 @@ describe('editorial scheduling UX', () => {
   it('does not retry or report success after a failed persistence call', async () => {
     const invoke = vi.fn().mockResolvedValue({ data: null, error: { message: 'DEV unavailable' } });
     await expect(
-      saveEditorialItemInDev(await scheduled(), { functions: { invoke } }),
+      saveEditorialItemInDev(await scheduled(), { functions: { invoke } }, resolveProducts),
     ).rejects.toThrow('DEV unavailable');
     expect(invoke).toHaveBeenCalledTimes(1);
   });

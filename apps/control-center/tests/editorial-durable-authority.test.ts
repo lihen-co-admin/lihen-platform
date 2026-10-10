@@ -20,7 +20,7 @@ describe('editorial durable authority', () => {
     const page = readFileSync(new URL('../src/pages/SocialContentPage.tsx',import.meta.url),'utf8');
     expect(page).not.toContain('InMemoryMarketingSocialRepository');
     expect(page.match(/localStorage\.setItem\([^\r\n]+/g)).toEqual(['localStorage.setItem(`${cacheKey}:goals`, JSON.stringify(next));']);
-    expect(page).toContain('confirmed.push(await saveEditorialItemInDev(item))');
+    expect(page).toContain('confirmed.push(await saveEditorialItemInDev(item, undefined, resolveProducts))');
     expect(page).toContain('editorialDevSyncEnabled(import.meta.env) &&');
     expect(page).not.toContain('EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT');
   });

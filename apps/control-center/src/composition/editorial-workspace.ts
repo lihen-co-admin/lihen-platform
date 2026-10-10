@@ -248,6 +248,33 @@ export function parseEditorialDate(value: string): Date {
     throw new Error('Fecha editorial inválida.');
   return result;
 }
+
+export function editEditorialDraft(previous: EditorialItem, fresh: EditorialItem): EditorialItem {
+  if (previous.publication.status !== 'PREPARED')
+    throw new Error('Solo se pueden editar borradores.');
+  return {
+    ...fresh,
+    publication: {
+      ...fresh.publication,
+      id: previous.publication.id,
+      campaignId: previous.publication.campaignId,
+      campaignContentId: previous.publication.campaignContentId,
+      channelVariantId: previous.publication.channelVariantId,
+      preparedAt: previous.publication.preparedAt,
+      scheduleId: fresh.schedule ? (previous.schedule?.id ?? fresh.schedule.id) : null,
+    },
+    schedule: fresh.schedule
+      ? {
+          ...fresh.schedule,
+          id: previous.schedule?.id ?? fresh.schedule.id,
+          channelVariantId: previous.publication.channelVariantId,
+          createdAt: previous.schedule?.createdAt ?? fresh.schedule.createdAt,
+        }
+      : null,
+    attempts: previous.attempts,
+    history: previous.history,
+  };
+}
 export async function reviewEditorial(
   item: EditorialItem,
   decision: PreparedPublicationReviewDecision,
@@ -369,6 +396,7 @@ export interface EditorialRuntimeClient {
 export async function saveEditorialItemToRuntime(
   item: EditorialItem,
   client: EditorialRuntimeClient,
+  operationId = crypto.randomUUID(),
 ): Promise<EditorialItem> {
   const invoke = async <T>(action: string, payload: Record<string, unknown>): Promise<T> => {
     const result = await client.functions.invoke<T>('marketing-social-runtime', {
@@ -392,10 +420,12 @@ export async function saveEditorialItemToRuntime(
     });
   }
   const publication = item.publication;
+  // preparedAt is immutable. Each save intent needs a new key, including a
+  // return to earlier copy. A transport retry can reuse the same operationId.
   await invoke('SAVE_PREPARED_PUBLICATION', {
     ...publication,
     preparedAt: publication.preparedAt.toISOString(),
-    operationKey: `editorial:publication:${publication.id}:${publication.preparedAt.toISOString()}:${publication.status}`,
+    operationKey: `editorial:publication:${publication.id}:${operationId}`,
   });
   return item;
 }
@@ -403,10 +433,23 @@ export async function saveEditorialItemToRuntime(
 export async function saveEditorialItemInDev(
   item: EditorialItem,
   client?: EditorialRuntimeClient,
+  resolveProducts?: (items: readonly EditorialItem[]) => Promise<EditorialItem[]>,
 ): Promise<EditorialItem> {
   if (!editorialDevSyncEnabled(import.meta.env))
-    throw new Error('Persistencia editorial bloqueada: requiere DEV y VITE_EDITORIAL_DEV_SYNC_ENABLED=true.');
+    throw new Error(
+      'Persistencia editorial bloqueada: requiere DEV y VITE_EDITORIAL_DEV_SYNC_ENABLED=true.',
+    );
   client ??= getBrowserSupabaseClient(import.meta.env);
+  if (item.productId) {
+    const linked =
+      item.publication.creativeAssetIds.length && resolveProducts
+        ? (await resolveProducts([item]))[0]
+        : undefined;
+    if (linked?.productId !== item.productId)
+      throw new Error(
+        'No se guardó el borrador: DEV no conserva el producto seleccionado por sí solo. Selecciona media autorizada de ese producto o guarda sin producto asociado.',
+      );
+  }
   await saveEditorialItemToRuntime(item, client);
   const rows = await readEditorialWorkspace(client, item.publication.id);
   const confirmed = rows.find((row) => row.publication.id === item.publication.id);
@@ -426,7 +469,15 @@ export async function saveEditorialItemInDev(
     throw new Error(
       'DEV no confirmó el estado solicitado. Actualiza desde DEV antes de volver a guardar o programar.',
     );
-  return { ...confirmed, productId: item.productId, campaignName: item.campaignName };
+  if (item.productId && resolveProducts) {
+    const linked = (await resolveProducts([confirmed]))[0];
+    if (linked?.productId !== item.productId)
+      throw new Error(
+        'El contenido se escribió en DEV, pero no se pudo recuperar su producto desde la media guardada. Actualiza desde DEV antes de reintentar.',
+      );
+    return linked;
+  }
+  return confirmed;
 }
 export async function saveEditorialDraftToRuntime(
   item: EditorialItem,

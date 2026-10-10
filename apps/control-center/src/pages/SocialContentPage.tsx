@@ -1,6 +1,6 @@
 import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
 import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
 import { useAuth } from '../auth/auth-context';
@@ -8,6 +8,7 @@ import { productsComposition } from '../composition/products';
 import { readEditorialVideoAssets } from '../composition/editorial-video-assets';
 import {
   createEditorialDraft,
+  editEditorialDraft,
   programEditorial,
   readEditorialWorkspace,
   resolveProductAssociationsFromMedia,
@@ -63,6 +64,21 @@ export function SocialContentPage() {
   const [selected, setSelected] = useState('');
   const [filter, setFilter] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!busy && (error || notice)) {
+      feedbackRef.current?.focus();
+      feedbackRef.current?.scrollIntoView({ block: 'center' });
+    }
+  }, [busy, error, notice]);
+
+  const resolveProducts = (entries: readonly EditorialItem[]) =>
+    resolveProductAssociationsFromMedia(
+      entries,
+      products,
+      async (productId) => productsComposition.getProductImages.execute({ productId }),
+      readEditorialVideoAssets,
+    );
 
   const refresh = useCallback(
     async (quiet = false, publicationId?: string) => {
@@ -147,7 +163,10 @@ export function SocialContentPage() {
   }, [cacheKey, refresh]);
 
   async function perform(action: () => Promise<void>) {
-    if (!canOperate || busy) { setError('Persistencia editorial bloqueada o acción en curso.'); return; }
+    if (!canOperate || busy) {
+      setError('Persistencia editorial bloqueada o acción en curso.');
+      return;
+    }
     setBusy(true);
     setError('');
     setNotice('');
@@ -168,29 +187,11 @@ export function SocialContentPage() {
         const previous = items.find((item) => item.publication.id === editing);
         if (!previous || previous.publication.status !== 'PREPARED')
           throw new Error('Solo se pueden editar borradores.');
-        return {
-          ...fresh,
-          publication: {
-            ...fresh.publication,
-            id: previous.publication.id,
-            campaignId: previous.publication.campaignId,
-            campaignContentId: previous.publication.campaignContentId,
-            channelVariantId: previous.publication.channelVariantId,
-            scheduleId: fresh.schedule ? (previous.schedule?.id ?? fresh.schedule.id) : null,
-          },
-          schedule: fresh.schedule
-            ? {
-                ...fresh.schedule,
-                id: previous.schedule?.id ?? fresh.schedule.id,
-                channelVariantId: previous.publication.channelVariantId,
-                createdAt: previous.schedule?.createdAt ?? fresh.schedule.createdAt,
-              }
-            : null,
-          history: previous.history,
-        };
+        return editEditorialDraft(previous, fresh);
       });
       const confirmed: EditorialItem[] = [];
-      for (const item of next) confirmed.push(await saveEditorialItemInDev(item));
+      for (const item of next)
+        confirmed.push(await saveEditorialItemInDev(item, undefined, resolveProducts));
       const byId = new Map(confirmed.map((item) => [item.publication.id, item]));
       setItems((currentItems) => [
         ...currentItems.filter((item) => !byId.has(item.publication.id)),
@@ -221,7 +222,7 @@ export function SocialContentPage() {
     if (!current) return;
     await perform(async () => {
       const next = await reviewEditorial(current, decision, new Date());
-      const confirmed = await saveEditorialItemInDev(next);
+      const confirmed = await saveEditorialItemInDev(next, undefined, resolveProducts);
       setItems((previous) =>
         previous.map((item) => (item.publication.id === current.publication.id ? confirmed : item)),
       );
@@ -235,12 +236,24 @@ export function SocialContentPage() {
 
   return (
     <div className="stack editorial-workspace">
-      <SocialProviderReadiness allowed={Boolean(import.meta.env.DEV && auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? ''))} />
+      <SocialProviderReadiness
+        allowed={Boolean(
+          import.meta.env.DEV &&
+          auth.enabled &&
+          auth.authorized &&
+          ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? ''),
+        )}
+      />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO | Beauty Care • Style</p>
           <h1>Contenido y calendario</h1>
-          <p role="status">Persistencia: {editorialDevSyncEnabled(import.meta.env) ? 'Supabase DEV · lectura durable después de guardar' : 'BLOQUEADA · VITE_EDITORIAL_DEV_SYNC_ENABLED deshabilitado'}</p>
+          <p role="status">
+            Persistencia:{' '}
+            {editorialDevSyncEnabled(import.meta.env)
+              ? 'Supabase DEV · lectura durable después de guardar'
+              : 'BLOQUEADA · VITE_EDITORIAL_DEV_SYNC_ENABLED deshabilitado'}
+          </p>
           <p>Organiza tus ideas, prepara cada canal y decide qué sigue.</p>
         </div>
         <div className="toolbar">
@@ -291,16 +304,18 @@ export function SocialContentPage() {
           Operación en curso en DEV. Espera su resultado antes de decidir otra acción.
         </div>
       )}
-      {error && (
-        <div role="alert" className="error-state">
-          {error}
-        </div>
-      )}
-      {notice && (
-        <div role="status" className="info-state">
-          {notice}
-        </div>
-      )}
+      <div ref={feedbackRef} tabIndex={-1}>
+        {error && (
+          <div role="alert" className="error-state">
+            {error}
+          </div>
+        )}
+        {notice && (
+          <div role="status" className="info-state">
+            {notice}
+          </div>
+        )}
+      </div>
       <section className="editorial-today card stack">
         <div>
           <p className="eyebrow">DATOS OBSERVADOS · {plan.today}</p>
@@ -515,7 +530,7 @@ export function SocialContentPage() {
                 const next = await programEditorial(current, date, new Date(), () =>
                   crypto.randomUUID(),
                 );
-                const confirmed = await saveEditorialItemInDev(next);
+                const confirmed = await saveEditorialItemInDev(next, undefined, resolveProducts);
                 setItems((all) =>
                   all.map((item) =>
                     item.publication.id === current.publication.id ? confirmed : item,
