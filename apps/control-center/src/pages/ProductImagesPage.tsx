@@ -14,11 +14,16 @@ import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
 import { productsComposition } from '../composition/products';
 import {
+  imageFileFromUrl,
+  optimizeProductImage,
+  LIHEN_MAX_IMAGES,
+} from '../lib/product-image-webp';
+import {
   visualIntelligenceComposition,
   type VisualIntelligenceSessionSummary,
 } from '../composition/visual-intelligence';
 
-const MAX_GALLERY_IMAGES = 10;
+const MAX_GALLERY_IMAGES = LIHEN_MAX_IMAGES;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -26,6 +31,7 @@ type StagedImage = {
   readonly key: string;
   readonly file: File;
   readonly previewUrl: string;
+  readonly originalBytes: number;
 };
 
 async function sha256Hex(file: File): Promise<string> {
@@ -58,6 +64,7 @@ export function ProductImagesPage() {
   const [publicUrl, setPublicUrl] = useState('');
   const [staged, setStaged] = useState<readonly StagedImage[]>([]);
   const [stagedMessage, setStagedMessage] = useState('');
+  const [optimizing, setOptimizing] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [altText, setAltText] = useState('');
   const [makeMain, setMakeMain] = useState(false);
@@ -215,31 +222,62 @@ export function ProductImagesPage() {
     }
   }
 
-  function stageFiles(files: readonly File[]): void {
-    if (!productsComposition.canReadImages) {
-      setStagedMessage('La galería no está disponible para comprobar el límite de 10.');
+  async function stageFiles(files: readonly File[]): Promise<void> {
+    if (!productsComposition.canReadImages || optimizing) {
+      setStagedMessage('Espera a que finalice la conversión o habilita la lectura de galería.');
       return;
     }
-    const room = Math.max(0, MAX_GALLERY_IMAGES - images.length - staged.length);
-    const currentKeys = new Set(staged.map((entry) => entry.key));
+    setOptimizing(true);
+    const remaining = Math.max(0, LIHEN_MAX_IMAGES - images.length - staged.length);
+    const seen = new Set(staged.map((entry) => entry.key));
     const incoming: StagedImage[] = [];
-    const rejected: string[] = [];
-    for (const file of files) {
-      const key = `${file.name}:${file.size}:${file.lastModified}`;
-      if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
-        rejected.push(`${file.name}: formato o tamaño no permitido`);
-      } else if (currentKeys.has(key)) {
-        rejected.push(`${file.name}: duplicada en esta selección`);
-      } else if (incoming.length >= room) {
-        rejected.push('Límite de 10 imágenes alcanzado');
-        break;
-      } else {
-        currentKeys.add(key);
-        incoming.push({ key, file, previewUrl: URL.createObjectURL(file) });
+    const errors: string[] = [];
+    try {
+      for (const source of files) {
+        if (incoming.length >= remaining) {
+          errors.push('Máximo 10 imágenes por producto.');
+          break;
+        }
+        try {
+          const optimized = await optimizeProductImage(source);
+          const hash = await sha256Hex(optimized.file);
+          if (seen.has(hash)) {
+            errors.push(`${source.name}: duplicado.`);
+            continue;
+          }
+          seen.add(hash);
+          incoming.push({
+            key: hash,
+            file: optimized.file,
+            originalBytes: optimized.originalBytes,
+            previewUrl: URL.createObjectURL(optimized.file),
+          });
+        } catch (error) {
+          errors.push(
+            `${source.name}: ${error instanceof Error ? error.message : 'Error de conversión'}`,
+          );
+        }
       }
+      setStaged((previous) => [...previous, ...incoming]);
+      setStagedMessage(
+        [incoming.length ? `${incoming.length} imagen(es) convertida(s) a WebP.` : '', ...errors]
+          .filter(Boolean)
+          .join(' '),
+      );
+    } finally {
+      setOptimizing(false);
     }
-    setStaged((previous) => [...previous, ...incoming]);
-    setStagedMessage([`${incoming.length} imagen(es) seleccionadas.`, ...rejected].join(' '));
+  }
+
+  async function stageUrlImage(): Promise<void> {
+    setStagedMessage('Importando URL y convirtiendo a WebP…');
+    try {
+      const source = await imageFileFromUrl(publicUrl);
+      await stageFiles([source]);
+      setPublicUrl('');
+    } catch (error) {
+      setStagedMessage(error instanceof Error ? error.message : 'No fue posible importar la URL.');
+    }
   }
 
   function removeStaged(key: string): void {
@@ -256,34 +294,15 @@ export function ProductImagesPage() {
     );
     if (image) {
       event.preventDefault();
-      stageFiles([image]);
+      void stageFiles([image]);
     }
   }
 
   async function handleAdd(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (!id || !productsComposition.canManageImages) return;
-    if (!productsComposition.canReadImages || images.length >= MAX_GALLERY_IMAGES || !authorized) {
-      setError('Revisa el máximo de 10 imágenes y confirma autorización de uso.');
-      return;
-    }
-    setError(null);
-    try {
-      await productsComposition.addProductImage.execute(
-        createAddProductImageCommand({
-          productId: id,
-          publicUrl,
-          ...(altText.trim() ? { altText } : {}),
-          makeMain,
-        }),
-      );
-      setPublicUrl('');
-      setAltText('');
-      setMakeMain(false);
-      await refresh(id);
-    } catch {
-      setError('No fue posible agregar la imagen. Verifica la URL y vuelve a intentarlo.');
-    }
+    setError(
+      'La URL debe convertirse a WebP y guardarse mediante Storage DEV autorizado. El registro directo está bloqueado.',
+    );
   }
 
   async function handleSetMain(imageId: string): Promise<void> {
@@ -509,7 +528,7 @@ export function ProductImagesPage() {
 
           <section className="detail-card" aria-labelledby="image-intake-title">
             <h2 id="image-intake-title">
-              Incorporar imágenes · {images.length + staged.length}/{MAX_GALLERY_IMAGES}
+              Incorporar imágenes · {images.length + staged.length}/{LIHEN_MAX_IMAGES}
             </h2>
             <p className="muted-text">
               Adjuntar y arrastrar: varias a la vez. Pegar Ctrl+V: una a la vez. URL: una a la vez.
@@ -522,7 +541,7 @@ export function ProductImagesPage() {
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
-                stageFiles(Array.from(event.dataTransfer.files));
+                void stageFiles(Array.from(event.dataTransfer.files));
               }}
               style={{ border: '2px dashed #c2a2c8', borderRadius: 12, padding: 20 }}
             >
@@ -534,16 +553,20 @@ export function ProductImagesPage() {
                   multiple
                   accept="image/jpeg,image/png,image/webp"
                   disabled={
+                    optimizing ||
                     !productsComposition.canReadImages ||
-                    images.length + staged.length >= MAX_GALLERY_IMAGES
+                    images.length + staged.length >= LIHEN_MAX_IMAGES
                   }
                   onChange={(event) => {
-                    stageFiles(Array.from(event.target.files ?? []));
+                    void stageFiles(Array.from(event.target.files ?? []));
                     event.target.value = '';
                   }}
                 />
               </label>
-              <small>JPG, PNG y WebP, hasta 12 MB por archivo.</small>
+              <small>
+                JPG, PNG y WebP hasta 12 MB. Conversión automática: WebP calidad 0,85, máximo 2000
+                px.
+              </small>
             </div>
             {stagedMessage ? <p role="status">{stagedMessage}</p> : null}
             {staged.length > 0 ? (
@@ -551,7 +574,10 @@ export function ProductImagesPage() {
                 {staged.map((entry) => (
                   <article className="image-card" key={entry.key}>
                     <img src={entry.previewUrl} alt={entry.file.name} />
-                    <p>{entry.file.name}</p>
+                    <p>
+                      {entry.file.name} · {(entry.originalBytes / 1024).toFixed(0)} KB →{' '}
+                      {(entry.file.size / 1024).toFixed(0)} KB WebP
+                    </p>
                     <button type="button" onClick={() => removeStaged(entry.key)}>
                       Quitar
                     </button>
@@ -573,6 +599,31 @@ export function ProductImagesPage() {
                 autorización de Storage DEV y la integración de persistencia.
               </p>
             ) : null}
+          </section>
+
+          <section className="detail-card" aria-labelledby="webp-url-title">
+            <h2 id="webp-url-title">Importar imagen desde URL HTTPS</h2>
+            <p className="muted-text">
+              Una por operación. La URL se descarga y convierte a WebP antes de preparar la vista
+              previa; enlaces sin CORS se rechazan.
+            </p>
+            <label>
+              URL de imagen
+              <input
+                type="url"
+                value={publicUrl}
+                onChange={(event) => setPublicUrl(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              disabled={
+                !publicUrl || optimizing || images.length + staged.length >= LIHEN_MAX_IMAGES
+              }
+              onClick={() => void stageUrlImage()}
+            >
+              Convertir URL a WebP
+            </button>
           </section>
 
           <section className="detail-card" aria-labelledby="media-registration-title">
@@ -612,13 +663,10 @@ export function ProductImagesPage() {
                 </label>
                 <button
                   type="submit"
-                  disabled={
-                    !authorized ||
-                    !productsComposition.canReadImages ||
-                    images.length >= MAX_GALLERY_IMAGES
-                  }
+                  disabled
+                  title="La URL original no se registra: primero debe convertirse y subirse como WebP autorizado"
                 >
-                  Agregar imagen por URL
+                  Registro directo de URL deshabilitado
                 </button>
               </form>
             )}
