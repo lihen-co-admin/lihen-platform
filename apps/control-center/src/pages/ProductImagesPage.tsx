@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState, type ClipboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  createAddProductImageCommand,
   createGetProductImagesQuery,
   createSetMainProductImageCommand,
   type ProductDetailDTO,
@@ -23,8 +22,6 @@ import {
   type VisualIntelligenceSessionSummary,
 } from '../composition/visual-intelligence';
 
-const MAX_GALLERY_IMAGES = LIHEN_MAX_IMAGES;
-const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type StagedImage = {
