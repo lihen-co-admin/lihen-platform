@@ -301,7 +301,6 @@ export function ProductImagesPage() {
       !id ||
       !authorized ||
       !productsComposition.canUploadWebp ||
-      !productsComposition.canManageImages ||
       !productsComposition.canReadImages
     ) {
       setError(
