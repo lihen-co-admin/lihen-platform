@@ -16,7 +16,8 @@ export const PRODUCT_IMAGE_ALLOWED_WEB_MIME_TYPES = [
   'image/png',
 ] as const;
 
-export type ProductImageOriginalMimeType = (typeof PRODUCT_IMAGE_ALLOWED_ORIGINAL_MIME_TYPES)[number];
+export type ProductImageOriginalMimeType =
+  (typeof PRODUCT_IMAGE_ALLOWED_ORIGINAL_MIME_TYPES)[number];
 export type ProductImageWebMimeType = (typeof PRODUCT_IMAGE_ALLOWED_WEB_MIME_TYPES)[number];
 export type ProductImageStorageVariant = 'ORIGINAL' | 'WEB';
 
@@ -29,6 +30,7 @@ export interface ProductImageStorageCandidate {
 }
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const productUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const sha256Pattern = /^[0-9a-f]{64}$/i;
 
 function assertUuid(value: string, field: string): string {
@@ -37,26 +39,43 @@ function assertUuid(value: string, field: string): string {
   return normalized;
 }
 
+function assertProductUuid(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (!productUuidPattern.test(normalized)) {
+    throw new Error('productId must have canonical UUID structure.');
+  }
+  return normalized;
+}
+
 function assertSha256(value: string): string {
   const normalized = value.trim().toLowerCase();
-  if (!sha256Pattern.test(normalized)) throw new Error('Image sha256 must contain exactly 64 hexadecimal characters.');
+  if (!sha256Pattern.test(normalized))
+    throw new Error('Image sha256 must contain exactly 64 hexadecimal characters.');
   return normalized;
 }
 
 function extensionForMime(mimeType: string): string {
   switch (mimeType) {
-    case 'image/jpeg': return 'jpg';
-    case 'image/png': return 'png';
-    case 'image/webp': return 'webp';
-    default: throw new Error(`Unsupported product image MIME type: ${mimeType}`);
+    case 'image/jpeg':
+      return 'jpg';
+    case 'image/png':
+      return 'png';
+    case 'image/webp':
+      return 'webp';
+    default:
+      throw new Error(`Unsupported product image MIME type: ${mimeType}`);
   }
 }
 
 export function validateOriginalImageCandidate(candidate: ProductImageStorageCandidate): void {
-  assertUuid(candidate.productId, 'productId');
+  assertProductUuid(candidate.productId);
   assertUuid(candidate.imageId, 'imageId');
   assertSha256(candidate.sha256);
-  if (!PRODUCT_IMAGE_ALLOWED_ORIGINAL_MIME_TYPES.includes(candidate.mimeType as ProductImageOriginalMimeType)) {
+  if (
+    !PRODUCT_IMAGE_ALLOWED_ORIGINAL_MIME_TYPES.includes(
+      candidate.mimeType as ProductImageOriginalMimeType,
+    )
+  ) {
     throw new Error(`Original product image MIME type is not allowed: ${candidate.mimeType}`);
   }
   if (!Number.isInteger(candidate.byteSize) || candidate.byteSize <= 0) {
@@ -68,10 +87,12 @@ export function validateOriginalImageCandidate(candidate: ProductImageStorageCan
 }
 
 export function validateWebImageCandidate(candidate: ProductImageStorageCandidate): void {
-  assertUuid(candidate.productId, 'productId');
+  assertProductUuid(candidate.productId);
   assertUuid(candidate.imageId, 'imageId');
   assertSha256(candidate.sha256);
-  if (!PRODUCT_IMAGE_ALLOWED_WEB_MIME_TYPES.includes(candidate.mimeType as ProductImageWebMimeType)) {
+  if (
+    !PRODUCT_IMAGE_ALLOWED_WEB_MIME_TYPES.includes(candidate.mimeType as ProductImageWebMimeType)
+  ) {
     throw new Error(`Web product image MIME type is not allowed: ${candidate.mimeType}`);
   }
   if (!Number.isInteger(candidate.byteSize) || candidate.byteSize <= 0) {
