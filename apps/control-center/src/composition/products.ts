@@ -99,7 +99,17 @@ export interface ProductsComposition {
   readonly canManageImages: boolean;
   readonly canReadImages: boolean;
   readonly canUploadWebp: boolean;
-  readonly uploadProductWebp: (productId: string, file: File) => Promise<string>;
+  readonly uploadProductWebp: (
+    productId: string,
+    file: File,
+  ) => Promise<{ readonly imageId: string; readonly sha256: string }>;
+  readonly registerProductWebp: (input: {
+    productId: string;
+    imageId: string;
+    sha256: string;
+    altText: string;
+    makeMain: boolean;
+  }) => Promise<void>;
   readonly canReadCanonicalTaxonomy: boolean;
   readonly repository: ProductRepository;
   readonly brandRepository: BrandRepository;
@@ -130,8 +140,7 @@ export function createProductsComposition(
   // Explicit independent opt-in. Never enabled by image-read configuration.
   const webpStorageEnabled =
     env.VITE_PRODUCT_WEBP_STORAGE_WRITE_MODE === 'controlled' &&
-    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' &&
-    productImageWriteEnabled;
+    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase';
 
   const repository: ProductRepository & ProductPricingRepository =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
@@ -167,7 +176,10 @@ export function createProductsComposition(
           webDerivativeUploadEnabled: webpStorageEnabled,
         })
       : null;
-  async function uploadProductWebp(productId: string, file: File): Promise<string> {
+  async function uploadProductWebp(
+    productId: string,
+    file: File,
+  ): Promise<{ readonly imageId: string; readonly sha256: string }> {
     if (!webpStorageEnabled || !webpStore) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId)) throw new Error('Invalid product ID');
     if (file.type !== 'image/webp' || file.size === 0 || file.size > PRODUCT_IMAGE_WEB_MAX_BYTES) {
@@ -177,16 +189,35 @@ export function createProductsComposition(
     const sha256 = Array.from(new Uint8Array(digest), (byte) =>
       byte.toString(16).padStart(2, '0'),
     ).join('');
+    const imageId = crypto.randomUUID();
     const asset = await webpStore.uploadWebDerivative({
       productId,
-      imageId: crypto.randomUUID(),
+      imageId,
       sha256,
       mimeType: 'image/webp',
       byteSize: file.size,
       body: file,
     });
     if (!asset.publicUrl) throw new Error('Storage no devolvió URL pública verificable.');
-    return asset.publicUrl;
+    return { imageId, sha256 };
+  }
+  async function registerProductWebp(input: {
+    productId: string;
+    imageId: string;
+    sha256: string;
+    altText: string;
+    makeMain: boolean;
+  }): Promise<void> {
+    if (!webpStorageEnabled) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
+    const { error } = await getBrowserSupabaseClient(env).rpc('add_product_webp_image_controlled', {
+      p_operation_key: crypto.randomUUID(),
+      p_image_id: input.imageId,
+      p_product_id: input.productId,
+      p_sha256: input.sha256,
+      p_alt_text: input.altText,
+      p_make_main: input.makeMain,
+    });
+    if (error) throw new Error(`El registro WebP fue rechazado: ${error.message}`);
   }
 
   const ids = new UuidGenerator();
@@ -213,6 +244,7 @@ export function createProductsComposition(
       (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImagesReadEnabled),
     canUploadWebp: webpStorageEnabled,
     uploadProductWebp,
+    registerProductWebp,
     canReadCanonicalTaxonomy: true,
     repository,
     brandRepository,

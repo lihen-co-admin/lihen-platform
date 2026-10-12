@@ -324,15 +324,14 @@ export function ProductImagesPage() {
       for (const entry of staged) {
         const file = entry.file;
         if (file.type !== 'image/webp') throw new Error('El archivo preparado no es WebP.');
-        const url = await productsComposition.uploadProductWebp(id, file);
-        await productsComposition.addProductImage.execute(
-          createAddProductImageCommand({
-            productId: id,
-            publicUrl: url,
-            altText: file.name.replace(/\.webp$/i, ''),
-            makeMain: registeredCount === 0,
-          }),
-        );
+        const uploaded = await productsComposition.uploadProductWebp(id, file);
+        await productsComposition.registerProductWebp({
+          productId: id,
+          imageId: uploaded.imageId,
+          sha256: uploaded.sha256,
+          altText: file.name.replace(/\.webp$/i, ''),
+          makeMain: registeredCount === 0,
+        });
         registeredCount++;
       }
       await refresh(id);
