@@ -62,6 +62,7 @@ export function ProductImagesPage() {
   const [product, setProduct] = useState<ProductDetailDTO | null>(null);
   const [images, setImages] = useState<readonly ProductImageDTO[]>([]);
   const [publicUrl, setPublicUrl] = useState('');
+  const [webpSaveBusy, setWebpSaveBusy] = useState(false);
   const [staged, setStaged] = useState<readonly StagedImage[]>([]);
   const [stagedMessage, setStagedMessage] = useState('');
   const [optimizing, setOptimizing] = useState(false);
@@ -295,6 +296,55 @@ export function ProductImagesPage() {
     if (image) {
       event.preventDefault();
       void stageFiles([image]);
+    }
+  }
+
+  async function saveOptimizedImages(): Promise<void> {
+    if (
+      !id ||
+      !authorized ||
+      !productsComposition.canUploadWebp ||
+      !productsComposition.canManageImages ||
+      !productsComposition.canReadImages
+    ) {
+      setError(
+        'Para guardar WebP debes confirmar autorización y habilitar escritura controlada en DEV.',
+      );
+      return;
+    }
+    if (!staged.length || images.length + staged.length > 10) {
+      setError('Verifica que la galería tenga entre 1 y 10 imágenes en total.');
+      return;
+    }
+    setWebpSaveBusy(true);
+    setError(null);
+    try {
+      // Sequential uploads keep gallery count bounded; never register before uploading.
+      let registeredCount = images.length;
+      for (const entry of staged) {
+        const file = entry.file;
+        if (file.type !== 'image/webp') throw new Error('El archivo preparado no es WebP.');
+        const url = await productsComposition.uploadProductWebp(id, file);
+        await productsComposition.addProductImage.execute(
+          createAddProductImageCommand({
+            productId: id,
+            publicUrl: url,
+            altText: file.name.replace(/\.webp$/i, ''),
+            makeMain: registeredCount === 0,
+          }),
+        );
+        registeredCount++;
+      }
+      await refresh(id);
+      setStaged([]);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? `No se completó el guardado WebP: ${cause.message}. Verifica la galería antes de reintentar; podría existir un archivo pendiente en Storage.`
+          : 'No se completó el guardado WebP.',
+      );
+    } finally {
+      setWebpSaveBusy(false);
     }
   }
 
@@ -623,6 +673,33 @@ export function ProductImagesPage() {
               onClick={() => void stageUrlImage()}
             >
               Convertir URL a WebP
+            </button>
+          </section>
+
+          <section className="detail-card" aria-label="Guardar archivos WebP optimizados">
+            <h2>Guardar imágenes optimizadas</h2>
+            <p>
+              Se almacenará exclusivamente la versión WebP y después se registrará en Product Master
+              DEV. No inicia publicaciones.
+            </p>
+            {!productsComposition.canUploadWebp ? (
+              <p role="status">
+                Guardado deshabilitado: requiere habilitación controlada de Storage y Product Images
+                en DEV.
+              </p>
+            ) : null}
+            <button
+              type="button"
+              disabled={
+                !authorized ||
+                !staged.length ||
+                webpSaveBusy ||
+                !productsComposition.canUploadWebp ||
+                images.length + staged.length > 10
+              }
+              onClick={() => void saveOptimizedImages()}
+            >
+              {webpSaveBusy ? 'Guardando WebP…' : `Guardar ${staged.length} WebP en Product Master`}
             </button>
           </section>
 

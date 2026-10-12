@@ -19,6 +19,8 @@ import {
   Product,
   SetMainProductImageHandler,
   SupabaseProductImageRepository,
+  SupabaseProductImageStorage,
+  PRODUCT_IMAGE_WEB_MAX_BYTES,
   SupabaseProductRepository,
   SupabaseBrandRepository,
   SupabaseCategoryRepository,
@@ -32,13 +34,35 @@ import {
 import { Money } from '@lihen/shared';
 
 const developmentBrands = [
-  new Brand({ id: 'brand-demo-beauty', name: 'Marca Beauty Demo', normalizedName: 'marca beauty demo', status: 'ACTIVE' }),
-  new Brand({ id: 'brand-demo-style', name: 'Marca Style Demo', normalizedName: 'marca style demo', status: 'ACTIVE' }),
+  new Brand({
+    id: 'brand-demo-beauty',
+    name: 'Marca Beauty Demo',
+    normalizedName: 'marca beauty demo',
+    status: 'ACTIVE',
+  }),
+  new Brand({
+    id: 'brand-demo-style',
+    name: 'Marca Style Demo',
+    normalizedName: 'marca style demo',
+    status: 'ACTIVE',
+  }),
 ] as const;
 
 const developmentCategories = [
-  new Category({ id: 'category-beauty-care', name: 'Beauty Care', normalizedName: 'beauty care', businessLine: 'BEAUTY_CARE', status: 'ACTIVE' }),
-  new Category({ id: 'category-style', name: 'Style', normalizedName: 'style', businessLine: 'STYLE', status: 'ACTIVE' }),
+  new Category({
+    id: 'category-beauty-care',
+    name: 'Beauty Care',
+    normalizedName: 'beauty care',
+    businessLine: 'BEAUTY_CARE',
+    status: 'ACTIVE',
+  }),
+  new Category({
+    id: 'category-style',
+    name: 'Style',
+    normalizedName: 'style',
+    businessLine: 'STYLE',
+    status: 'ACTIVE',
+  }),
 ] as const;
 
 const developmentProducts = [
@@ -74,6 +98,8 @@ export interface ProductsComposition {
   readonly canReadPriceHistory: boolean;
   readonly canManageImages: boolean;
   readonly canReadImages: boolean;
+  readonly canUploadWebp: boolean;
+  readonly uploadProductWebp: (productId: string, file: File) => Promise<string>;
   readonly canReadCanonicalTaxonomy: boolean;
   readonly repository: ProductRepository;
   readonly brandRepository: BrandRepository;
@@ -101,6 +127,11 @@ export function createProductsComposition(
   const priceHistoryReadEnabled = parsedEnv.VITE_PRODUCT_PRICE_HISTORY_READ_MODE === 'controlled';
   const productImagesReadEnabled = parsedEnv.VITE_PRODUCT_IMAGES_READ_MODE === 'controlled';
   const productImageWriteEnabled = parsedEnv.VITE_PRODUCT_IMAGE_WRITE_MODE === 'controlled';
+  // Explicit independent opt-in. Never enabled by image-read configuration.
+  const webpStorageEnabled =
+    env.VITE_PRODUCT_WEBP_STORAGE_WRITE_MODE === 'controlled' &&
+    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' &&
+    productImageWriteEnabled;
 
   const repository: ProductRepository & ProductPricingRepository =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
@@ -129,28 +160,59 @@ export function createProductsComposition(
         })
       : new InMemoryProductImageRepository();
 
+  const webpStore =
+    parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
+      ? new SupabaseProductImageStorage(getBrowserSupabaseClient(env), {
+          originalUploadEnabled: false,
+          webDerivativeUploadEnabled: webpStorageEnabled,
+        })
+      : null;
+  async function uploadProductWebp(productId: string, file: File): Promise<string> {
+    if (!webpStorageEnabled || !webpStore) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
+    if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId)) throw new Error('Invalid product ID');
+    if (file.type !== 'image/webp' || file.size === 0 || file.size > PRODUCT_IMAGE_WEB_MAX_BYTES) {
+      throw new Error('WebP inválido o superior a 3 MB.');
+    }
+    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+    const sha256 = Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('');
+    const asset = await webpStore.uploadWebDerivative({
+      productId,
+      imageId: crypto.randomUUID(),
+      sha256,
+      mimeType: 'image/webp',
+      byteSize: file.size,
+      body: file,
+    });
+    if (!asset.publicUrl) throw new Error('Storage no devolvió URL pública verificable.');
+    return asset.publicUrl;
+  }
+
   const ids = new UuidGenerator();
 
   return {
     source: parsedEnv.VITE_PRODUCT_READ_SOURCE,
     canCreate:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledCreateEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledCreateEnabled),
     canUpdate:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledUpdateEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledUpdateEnabled),
     canChangePrice:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledPriceChangeEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledPriceChangeEnabled),
     canReadPriceHistory:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && priceHistoryReadEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && priceHistoryReadEnabled),
     canManageImages:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImageWriteEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImageWriteEnabled),
     canReadImages:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory'
-      || (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImagesReadEnabled),
+      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && productImagesReadEnabled),
+    canUploadWebp: webpStorageEnabled,
+    uploadProductWebp,
     canReadCanonicalTaxonomy: true,
     repository,
     brandRepository,
@@ -159,17 +221,8 @@ export function createProductsComposition(
     getProductById: new GetProductByIdHandler(repository, brandRepository, categoryRepository),
     getBrands: new GetBrandsHandler(brandRepository),
     getCategories: new GetCategoriesHandler(categoryRepository),
-    createProduct: new CreateProductHandler(
-      repository,
-      ids,
-      brandRepository,
-      categoryRepository,
-    ),
-    updateProduct: new UpdateProductHandler(
-      repository,
-      brandRepository,
-      categoryRepository,
-    ),
+    createProduct: new CreateProductHandler(repository, ids, brandRepository, categoryRepository),
+    updateProduct: new UpdateProductHandler(repository, brandRepository, categoryRepository),
     changeProductSalePrice: new ChangeProductSalePriceHandler(
       repository,
       repository,
