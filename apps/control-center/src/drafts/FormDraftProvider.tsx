@@ -48,6 +48,26 @@ class DraftRegistry {
     return session as LocalFormDraft<T>;
   }
 
+  listEntities(module: string, form: string) {
+    if (!this.enabled || !this.userId)
+      return { enabled: false, entities: [] as string[], storageError: false };
+    try {
+      const head =
+        'lihen:dev:form-draft:v1:' +
+        encodeURIComponent(this.userId) +
+        ':' +
+        encodeURIComponent(module) +
+        ':';
+      const tail = ':' + encodeURIComponent(form);
+      const entities = Object.keys(window.localStorage)
+        .filter((key) => key.startsWith(head) && key.endsWith(tail))
+        .map((key) => decodeURIComponent(key.slice(head.length, -tail.length)));
+      return { enabled: true, entities, storageError: false };
+    } catch {
+      return { enabled: true, entities: [] as string[], storageError: true };
+    }
+  }
+
   hasUnsaved(): boolean {
     return [...this.sessions.values()].some((session) => session.getSnapshot().dirty);
   }
@@ -99,16 +119,23 @@ export function FormDraftProvider({
 }
 
 export function useLocalFormDraft<T>(
-  scope: Omit<DraftScope, 'userId'>,
+  scope: Omit<DraftScope, 'userId'> | null,
   codec: DraftCodec<T>,
   initial: T,
 ) {
   const registry = useContext(DraftContext);
-  const session = registry?.open(scope, codec, initial) ?? null;
+  const session = scope ? (registry?.open(scope, codec, initial) ?? null) : null;
   const snapshot = useSyncExternalStore(
     session?.subscribe ?? (() => () => {}),
     session?.getSnapshot ?? (() => null),
   );
   useEffect(() => () => session?.suspend(), [session]);
   return { session, snapshot };
+}
+
+export function useDraftEntities(module: string, form: string) {
+  const registry = useContext(DraftContext);
+  return (
+    registry?.listEntities(module, form) ?? { enabled: false, entities: [], storageError: false }
+  );
 }

@@ -25,6 +25,7 @@ test('navigation, browser back and refresh preserve drafts with explicit restora
   await page.goto(url);
   await name(page).fill('Borrador conservado');
   await page.getByRole('link', { name: 'Otro módulo', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Otro m\u00f3dulo' })).toBeVisible();
   await page.goBack();
   await restore(page).click();
   await expect(name(page)).toHaveValue('Borrador conservado');

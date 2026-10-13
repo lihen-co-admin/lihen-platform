@@ -3,9 +3,13 @@ import type { LocalFormDraft, DraftSnapshot } from './local-form-draft';
 export function FormDraftNotice<T>({
   session,
   snapshot,
+  uncertainHelp,
+  cleanHelp,
 }: {
   session: LocalFormDraft<T> | null;
   snapshot: DraftSnapshot<T> | null;
+  uncertainHelp?: string;
+  cleanHelp?: string;
 }) {
   if (!session || !snapshot) return null;
   return (
@@ -17,7 +21,8 @@ export function FormDraftNotice<T>({
             ? 'Resultado de guardado pendiente de verificar. No se enviarán reintentos automáticamente.'
             : snapshot.dirty
               ? 'Cambios sin guardar en Supabase. Borrador local conservado en este navegador.'
-              : 'Datos cargados del servidor. Los cambios se conservarán como borrador local.'}
+              : (cleanHelp ??
+                'Datos cargados del servidor. Los cambios se conservarán como borrador local.')}
       </p>
       {snapshot.storageError ? (
         <p role="alert">
@@ -43,8 +48,8 @@ export function FormDraftNotice<T>({
       ) : null}
       {snapshot.operation?.phase === 'UNCERTAIN' ? (
         <p>
-          Verifica el resultado antes de reintentar. El reintento conserva la misma operación y
-          bloquea cambios de contenido.
+          {uncertainHelp ??
+            'Verifica el resultado antes de reintentar. El reintento conserva la misma operaci\u00f3n y bloquea cambios de contenido.'}
         </p>
       ) : null}
     </aside>
