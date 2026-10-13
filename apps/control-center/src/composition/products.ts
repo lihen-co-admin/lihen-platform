@@ -19,11 +19,11 @@ import {
   Product,
   SetMainProductImageHandler,
   SupabaseProductImageRepository,
-  SupabaseProductImageStorage,
-  PRODUCT_IMAGE_WEB_MAX_BYTES,
   SupabaseProductRepository,
   SupabaseBrandRepository,
   SupabaseCategoryRepository,
+  SupabaseProductImageStorage,
+  PRODUCT_IMAGE_WEB_MAX_BYTES,
   UpdateProductHandler,
   type BrandRepository,
   type CategoryRepository,
@@ -102,11 +102,19 @@ export interface ProductsComposition {
   readonly uploadProductWebp: (
     productId: string,
     file: File,
-  ) => Promise<{ readonly imageId: string; readonly sha256: string }>;
+    ownerId: string,
+  ) => Promise<{
+    readonly imageId: string;
+    readonly sha256: string;
+    readonly operationKey: string;
+    readonly ownerId: string;
+  }>;
   readonly registerProductWebp: (input: {
     productId: string;
     imageId: string;
     sha256: string;
+    operationKey: string;
+    ownerId: string;
     altText: string;
     makeMain: boolean;
   }) => Promise<void>;
@@ -168,7 +176,6 @@ export function createProductsComposition(
           controlledWriteEnabled: productImageWriteEnabled,
         })
       : new InMemoryProductImageRepository();
-
   const webpStore =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
       ? new SupabaseProductImageStorage(getBrowserSupabaseClient(env), {
@@ -176,20 +183,35 @@ export function createProductsComposition(
           webDerivativeUploadEnabled: webpStorageEnabled,
         })
       : null;
+
   async function uploadProductWebp(
     productId: string,
     file: File,
-  ): Promise<{ readonly imageId: string; readonly sha256: string }> {
+    ownerId: string,
+  ): Promise<{
+    readonly imageId: string;
+    readonly sha256: string;
+    readonly operationKey: string;
+    readonly ownerId: string;
+  }> {
     if (!webpStorageEnabled || !webpStore) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId)) throw new Error('Invalid product ID');
-    if (file.type !== 'image/webp' || file.size === 0 || file.size > PRODUCT_IMAGE_WEB_MAX_BYTES) {
+    if (file.type !== 'image/webp' || file.size <= 0 || file.size > PRODUCT_IMAGE_WEB_MAX_BYTES) {
       throw new Error('WebP inválido o superior a 3 MB.');
     }
+    const client = getBrowserSupabaseClient(env);
+    const { data, error } = await client.auth.getUser();
+    if (error) throw new Error(`No se pudo confirmar el usuario autenticado: ${error.message}`);
+    if (!data.user || data.user.id !== ownerId) {
+      throw new Error('La sesión cambió; vuelve a iniciar el guardado con el usuario autorizado.');
+    }
+
     const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
     const sha256 = Array.from(new Uint8Array(digest), (byte) =>
       byte.toString(16).padStart(2, '0'),
     ).join('');
     const imageId = crypto.randomUUID();
+    const operationKey = crypto.randomUUID();
     const asset = await webpStore.uploadWebDerivative({
       productId,
       imageId,
@@ -199,18 +221,28 @@ export function createProductsComposition(
       body: file,
     });
     if (!asset.publicUrl) throw new Error('Storage no devolvió URL pública verificable.');
-    return { imageId, sha256 };
+    return { imageId, sha256, operationKey, ownerId };
   }
+
   async function registerProductWebp(input: {
     productId: string;
     imageId: string;
     sha256: string;
+    operationKey: string;
+    ownerId: string;
     altText: string;
     makeMain: boolean;
   }): Promise<void> {
     if (!webpStorageEnabled) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
-    const { error } = await getBrowserSupabaseClient(env).rpc('add_product_webp_image_controlled', {
-      p_operation_key: crypto.randomUUID(),
+    const client = getBrowserSupabaseClient(env);
+    const { data, error: authError } = await client.auth.getUser();
+    if (authError)
+      throw new Error(`No se pudo confirmar el usuario autenticado: ${authError.message}`);
+    if (!data.user || data.user.id !== input.ownerId) {
+      throw new Error('La sesión cambió; solo el usuario que subió el WebP puede registrarlo.');
+    }
+    const { error } = await client.rpc('add_product_webp_image_controlled', {
+      p_operation_key: input.operationKey,
       p_image_id: input.imageId,
       p_product_id: input.productId,
       p_sha256: input.sha256,

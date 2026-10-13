@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState, type ClipboardEvent } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   createGetProductImagesQuery,
@@ -11,6 +11,8 @@ import { AdminPageHero } from '../components/AdminPageHero';
 import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
+import { useAuth } from '../auth/auth-context';
+import { saveProductWebpQueue, type ProductWebpProgress } from '../composition/product-webp-save';
 import { productsComposition } from '../composition/products';
 import {
   imageFileFromUrl,
@@ -56,6 +58,7 @@ function mediaStatusLabel(images: readonly ProductImageDTO[], canReadImages: boo
 
 export function ProductImagesPage() {
   const { id } = useParams();
+  const auth = useAuth();
   const [product, setProduct] = useState<ProductDetailDTO | null>(null);
   const [images, setImages] = useState<readonly ProductImageDTO[]>([]);
   const [publicUrl, setPublicUrl] = useState('');
@@ -68,11 +71,18 @@ export function ProductImagesPage() {
   const [makeMain, setMakeMain] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState('');
+  const [webpProgress, setWebpProgress] = useState<readonly ProductWebpProgress[]>([]);
   const [lensBusy, setLensBusy] = useState(false);
   const [lensError, setLensError] = useState<string | null>(null);
   const [lensSession, setLensSession] = useState<VisualIntelligenceSessionSummary | null>(null);
   const [lensPreviewUrl, setLensPreviewUrl] = useState<string | null>(null);
   const [lensFileName, setLensFileName] = useState<string | null>(null);
+
+  const stagedRef = useRef(staged);
+  stagedRef.current = staged;
+  const isAuthorizedWebpOperator =
+    auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '');
 
   const mainImage = useMemo(() => images.find((image) => image.isMain) ?? null, [images]);
   const altCoverage = useMemo(
@@ -182,6 +192,13 @@ export function ProductImagesPage() {
     [lensPreviewUrl],
   );
 
+  useEffect(
+    () => () => {
+      for (const entry of stagedRef.current) URL.revokeObjectURL(entry.previewUrl);
+    },
+    [],
+  );
+
   async function handleLensAttachment(file?: File): Promise<void> {
     if (!file || !id || !visualIntelligenceComposition.enabled) return;
     setLensBusy(true);
@@ -221,7 +238,7 @@ export function ProductImagesPage() {
   }
 
   async function stageFiles(files: readonly File[]): Promise<void> {
-    if (!productsComposition.canReadImages || optimizing) {
+    if (!productsComposition.canReadImages || optimizing || webpSaveBusy) {
       setStagedMessage('Espera a que finalice la conversión o habilita la lectura de galería.');
       return;
     }
@@ -279,6 +296,7 @@ export function ProductImagesPage() {
   }
 
   function removeStaged(key: string): void {
+    if (webpSaveBusy || webpProgress.some((entry) => entry.key === key)) return;
     setStaged((previous) => {
       const match = previous.find((entry) => entry.key === key);
       if (match) URL.revokeObjectURL(match.previewUrl);
@@ -297,46 +315,54 @@ export function ProductImagesPage() {
   }
 
   async function saveOptimizedImages(): Promise<void> {
+    if (webpSaveBusy || optimizing) return;
     if (
       !id ||
+      !auth.user?.id ||
+      !isAuthorizedWebpOperator ||
       !authorized ||
       !productsComposition.canUploadWebp ||
       !productsComposition.canReadImages
     ) {
       setError(
-        'Para guardar WebP debes confirmar autorización y habilitar escritura controlada en DEV.',
+        'Para guardar WebP, confirma la autorización de uso e inicia sesión con perfil OWNER o ADMIN activo en DEV.',
       );
       return;
     }
-    if (!staged.length || images.length + staged.length > 10) {
-      setError('Verifica que la galería tenga entre 1 y 10 imágenes en total.');
+    if (images.length + staged.length > LIHEN_MAX_IMAGES) {
+      setError(`La galería no puede superar ${LIHEN_MAX_IMAGES} imágenes.`);
       return;
     }
     setWebpSaveBusy(true);
     setError(null);
+    setNotice('');
     try {
-      // Sequential uploads keep gallery count bounded; never register before uploading.
-      let registeredCount = images.length;
-      for (const entry of staged) {
-        const file = entry.file;
-        if (file.type !== 'image/webp') throw new Error('El archivo preparado no es WebP.');
-        const uploaded = await productsComposition.uploadProductWebp(id, file);
-        await productsComposition.registerProductWebp({
-          productId: id,
-          imageId: uploaded.imageId,
-          sha256: uploaded.sha256,
-          altText: file.name.replace(/\.webp$/i, ''),
-          makeMain: registeredCount === 0,
-        });
-        registeredCount++;
-      }
-      await refresh(id);
+      const updatedImages = await saveProductWebpQueue({
+        productId: id,
+        ownerId: auth.user.id,
+        candidates: staged,
+        registeredCount: images.length,
+        progress: webpProgress,
+        upload: productsComposition.uploadProductWebp,
+        register: (entry) => productsComposition.registerProductWebp(entry),
+        onProgress: (entry) =>
+          setWebpProgress((previous) => [
+            ...previous.filter((item) => item.key !== entry.key),
+            entry,
+          ]),
+        readBack: (productId) =>
+          productsComposition.getProductImages.execute(createGetProductImagesQuery(productId)),
+      });
+      setImages(updatedImages);
+      for (const entry of staged) URL.revokeObjectURL(entry.previewUrl);
       setStaged([]);
+      setWebpProgress([]);
+      setNotice('Imágenes WebP registradas y verificadas en Product Master.');
     } catch (cause) {
       setError(
         cause instanceof Error
-          ? `No se completó el guardado WebP: ${cause.message}. Verifica la galería antes de reintentar; podría existir un archivo pendiente en Storage.`
-          : 'No se completó el guardado WebP.',
+          ? `${cause.message} Las subidas confirmadas se conservan en esta pantalla; reintenta para completar el registro o verificar la galería.`
+          : 'No se completó el guardado WebP; las subidas confirmadas se conservaron para reintentar.',
       );
     } finally {
       setWebpSaveBusy(false);
@@ -391,6 +417,12 @@ export function ProductImagesPage() {
       {error ? (
         <div className="error-state" role="alert">
           {error}
+        </div>
+      ) : null}
+
+      {notice ? (
+        <div className="info-state" role="status">
+          {notice}
         </div>
       ) : null}
 
@@ -623,7 +655,18 @@ export function ProductImagesPage() {
                       {entry.file.name} · {(entry.originalBytes / 1024).toFixed(0)} KB →{' '}
                       {(entry.file.size / 1024).toFixed(0)} KB WebP
                     </p>
-                    <button type="button" onClick={() => removeStaged(entry.key)}>
+                    <p role="status">
+                      {webpProgress.find((item) => item.key === entry.key)?.status === 'REGISTERED'
+                        ? 'Registro confirmado; pendiente de verificar lectura.'
+                        : webpProgress.some((item) => item.key === entry.key)
+                          ? 'WebP subido; pendiente de confirmar registro.'
+                          : 'Preparada para guardar.'}
+                    </p>
+                    <button
+                      type="button"
+                      disabled={webpSaveBusy || webpProgress.some((item) => item.key === entry.key)}
+                      onClick={() => removeStaged(entry.key)}
+                    >
                       Quitar
                     </button>
                   </article>
@@ -640,8 +683,8 @@ export function ProductImagesPage() {
             </label>
             {staged.length > 0 ? (
               <p role="status" className="muted-text">
-                Vista previa local solamente. Aún no se han guardado las imágenes: falta la
-                autorización de Storage DEV y la integración de persistencia.
+                Las imágenes preparadas se guardan al confirmar la autorización y pulsar Guardar.
+                Las subidas confirmadas se conservan en esta pantalla para reintentar.
               </p>
             ) : null}
           </section>
@@ -689,6 +732,9 @@ export function ProductImagesPage() {
                 !authorized ||
                 !staged.length ||
                 webpSaveBusy ||
+                optimizing ||
+                !isAuthorizedWebpOperator ||
+                !productsComposition.canReadImages ||
                 !productsComposition.canUploadWebp ||
                 images.length + staged.length > 10
               }
@@ -702,8 +748,8 @@ export function ProductImagesPage() {
             <h2 id="media-registration-title">Registrar media canónica</h2>
             {!productsComposition.canManageImages ? (
               <p className="muted-text">
-                El registro de URL continúa bloqueado por PRODUCT_IMAGE_WRITE. La vista previa de
-                archivos es local; todavía no guarda imágenes. Lens Mode es independiente.
+                El registro directo de URL está bloqueado. Convierte la imagen a WebP y utiliza el
+                guardado controlado. Lens Mode es independiente.
               </p>
             ) : (
               <form className="form-stack" onSubmit={handleAdd}>
