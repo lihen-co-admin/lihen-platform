@@ -20,6 +20,7 @@ jobs:
     name: Build DEV Pages artifact
     runs-on: ubuntu-latest
     env:
+      VITE_LOCAL_FORM_DRAFTS_MODE: controlled
       VITE_PRODUCT_READ_SOURCE: supabase
       VITE_AUTH_MODE: supabase
       VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: "false"
