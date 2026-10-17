@@ -4,6 +4,7 @@ export * from './assurance';
 export * from './orchestrator';
 export * from './provider-ports';
 export * from './capabilities/editorial-research';
+export * from './capabilities/verified-product-images';
 export * from './provider-capability-matrix';
 export * from './control-plane';
 export * from './review-queue';

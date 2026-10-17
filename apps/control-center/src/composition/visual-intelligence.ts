@@ -1,4 +1,59 @@
 import { getBrowserSupabaseClient, parseBrowserEnv } from '@lihen/database';
+import {
+  researchVerifiedProductImages,
+  type ProductImageResearchDependencies,
+  type SearchProductIdentity,
+} from '@lihen/intelligence-core';
+import {
+  evaluateProductMediaSourceReadiness,
+  type ProductDetailDTO,
+  type ProductImageDTO,
+} from '@lihen/products';
+
+/** Product Master does not expose manufacturer/reference/variant today. Never infer them from SKU,
+ * catalog code, category, a crop, a Lens decision or an AI confidence score. */
+export function productImageSearchIdentity(product: ProductDetailDTO): SearchProductIdentity {
+  return {
+    productId: product.id,
+    productName: product.name,
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(product.brandId ? { brandId: product.brandId } : {}),
+    ...(product.brandName ? { brand: product.brandName } : {}),
+  };
+}
+
+export function evaluateExistingProductImage(
+  image: ProductImageDTO,
+  dimensions?: { widthPx: number; heightPx: number },
+) {
+  return {
+    imageId: image.id,
+    identityMatch: 'INSUFFICIENT_EVIDENCE' as const,
+    // Quality is separate from identity; measured dimensions cannot establish exact identity.
+    quality: evaluateProductMediaSourceReadiness({
+      sourceType: image.sourceType,
+      isExactProductMatch: true,
+      publicationEligibility: 'ELIGIBLE_PRIMARY',
+      ...dimensions,
+    }),
+    reasons: [
+      'NO_PHOTOGRAPH_IDENTITY_EVIDENCE',
+      ...(!dimensions ? ['DIMENSIONS_NOT_EXPOSED'] : []),
+    ],
+  };
+}
+
+/** Same SearchPort and authority registry as editorial research; no browser provider/credentials.
+ * Default is explicitly unconfigured: existing runtime has no photograph/rights evidence contract.
+ */
+export function createVerifiedImageResearch(dependencies: ProductImageResearchDependencies = {}) {
+  return {
+    configured: Boolean(dependencies.search && dependencies.photographEvidenceSupported),
+    research: researchVerifiedProductImages,
+    dependencies,
+  };
+}
+export const verifiedImageResearch = createVerifiedImageResearch();
 
 export interface VisualIntelligenceSessionSummary {
   readonly sessionId: string;

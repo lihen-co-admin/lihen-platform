@@ -1,8 +1,15 @@
 import type { ProductImageDTO } from '@lihen/products';
+import {
+  assertManualWebpQueueOnly,
+  type ExternalProductImageSelection,
+} from './external-product-image-save';
 
 export interface ProductWebpCandidate {
   readonly key: string;
   readonly file: File;
+  readonly origin?: 'MANUAL' | 'EXTERNAL_VERIFIED';
+  /** Retained on rejected external attempts; never stripped into a manual candidate. */
+  readonly externalSelection?: ExternalProductImageSelection;
 }
 
 export interface ProductWebpUpload {
@@ -18,6 +25,8 @@ export interface ProductWebpProgress extends ProductWebpUpload {
   readonly altText: string;
   readonly makeMain: boolean;
   readonly status: 'UPLOADED' | 'REGISTERED';
+  readonly origin?: 'MANUAL' | 'EXTERNAL_VERIFIED';
+  readonly externalSelection?: ExternalProductImageSelection;
 }
 
 interface SaveProductWebpQueueInput {
@@ -35,6 +44,7 @@ interface SaveProductWebpQueueInput {
 export async function saveProductWebpQueue(
   input: SaveProductWebpQueueInput,
 ): Promise<readonly ProductImageDTO[]> {
+  assertManualWebpQueueOnly([...input.candidates, ...input.progress]);
   if (!input.productId || !input.ownerId)
     throw new Error('Producto y usuario autenticado requeridos.');
   if (input.candidates.length === 0 || input.registeredCount + input.candidates.length > 10) {

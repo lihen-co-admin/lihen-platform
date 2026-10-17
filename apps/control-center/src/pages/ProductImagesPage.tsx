@@ -11,6 +11,7 @@ import { AdminPageHero } from '../components/AdminPageHero';
 import { IntelligencePanel, type IntelligenceInsight } from '../components/IntelligencePanel';
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
+import { VerifiedProductImagesPanel } from '../components/VerifiedProductImagesPanel';
 import { useAuth } from '../auth/auth-context';
 import { saveProductWebpQueue, type ProductWebpProgress } from '../composition/product-webp-save';
 import { productsComposition } from '../composition/products';
@@ -61,6 +62,9 @@ export function ProductImagesPage() {
   const auth = useAuth();
   const [product, setProduct] = useState<ProductDetailDTO | null>(null);
   const [images, setImages] = useState<readonly ProductImageDTO[]>([]);
+  const [imageDimensions, setImageDimensions] = useState<
+    Readonly<Record<string, { widthPx: number; heightPx: number }>>
+  >({});
   const [publicUrl, setPublicUrl] = useState('');
   const [webpSaveBusy, setWebpSaveBusy] = useState(false);
   const [staged, setStaged] = useState<readonly StagedImage[]>([]);
@@ -480,6 +484,24 @@ export function ProductImagesPage() {
             insights={insights}
           />
 
+          <VerifiedProductImagesPanel
+            key={JSON.stringify([
+              product.id,
+              product.name,
+              product.brandId,
+              product.brandName,
+              auth.user?.id,
+              isAuthorizedWebpOperator,
+            ])}
+            product={product}
+            images={images}
+            dimensions={imageDimensions}
+            galleryReadable={productsComposition.canReadImages}
+            stagedCount={staged.length}
+            authorized={isAuthorizedWebpOperator}
+            userId={auth.user?.id}
+          />
+
           <section className="detail-card lens-panel" aria-labelledby="lens-mode-title">
             <div className="lens-panel__heading">
               <div>
@@ -808,7 +830,17 @@ export function ProductImagesPage() {
               <div className="image-grid">
                 {images.map((image) => (
                   <article className="image-card" key={image.id}>
-                    <img src={image.publicUrl} alt={image.altText ?? product.name} />
+                    <img
+                      src={image.publicUrl}
+                      alt={image.altText ?? product.name}
+                      onLoad={(event) => {
+                        const { naturalWidth, naturalHeight } = event.currentTarget;
+                        setImageDimensions((previous) => ({
+                          ...previous,
+                          [image.id]: { widthPx: naturalWidth, heightPx: naturalHeight },
+                        }));
+                      }}
+                    />
                     <div>
                       <strong>{image.isMain ? 'Principal' : `Orden ${image.sortOrder}`}</strong>
                       <p className="muted-text">{image.altText ?? 'Sin texto alternativo'}</p>
