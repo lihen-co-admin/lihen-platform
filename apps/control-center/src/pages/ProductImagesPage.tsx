@@ -15,17 +15,15 @@ import { VerifiedProductImagesPanel } from '../components/VerifiedProductImagesP
 import { useAuth } from '../auth/auth-context';
 import { saveProductWebpQueue, type ProductWebpProgress } from '../composition/product-webp-save';
 import { productsComposition } from '../composition/products';
-import {
-  imageFileFromUrl,
-  optimizeProductImage,
-  LIHEN_MAX_IMAGES,
-} from '../lib/product-image-webp';
+import { optimizeProductImage, LIHEN_MAX_IMAGES } from '../lib/product-image-webp';
 import {
   visualIntelligenceComposition,
   type VisualIntelligenceSessionSummary,
 } from '../composition/visual-intelligence';
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const HTTPS_IMPORT_BLOCKED_NOTICE =
+  'Importación por URL pendiente de verificación de identidad exacta y derechos comerciales';
 
 type StagedImage = {
   readonly key: string;
@@ -289,14 +287,8 @@ export function ProductImagesPage() {
   }
 
   async function stageUrlImage(): Promise<void> {
-    setStagedMessage('Importando URL y convirtiendo a WebP…');
-    try {
-      const source = await imageFileFromUrl(publicUrl);
-      await stageFiles([source]);
-      setPublicUrl('');
-    } catch (error) {
-      setStagedMessage(error instanceof Error ? error.message : 'No fue posible importar la URL.');
-    }
+    // No server authorization/ingestion contract exists. Programmatic invocation is blocked too.
+    setStagedMessage(HTTPS_IMPORT_BLOCKED_NOTICE);
   }
 
   function removeStaged(key: string): void {
@@ -713,25 +705,17 @@ export function ProductImagesPage() {
 
           <section className="detail-card" aria-labelledby="webp-url-title">
             <h2 id="webp-url-title">Importar imagen desde URL HTTPS</h2>
-            <p className="muted-text">
-              Una por operación. La URL se descarga y convierte a WebP antes de preparar la vista
-              previa; enlaces sin CORS se rechazan.
-            </p>
+            <p className="muted-text">{HTTPS_IMPORT_BLOCKED_NOTICE}</p>
             <label>
               URL de imagen
               <input
                 type="url"
+                disabled
                 value={publicUrl}
                 onChange={(event) => setPublicUrl(event.target.value)}
               />
             </label>
-            <button
-              type="button"
-              disabled={
-                !publicUrl || optimizing || images.length + staged.length >= LIHEN_MAX_IMAGES
-              }
-              onClick={() => void stageUrlImage()}
-            >
+            <button type="button" disabled onClick={() => void stageUrlImage()}>
               Convertir URL a WebP
             </button>
           </section>
