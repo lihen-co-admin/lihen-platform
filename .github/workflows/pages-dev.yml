@@ -22,6 +22,8 @@ jobs:
     env:
       VITE_LOCAL_FORM_DRAFTS_MODE: controlled
       VITE_PRODUCT_READ_SOURCE: supabase
+      VITE_PRODUCT_WRITE_MODE: controlled
+      VITE_PRODUCT_UPDATE_WRITE_MODE: controlled
       VITE_AUTH_MODE: supabase
       VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: "false"
       VITE_SUPABASE_URL: ${{ vars.SUPABASE_DEV_URL }}
