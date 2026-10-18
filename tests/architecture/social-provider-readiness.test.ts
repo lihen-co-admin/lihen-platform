@@ -14,7 +14,11 @@ describe('provider readiness without provider calls', () => {
   it('never echoes configuration values or declares execution ready', () => {
     const env:Record<string,string> = {META_PUBLICATION_ENABLED:'true',META_GRAPH_API_VERSION:'v99.0',META_FACEBOOK_ACCESS_TOKEN:'SECRET_TOKEN',META_FACEBOOK_PAGE_ID:'SECRET_ID',META_INSTAGRAM_ACCESS_TOKEN:'SECRET_TOKEN',META_INSTAGRAM_ACCOUNT_ID:'SECRET_ID',TIKTOK_PUBLICATION_ENABLED:'true',TIKTOK_ACCESS_TOKEN:'SECRET_TOKEN',TIKTOK_VERIFIED_URL_PREFIX:'https://secret.example/media/',TIKTOK_AUTHORIZED_SCOPES:'video.publish',TIKTOK_CONTEXT_SIGNING_KEY:'SECRET_SIGNING_KEY_12345678901234567890'};
     const result=readSocialProviderReadiness(name => env[name]);
-    expect(result.providers.every(row => row.status === 'REVIEW')).toBe(true);
+    expect(result.providers.filter(row => row.channel !== 'TIKTOK').every(row => row.status === 'REVIEW')).toBe(true);
+    const tiktok = result.providers.find(row => row.channel === 'TIKTOK');
+    expect(tiktok?.status).toBe('BLOCKED');
+    expect(tiktok?.blockers).toContain('TIKTOK_ON_HOLD');
+    expect(result.providerCalls).toBe(0);
     expect(result.executionAllowed).toBe(false);
     expect(JSON.stringify(result)).not.toMatch(/SECRET|secret.example|v99/);
     expect(result.providers.at(-1)?.restrictions).toContain('SELF_ONLY_UNAUDITED_CLIENT');

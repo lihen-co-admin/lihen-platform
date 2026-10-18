@@ -104,8 +104,13 @@ describe('editorial operational assessment', () => {
         { ...item, publication: { ...item.publication, channel } },
         now,
       );
-      expect(assessment.checks[0]?.observed).toBe(true);
-      expect(assessment.checks[0]?.message).toContain('activación externa no verificada');
+      expect(assessment.checks[0]?.observed).toBe(channel !== 'TIKTOK');
+      if (channel === 'TIKTOK') {
+        expect(blockers({ ...item, publication: { ...item.publication, channel } })).toContain('CHANNEL');
+        expect(assessment.observedRequirementsMet).toBe(false);
+      } else {
+        expect(assessment.checks[0]?.message).toContain('activación externa no verificada');
+      }
       expect(assessment.executionAllowed).toBe(false);
     },
   );
