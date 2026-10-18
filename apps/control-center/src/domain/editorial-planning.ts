@@ -5,7 +5,7 @@ export const editorialChannels = [
   { id: 'INSTAGRAM_STORY', label: 'Instagram Story', runtime: true },
   { id: 'INSTAGRAM_REEL', label: 'Instagram Reel', runtime: true },
   { id: 'FACEBOOK', label: 'Facebook', runtime: true },
-  { id: 'TIKTOK', label: 'TikTok', runtime: true },
+  { id: 'TIKTOK', label: 'TikTok · HOLD', runtime: false },
 ] as const;
 export type EditorialChannel = (typeof editorialChannels)[number]['id'];
 export const whatsappCapability = {
@@ -20,8 +20,8 @@ export function channelCapability(channel: string) {
     runtimeSupported: entry?.runtime ?? false,
     externalPublicationEnabled: false,
     status:
-      channel === 'WHATSAPP'
-        ? 'ENVÍO BLOQUEADO'
+      channel === 'TIKTOK' || channel === 'WHATSAPP'
+        ? 'HOLD · sin publicación ni envíos'
         : entry?.runtime
           ? 'PREPARACIÓN DISPONIBLE'
           : 'INTEGRACIÓN DE PUBLICACIÓN PENDIENTE',

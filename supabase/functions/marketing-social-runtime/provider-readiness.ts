@@ -1,3 +1,4 @@
+export { verifyMetaAccounts } from './meta-account-verification.ts';
 /** Configuration-only diagnostics. Never create a transport or call a provider. */
 export function readSocialProviderReadiness(env: (name: string) => string | undefined) {
   const present = (name: string) => Boolean(env(name)?.trim());
@@ -7,7 +8,7 @@ export function readSocialProviderReadiness(env: (name: string) => string | unde
     if (!metaEnabled) blockers.unshift('META_PUBLICATION_DISABLED');
     return { channel, status: blockers.length ? 'BLOCKED' as const : 'REVIEW' as const, blockers, restrictions: ['PROVIDER_NOT_CONTACTED', 'FINAL_EXECUTION_BLOCKED'] };
   };
-  const tiktokBlockers: string[] = [];
+  const tiktokBlockers: string[] = ['TIKTOK_ON_HOLD'];
   if (env('TIKTOK_PUBLICATION_ENABLED') !== 'true') tiktokBlockers.push('TIKTOK_PUBLICATION_DISABLED');
   if (!present('TIKTOK_ACCESS_TOKEN')) tiktokBlockers.push('TIKTOK_ACCESS_TOKEN_NOT_CONFIGURED');
   if (!(env('TIKTOK_AUTHORIZED_SCOPES') ?? '').split(',').map(value => value.trim()).includes('video.publish')) tiktokBlockers.push('TIKTOK_VIDEO_PUBLISH_SCOPE_REQUIRED');

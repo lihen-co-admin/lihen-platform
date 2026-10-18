@@ -1,3 +1,6 @@
+export function assertOperationalChannelEnabled(channel: string): void {
+  if (channel === 'TIKTOK' || channel === 'WHATSAPP') throw new Error(`${channel}_ON_HOLD`);
+}
 // Shared by preflight and the existing runtime actions. Never calls a provider.
 export interface OperationalSnapshot {
   publication: {
@@ -29,7 +32,10 @@ export function assessOperationalSnapshot(
 ) {
   const { publication: publication, schedule, attempts } = snapshot;
   const blockers: string[] = [];
+  if (publication.channel !== 'TIKTOK' && publication.creative_asset_ids.length > 1)
+    blockers.push('CAROUSEL_PROVIDER_CONTRACT_NOT_VERIFIED');
   if (publication.channel === 'TIKTOK') {
+    blockers.push('TIKTOK_ON_HOLD');
     blockers.push(...tiktokBlockers);
     if (publication.creative_asset_ids.length !== 1) blockers.push('TIKTOK_SINGLE_VIDEO_REQUIRED');
   } else if (

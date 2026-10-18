@@ -406,6 +406,7 @@ export function UpdateProductPage() {
 
       {!loading && !notFound ? (
         <form className="product-form" onSubmit={handleSubmit}>
+          <p><Link to={`/products/${id}/images`}>Buscar imágenes con LIHEN Intelligence o subir imágenes propias</Link>. La galería conserva las fotografías y su imagen principal hasta una confirmación independiente.</p>
           <div className="form-grid">
             <label>
               <span>Nombre *</span>

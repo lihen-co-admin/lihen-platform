@@ -3,6 +3,11 @@ import { PRODUCT_IMAGE_WEB_MAX_BYTES } from '@lihen/products';
 export const LIHEN_WEBP_QUALITY = 0.85;
 export const LIHEN_IMAGE_MAX_SIDE = 2000;
 export const LIHEN_MAX_IMAGES = 10;
+// New manual selections are capped without invalidating previously persisted retry journals.
+export const LIHEN_MANUAL_BATCH_LIMIT = 5;
+export function manualImageCapacity(existing: number, staged: number): number {
+  return Math.max(0, Math.min(LIHEN_MAX_IMAGES - existing - staged, LIHEN_MANUAL_BATCH_LIMIT - staged));
+}
 const acceptedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export interface OptimizedImage {

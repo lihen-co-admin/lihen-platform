@@ -53,7 +53,8 @@ vi.mock('../src/composition/products', () => ({
     canManageImages: false,
   },
 }));
-vi.mock('../src/lib/product-image-webp', () => ({
+vi.mock('../src/lib/product-image-webp', async (original) => ({
+  ...(await original<typeof import('../src/lib/product-image-webp')>()),
   LIHEN_MAX_IMAGES: 10,
   optimizeProductImage: fixtures.optimize,
   imageFileFromUrl: fixtures.importUrl,

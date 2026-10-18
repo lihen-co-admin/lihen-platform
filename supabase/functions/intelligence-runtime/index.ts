@@ -162,6 +162,34 @@ Deno.serve(async (req: Request) => {
 
     const action = typeof body.action === 'string' ? body.action.trim() : '';
 
+    if (action === 'INGEST_VERIFIED_EXTERNAL_IMAGE' || action === 'INGEST_SYNTHETIC_TEST_IMAGE') {
+      const synthetic = action === 'INGEST_SYNTHETIC_TEST_IMAGE';
+      // Independent server activation only after migration + runtime acceptance. Browser importer
+      // remains blocked; no URL, file, actor or evidence supplied by the caller is trusted here.
+      if (Deno.env.get(synthetic ? 'LIHEN_SYNTHETIC_IMAGES_ENABLED' : 'LIHEN_EXTERNAL_IMAGES_ENABLED') !== 'true') {
+        return json({ error: 'EXTERNAL_IMAGE_INGESTION_NOT_ACTIVATED' }, 503);
+      }
+      if (
+        typeof body.candidateId !== 'string' ||
+        typeof body.operationKey !== 'string' ||
+        Object.keys(body).some((key) => !['action', 'candidateId', 'operationKey'].includes(key))
+      ) {
+        return json({ error: 'EXTERNAL_IMAGE_REQUEST_INVALID' }, 400);
+      }
+      const { ingestAuthorizedExternalImage } = await import('./external-image-ingestion.ts');
+      const { convertExternalPng } = await import('./external-image-conversion.ts');
+      const result = await ingestAuthorizedExternalImage({
+        projectUrl: Deno.env.get('SUPABASE_URL') ?? '',
+        actorId: user.id,
+        mode: synthetic ? 'SYNTHETIC_TEST' : undefined,
+        candidateId: body.candidateId,
+        operationKey: body.operationKey,
+        client: serviceSupabase,
+        convert: convertExternalPng,
+      });
+      return json({ result });
+    }
+
     if (action === 'EDITORIAL_RESEARCH_PREFLIGHT') {
       return json({
         runtime: 'LIHEN_INTELLIGENCE',

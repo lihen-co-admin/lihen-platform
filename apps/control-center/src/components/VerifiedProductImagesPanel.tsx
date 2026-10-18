@@ -15,8 +15,9 @@ import {
   productImageSearchIdentity,
   verifiedImageResearch,
 } from '../composition/visual-intelligence';
-import { LIHEN_MAX_IMAGES } from '../lib/product-image-webp';
+import { manualImageCapacity } from '../lib/product-image-webp';
 import { EXTERNAL_PRODUCT_IMAGE_SAVE_NOTICE } from '../composition/external-product-image-save';
+import { VerifiedProductImagePreview } from './VerifiedProductImagePreview';
 
 export function VerifiedProductImagesPanel({
   product,
@@ -36,19 +37,21 @@ export function VerifiedProductImagesPanel({
   readonly userId?: string | undefined;
 }) {
   const [report, setReport] = useState<ProductImageResearchReport | null>(null);
+  const [reportScope,setReportScope]=useState('');
   const [approved, setApproved] = useState<readonly string[]>([]);
+  const [rejected,setRejected]=useState<readonly string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const generation = useRef(0);
-  useEffect(
-    () => () => {
-      generation.current += 1;
-    },
-    [],
-  );
+  useEffect(() => {
+    generation.current += 1;
+    setReport(null);setApproved([]);setRejected([]);setMessage('');setBusy(false);
+    return () => {generation.current += 1;};
+  }, [product.id, product.name, product.sku, product.brandId, userId, authorized]);
   const identity = productImageSearchIdentity(product);
   const query = buildVerifiedImageQuery(identity);
-  const candidates = report?.candidates ?? [];
+  const scope=JSON.stringify([product.id,product.name,product.sku,product.brandId,userId,authorized]);
+  const candidates = (reportScope===scope ? report?.candidates ?? [] : []).filter(image=>!rejected.includes(image.imageUrl)).slice(0,5);
   const sources = candidates
     .filter(
       (item) =>
@@ -64,7 +67,7 @@ export function VerifiedProductImagesPanel({
     }));
   const suggested = selectProductMediaSource('CATALOG_PDF', sources).source?.sourceId;
   const capacity = galleryReadable
-    ? Math.max(0, LIHEN_MAX_IMAGES - images.length - stagedCount)
+    ? manualImageCapacity(images.length, stagedCount)
     : null;
 
   async function search() {
@@ -73,6 +76,7 @@ export function VerifiedProductImagesPanel({
     setBusy(true);
     setMessage('');
     setApproved([]);
+    setRejected([]);
     setReport(null);
     try {
       const next = await verifiedImageResearch.research(
@@ -84,7 +88,7 @@ export function VerifiedProductImagesPanel({
         },
         verifiedImageResearch.dependencies,
       );
-      if (current === generation.current) setReport(next);
+      if (current === generation.current) {setReportScope(scope);setReport(next);}
     } catch {
       setMessage('No fue posible verificar el proveedor. No se aprobaron imágenes.');
     } finally {
@@ -141,8 +145,9 @@ export function VerifiedProductImagesPanel({
         disabled={!authorized || !userId || !query || !verifiedImageResearch.configured || busy}
         onClick={() => void search()}
       >
-        Buscar hasta cinco imágenes verificadas
+        Buscar imágenes con LIHEN Intelligence
       </button>
+      <button type="button" disabled={!authorized || busy || capacity===null || capacity<=0} onClick={()=>document.getElementById('manual-product-images')?.click()}>Subir imagen propia</button>
       {report ? <p role="status">Estado de búsqueda: {report.status}</p> : null}
       {candidates.length === 0 ? (
         <p>
@@ -154,7 +159,7 @@ export function VerifiedProductImagesPanel({
           const stage = reviewProductPhotograph(
             image,
             authorized,
-            approved.includes(image.imageUrl),
+            false,
             new Date().toISOString(),
           );
           const quality = evaluateProductMediaSourceReadiness({
@@ -166,6 +171,7 @@ export function VerifiedProductImagesPanel({
           });
           return (
             <article key={image.imageUrl} className="image-card">
+              <VerifiedProductImagePreview key={image.imageUrl} image={image}/>
               <h3>
                 {image.imageUrl === suggested
                   ? 'Principal sugerida'
@@ -200,6 +206,9 @@ export function VerifiedProductImagesPanel({
                 {image.checkedAt}
               </p>
               <p>Motivos: {image.reasons.join(' · ')}</p>
+              <button type="button" disabled={!authorized||busy} onClick={()=>{setRejected(previous=>[...previous,image.imageUrl]);setApproved(previous=>previous.filter(url=>url!==image.imageUrl));}}>Rechazar candidato</button>
+              <button type="button" disabled={!authorized||busy||!verifiedImageResearch.configured} onClick={()=>void search()}>Buscar reemplazo sin sustituir fotografías guardadas</button>
+              <button type="button" disabled>Aprobar y registrar · requiere autorización servidor</button>
               <details>
                 <summary>Evidencias de coincidencia y derechos</summary>
                 {image.evidence.map((e) => (

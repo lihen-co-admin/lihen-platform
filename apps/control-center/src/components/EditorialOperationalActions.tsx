@@ -6,6 +6,10 @@ import {
 import type { EditorialItem } from '../domain/editorial-planning';
 
 const reasons: Record<string, string> = {
+  TIKTOK_ON_HOLD:
+    'TikTok permanece en HOLD por decisión operativa. No se consultará ni activará el proveedor.',
+  WHATSAPP_ON_HOLD:
+    'WhatsApp permanece en HOLD. No se envían mensajes ni se activan automatizaciones.',
   CHANNEL_UNAVAILABLE:
     'Integración no disponible para este canal. WhatsApp pertenece a Conversation con SEND bloqueado.',
   PUBLICATION_NOT_APPROVED: 'Falta aprobación explícita del contenido.',
@@ -26,7 +30,8 @@ const reasons: Record<string, string> = {
     'El video requiere una URL HTTPS de origen verificado para TikTok.',
   TIKTOK_VIDEO_DURATION_VERIFICATION_UNAVAILABLE:
     'La publicación TikTok permanece bloqueada porque todavía no existe una medición confiable de la duración del video en el servidor.',
-  TIKTOK_VIDEO_DURATION_INVALID: 'La duración del video excede el máximo vigente del creador o no puede validarse.',
+  TIKTOK_VIDEO_DURATION_INVALID:
+    'La duración del video excede el máximo vigente del creador o no puede validarse.',
   TIKTOK_CREATOR_INFO_REQUIRED:
     'Información vigente del creador y controles requeridos no disponibles.',
   TIKTOK_EXPLICIT_CHOICES_REQUIRED:
@@ -36,6 +41,8 @@ const reasons: Record<string, string> = {
   ATTEMPT_REQUIRES_RECONCILIATION_NO_RETRY:
     'Hay intentos terminales, múltiples o inciertos. Reconciliar; no reintentar.',
   META_PUBLICATION_DISABLED: 'Publicación externa deshabilitada en el servidor.',
+  CAROUSEL_PROVIDER_CONTRACT_NOT_VERIFIED:
+    'Carrusel bloqueado: contrato del proveedor no verificado. No se publicará únicamente la primera imagen.',
   PROVIDER_NOT_CONFIGURED: 'Configuración del proveedor incompleta.',
 };
 
@@ -78,7 +85,9 @@ export function EditorialOperationalActions({
     setAssessment(null);
     setMessage('');
     try {
-      setAssessment(await operations().assess(item.publication.id, item.productId, choices, creatorContext));
+      setAssessment(
+        await operations().assess(item.publication.id, item.productId, choices, creatorContext),
+      );
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : 'Assessment no disponible.');
     } finally {
@@ -89,15 +98,28 @@ export function EditorialOperationalActions({
   }
   async function readCreator() {
     if (disabled || lock.current) return;
-    lock.current = true; setBusy(true); onBusyChange(true);
-    setConfirmed(false); setChoices(null); setPrivacy(''); setInteractions({}); setAssessment(null); setCreatorContext(null); setMessage('');
+    lock.current = true;
+    setBusy(true);
+    onBusyChange(true);
+    setConfirmed(false);
+    setChoices(null);
+    setPrivacy('');
+    setInteractions({});
+    setAssessment(null);
+    setCreatorContext(null);
+    setMessage('');
     try {
       const op = operations();
       const result = await op.readTikTokCreator(item.publication.id, item.productId);
       setCreatorContext(result.context);
       setAssessment(await op.assess(item.publication.id, item.productId, null, result.context));
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : 'Información TikTok no disponible.'); }
-    finally { lock.current = false; setBusy(false); onBusyChange(false); }
+    } catch (cause) {
+      setMessage(cause instanceof Error ? cause.message : 'Información TikTok no disponible.');
+    } finally {
+      lock.current = false;
+      setBusy(false);
+      onBusyChange(false);
+    }
   }
   async function act() {
     if (disabled || lock.current || !confirmed || !assessment?.nextAction) return;
@@ -137,10 +159,17 @@ export function EditorialOperationalActions({
       <button disabled={disabled || busy || !item.productId} onClick={() => void assess()}>
         Evaluar estado actual en servidor
       </button>
-      {item.publication.channel === 'TIKTOK' && <>
-        <button disabled={disabled || busy || !item.productId} onClick={() => void readCreator()}>Consultar creador TikTok</button>
-        <p>Esta consulta obtiene opciones actuales de TikTok; no envía el video. El procesamiento y la publicación pueden tardar.</p>
-      </>}
+      {item.publication.channel === 'TIKTOK' && (
+        <>
+          <button disabled={disabled || busy || !item.productId} onClick={() => void readCreator()}>
+            Consultar creador TikTok
+          </button>
+          <p>
+            Esta consulta obtiene opciones actuales de TikTok; no envía el video. El procesamiento y
+            la publicación pueden tardar.
+          </p>
+        </>
+      )}
       {!item.productId && <p>Bloqueado: falta producto asociado a la primera media autorizada.</p>}
       {item.attempts.map((attempt) =>
         attempt.providerEvidence?.length ? (
@@ -189,18 +218,52 @@ export function EditorialOperationalActions({
                   ))}
                 </select>
               </label>
-              {assessment.tiktokCreator.interactions.map((interaction) => <label key={interaction.key}>{interaction.label}
-                <select disabled={!interaction.allowed} value={interaction.allowed ? (typeof interactions[interaction.key] === 'boolean' ? String(interactions[interaction.key]) : '') : 'false'} onChange={(event) => {
-                  setInteractions({ ...interactions, [interaction.key]: event.target.value === 'true' }); setChoices(null); setConfirmed(false); setAssessment({ ...assessment, nextAction: null, snapshot: '' });
-                }}>
-                  {interaction.allowed ? <><option value="" disabled>Selecciona una opción</option><option value="true">Permitir</option><option value="false">Desactivar</option></> : <option value="false">Desactivado por el creador</option>}
-                </select>
-              </label>)}
+              {assessment.tiktokCreator.interactions.map((interaction) => (
+                <label key={interaction.key}>
+                  {interaction.label}
+                  <select
+                    disabled={!interaction.allowed}
+                    value={
+                      interaction.allowed
+                        ? typeof interactions[interaction.key] === 'boolean'
+                          ? String(interactions[interaction.key])
+                          : ''
+                        : 'false'
+                    }
+                    onChange={(event) => {
+                      setInteractions({
+                        ...interactions,
+                        [interaction.key]: event.target.value === 'true',
+                      });
+                      setChoices(null);
+                      setConfirmed(false);
+                      setAssessment({ ...assessment, nextAction: null, snapshot: '' });
+                    }}
+                  >
+                    {interaction.allowed ? (
+                      <>
+                        <option value="" disabled>
+                          Selecciona una opción
+                        </option>
+                        <option value="true">Permitir</option>
+                        <option value="false">Desactivar</option>
+                      </>
+                    ) : (
+                      <option value="false">Desactivado por el creador</option>
+                    )}
+                  </select>
+                </label>
+              ))}
               <label>
                 <input
                   type="checkbox"
                   checked={Boolean(choices)}
-                  disabled={!privacy || assessment.tiktokCreator.interactions.some((entry) => entry.allowed && typeof interactions[entry.key] !== 'boolean')}
+                  disabled={
+                    !privacy ||
+                    assessment.tiktokCreator.interactions.some(
+                      (entry) => entry.allowed && typeof interactions[entry.key] !== 'boolean',
+                    )
+                  }
                   onChange={(event) => {
                     setChoices(
                       event.target.checked
@@ -208,7 +271,12 @@ export function EditorialOperationalActions({
                             creatorRevision: assessment.tiktokCreator!.revision,
                             privacy,
                             consent: true,
-                            interactions: Object.fromEntries(assessment.tiktokCreator!.interactions.map((entry) => [entry.key, entry.allowed ? interactions[entry.key]! : false])),
+                            interactions: Object.fromEntries(
+                              assessment.tiktokCreator!.interactions.map((entry) => [
+                                entry.key,
+                                entry.allowed ? interactions[entry.key]! : false,
+                              ]),
+                            ),
                           }
                         : null,
                     );

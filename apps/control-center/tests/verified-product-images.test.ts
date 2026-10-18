@@ -71,7 +71,7 @@ describe('verified images read-only UI boundary', () => {
       expect(html).toContain('SEARCH_PROVIDER_NOT_CONFIGURED');
       expect(html).toContain('UNKNOWN_DIMENSIONS');
       expect(html).toContain('fotografías propias');
-      expect(html).toContain('subida manual: 7');
+      expect(html).toContain('subida manual: 3');
       expect(html).toContain('disabled=""');
       expect(html).not.toContain('<img');
       expect(html).not.toContain('READY_FOR_CONTROLLED_SAVE');

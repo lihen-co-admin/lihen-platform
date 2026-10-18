@@ -35,7 +35,7 @@ export interface ExternalProductImageSelection {
 
 export const EXTERNAL_PRODUCT_IMAGE_SAVE_BLOCKED = 'EXTERNAL_IMAGE_SAVE_SERVER_VERIFIER_REQUIRED';
 export const EXTERNAL_PRODUCT_IMAGE_SAVE_NOTICE =
-  'Guardado externo bloqueado: falta un verificador servidor que vincule producto, variante, contenido, autoridad, derechos y aprobación vigente en el límite de escritura. La revisión local no autoriza descargas ni guardados.';
+  'Guardado externo bloqueado en Control Center: el circuito servidor requiere una autorización persistida que vincule producto, variante, contenido, autoridad, derechos y aprobación vigente. La búsqueda y la provisión de esa autorización todavía no están conectadas a esta interfaz. La revisión local no autoriza descargas ni guardados.';
 
 /** Compatibility guard for the MANUAL queue, NOT a security verifier or a server receipt validator.
  * No flag, client hash, evidence object or approval can enable external ingestion here.

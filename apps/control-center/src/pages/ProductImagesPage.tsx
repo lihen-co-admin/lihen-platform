@@ -15,7 +15,7 @@ import { VerifiedProductImagesPanel } from '../components/VerifiedProductImagesP
 import { useAuth } from '../auth/auth-context';
 import { saveProductWebpQueue, type ProductWebpProgress } from '../composition/product-webp-save';
 import { productsComposition } from '../composition/products';
-import { optimizeProductImage, LIHEN_MAX_IMAGES } from '../lib/product-image-webp';
+import { optimizeProductImage, LIHEN_MAX_IMAGES, LIHEN_MANUAL_BATCH_LIMIT, manualImageCapacity } from '../lib/product-image-webp';
 import {
   visualIntelligenceComposition,
   type VisualIntelligenceSessionSummary,
@@ -245,14 +245,14 @@ export function ProductImagesPage() {
       return;
     }
     setOptimizing(true);
-    const remaining = Math.max(0, LIHEN_MAX_IMAGES - images.length - staged.length);
+    const remaining = manualImageCapacity(images.length, staged.length);
     const seen = new Set(staged.map((entry) => entry.key));
     const incoming: StagedImage[] = [];
     const errors: string[] = [];
     try {
       for (const source of files) {
         if (incoming.length >= remaining) {
-          errors.push('Máximo 10 imágenes por producto.');
+          errors.push('Máximo cinco imágenes nuevas por operación y diez en la galería existente.');
           break;
         }
         try {
@@ -622,7 +622,7 @@ export function ProductImagesPage() {
               Incorporar imágenes · {images.length + staged.length}/{LIHEN_MAX_IMAGES}
             </h2>
             <p className="muted-text">
-              Adjuntar y arrastrar: varias a la vez. Pegar Ctrl+V: una a la vez. URL: una a la vez.
+              Adjuntar, arrastrar o pegar archivos propios: hasta cinco imágenes nuevas por operación. La importación HTTPS sigue bloqueada.
             </p>
             <div
               role="group"
@@ -641,12 +641,13 @@ export function ProductImagesPage() {
                 Adjuntar varios archivos
                 <input
                   type="file"
+                  id="manual-product-images"
                   multiple
                   accept="image/jpeg,image/png,image/webp"
                   disabled={
                     optimizing ||
                     !productsComposition.canReadImages ||
-                    images.length + staged.length >= LIHEN_MAX_IMAGES
+                    images.length + staged.length >= LIHEN_MAX_IMAGES || staged.length >= LIHEN_MANUAL_BATCH_LIMIT
                   }
                   onChange={(event) => {
                     void stageFiles(Array.from(event.target.files ?? []));

@@ -1,4 +1,5 @@
-import { readSocialProviderReadiness } from './provider-readiness.ts';
+import { readSocialProviderReadiness, verifyMetaAccounts } from './provider-readiness.ts';
+import { META_GRAPH_ORIGIN } from './meta-contract.ts';
 import { createClient } from 'supabase';
 import {
   tikTokConfig,
@@ -12,6 +13,7 @@ import {
 } from './tiktok-provider.ts';
 import {
   assessOperationalSnapshot,
+  assertOperationalChannelEnabled,
   requireOperationalConfirmation,
   type OperationalSnapshot,
 } from './operational-policy.ts';
@@ -24,6 +26,7 @@ const corsHeaders = {
 
 type Action =
   | 'READ_PROVIDER_READINESS'
+  | 'VERIFY_META_ACCOUNTS'
   | 'READ_TIKTOK_CREATOR_INFO'
   | 'ASSESS_PUBLICATION_OPERATION'
   | 'READ_EDITORIAL_WORKSPACE'
@@ -132,6 +135,8 @@ async function resolveAuthorizedPublicationMedia(
   publication: PreparedPublicationRow,
   productId: string,
 ): Promise<AuthorizedMedia> {
+  if (publication.channel !== 'TIKTOK' && publication.creative_asset_ids.length > 1)
+    throw new Error('CAROUSEL_PROVIDER_CONTRACT_NOT_VERIFIED');
   const assetId = publication.creative_asset_ids?.[0]?.trim();
   if (!assetId) throw new Error('LIHEN_MARKETING_SOCIAL_MEDIA_REQUIRED');
 
@@ -180,10 +185,7 @@ async function publishMetaMedia(
   const caption = publicationCaption(publication);
 
   const post = async (path: string, body: Record<string, string>): Promise<MetaGraphResponse> => {
-    const graphHost =
-      publication.channel === 'FACEBOOK' ? 'graph.facebook.com' : 'graph.instagram.com';
-
-    const url = new URL(`https://${graphHost}/${graphApiVersion}/${path}`);
+    const url = new URL(`${META_GRAPH_ORIGIN}/${graphApiVersion}/${path}`);
     const params = new URLSearchParams(body);
     params.set('access_token', accessToken);
     const response = await fetch(url, { method: 'POST', body: params });
@@ -222,7 +224,7 @@ async function publishMetaMedia(
       };
     }
     const getContainerStatus = async (): Promise<string | null> => {
-      const url = new URL(`https://graph.instagram.com/${graphApiVersion}/${created.id}`);
+      const url = new URL(`${META_GRAPH_ORIGIN}/${graphApiVersion}/${created.id}`);
       url.searchParams.set('fields', 'status_code');
       url.searchParams.set('access_token', accessToken);
 
@@ -431,6 +433,13 @@ Deno.serve(async (req: Request) => {
       return json({ data: readSocialProviderReadiness((name) => Deno.env.get(name)), externalPublication: false });
     }
 
+    if (action === 'VERIFY_META_ACCOUNTS') {
+      return json({ data: await verifyMetaAccounts((name) => Deno.env.get(name)), externalPublication: false });
+    }
+    if (['READ_TIKTOK_CREATOR_INFO'].includes(action ?? '')) {
+      return json({ error: 'TIKTOK_ON_HOLD', externalPublication: false }, 409);
+    }
+
     if (!action || !payload || typeof payload !== 'object') {
       return json({ error: 'LIHEN_MARKETING_SOCIAL_REQUEST_INVALID' }, 400);
     }
@@ -460,6 +469,7 @@ Deno.serve(async (req: Request) => {
       if (publicationResult.error || !publicationResult.data)
         throw new Error('LIHEN_MARKETING_SOCIAL_PUBLICATION_READ_FAILED');
       const publication = publicationResult.data;
+      assertOperationalChannelEnabled(publication.channel);
       const scheduleResult = publication.schedule_id
         ? await serviceSupabase
             .from('marketing_content_schedules')
@@ -805,6 +815,7 @@ Deno.serve(async (req: Request) => {
       }
 
       const publication = durablePublication.data as PreparedPublicationRow;
+      assertOperationalChannelEnabled(publication.channel);
 
       if (String(executionRow.publication_id) !== publication.id) {
         return json(

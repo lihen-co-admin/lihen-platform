@@ -19,6 +19,17 @@ beforeAll(async () => {
       {
         name: 'forbid-preflight-effects',
         setup(builder) {
+          // The new lazy server ingestion branch uses Deno's Node-compatible transport.
+          // Neutral VM preflight tests must forbid these effects, not execute Node networking.
+          builder.onResolve({ filter: /^node:(dns\/promises|https|net)$/ }, () => ({
+            path: 'egress',
+            namespace: 'forbidden-egress',
+          }));
+          builder.onLoad({ filter: /.*/, namespace: 'forbidden-egress' }, () => ({
+            contents:
+              'export function lookup(){throw new Error("UNEXPECTED_DNS")} export function request(){throw new Error("UNEXPECTED_HTTPS")} export function isIP(){throw new Error("UNEXPECTED_EGRESS_VALIDATION")}',
+            loader: 'js',
+          }));
           builder.onResolve({ filter: /catalog-pdf-webp-transformer\.ts$/ }, () => ({
             path: 'wasm',
             namespace: 'wasm-fixture',
@@ -58,6 +69,7 @@ async function request(
     user?: boolean;
     enabled?: string;
     env?: Record<string, string>;
+    action?: string;
   } = {},
 ) {
   let handler!: (req: Request) => Promise<Response>;
@@ -139,7 +151,7 @@ async function request(
       method: 'POST',
       headers: { Authorization: options.token ?? 'Bearer test' },
       body: JSON.stringify({
-        action: 'EDITORIAL_RESEARCH_PREFLIGHT',
+        action: options.action ?? 'EDITORIAL_RESEARCH_PREFLIGHT',
         enabled: true,
         groqApiKey: 'untrusted',
       }),
@@ -152,6 +164,24 @@ async function request(
 }
 
 describe('Editorial Research preflight HTTP runtime', () => {
+  it('keeps external image ingestion OFF without constructing transport or transforming', async () => {
+    const { response, body } = await request({ action: 'INGEST_VERIFIED_EXTERNAL_IMAGE' });
+    expect(response.status).toBe(503);
+    expect(body.error).toBe('EXTERNAL_IMAGE_INGESTION_NOT_ACTIVATED');
+  });
+  it('rejects browser evidence/configuration on the external server branch', async () => {
+    const { response } = await request({
+      action: 'INGEST_VERIFIED_EXTERNAL_IMAGE',
+      env: { LIHEN_EXTERNAL_IMAGES_ENABLED: 'true' },
+    });
+    expect(response.status).toBe(400);
+  });
+  it('retains authorization before the disabled external branch', async () => {
+    expect(
+      (await request({ action: 'INGEST_VERIFIED_EXTERNAL_IMAGE', role: 'CUSTOMER' })).response
+        .status,
+    ).toBe(403);
+  });
   it.each([
     ['LIHEN_EDITORIAL_RESEARCH_AUTHORITIES', '[]', 'PROVIDER_NOT_CONFIGURED'],
     ['LIHEN_EDITORIAL_RESEARCH_ALLOWED_DOMAINS', '', 'ALLOWLIST_NOT_CONFIGURED'],

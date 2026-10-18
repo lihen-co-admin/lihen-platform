@@ -486,6 +486,7 @@ export function CreateProductPage() {
       />
 
       <form className="product-form" onSubmit={handleSubmit}>
+        <p>Imágenes con LIHEN Intelligence y carga propia: disponibles desde la galería del producto después de confirmar su creación. No se asociarán archivos a un producto todavía no guardado.</p>
         <div className="form-grid">
           <label>
             <span>Nombre *</span>

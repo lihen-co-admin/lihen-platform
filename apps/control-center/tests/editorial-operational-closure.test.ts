@@ -1,4 +1,5 @@
 import * as providerReadiness from '../../../supabase/functions/marketing-social-runtime/provider-readiness';
+import * as metaContract from '../../../supabase/functions/marketing-social-runtime/meta-contract';
 import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -107,16 +108,12 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
       attempts[0]!.provider_evidence = evidence;
       return { data: null, error: null };
     }
-    if (
-      name ===
-      'get_marketing_scheduled_execution_authority_server_controlled'
-    ) {
+    if (name === 'get_marketing_scheduled_execution_authority_server_controlled') {
       scheduledAuthorityReads += 1;
 
       const mode = env.TEST_SCHEDULED_AUTHORITY ?? 'ALLOW';
       const authorized =
-        mode !== 'DENY' &&
-        !(mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 1);
+        mode !== 'DENY' && !(mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 1);
 
       return {
         data: authorized
@@ -154,15 +151,11 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
         ],
         error: null,
       };
-    if (
-      name ===
-      'start_marketing_scheduled_publication_attempt_server_controlled'
-    ) {
+    if (name === 'start_marketing_scheduled_publication_attempt_server_controlled') {
       const attempt = attempts.find(
         (candidate) =>
           candidate.id === args.p_attempt_id &&
-          candidate.prepared_publication_id ===
-            args.p_prepared_publication_id,
+          candidate.prepared_publication_id === args.p_prepared_publication_id,
       );
 
       if (!attempt || attempt.status !== 'PENDING') {
@@ -173,10 +166,7 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
       }
 
       const mode = env.TEST_SCHEDULED_AUTHORITY ?? 'ALLOW';
-      if (
-        mode === 'DENY' ||
-        (mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 0)
-      ) {
+      if (mode === 'DENY' || (mode === 'REVOKE_AFTER_FIRST' && scheduledAuthorityReads > 0)) {
         return {
           data: null,
           error: { message: 'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED' },
@@ -229,7 +219,11 @@ function runtime(transport: tiktok.TikTokTransport | null = null) {
                 creator: tiktok.TikTokCreator | null = null,
               ) => (transport ? { ...transport, creator } : null),
             }
-          : name.includes('provider-readiness') ? providerReadiness : policy,
+          : name.includes('meta-contract')
+            ? metaContract
+            : name.includes('provider-readiness')
+              ? providerReadiness
+              : policy,
     {
       env: { get: (name: string) => env[name] },
       serve: (fn: typeof handler) => {
@@ -367,179 +361,61 @@ function tikTokRuntime() {
   return { ...r, provider };
 }
 
-describe('TikTok governed runtime — local normalized provider only', () => {
-  it('blocks unmeasurable duration before START despite browser metadata and URLs', async () => {
+describe('TikTok HOLD at the actual runtime boundary', () => {
+  it.each([
+    'configured',
+    'missing-enabled',
+    'missing-token',
+    'missing-prefix',
+    'browser-url',
+    'missing-media',
+    'archived',
+    'wrong-product',
+    'image',
+    'no-scope',
+    'unmeasurable',
+    'pending',
+    'concurrent',
+  ])('blocks %s without creator queries, START or provider dispatch', async (scenario) => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const r = tikTokRuntime();
-    r.provider.physicalVerificationAvailable = false;
-    const result = await r.call('ASSESS_PUBLICATION_OPERATION', {
-      preparedPublicationId: 'publication',
-      productId: 'product',
-      durationSeconds: 1,
-      verifiedEtag: '"browser-claim"',
-      videoUrl: 'https://attacker.invalid/video.mp4',
-      physicalVerificationAvailable: true,
-    });
-    expect(result.body.data.blockers).toContain('TIKTOK_VIDEO_DURATION_VERIFICATION_UNAVAILABLE');
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
-    expect(r.attempts).toHaveLength(0);
-    expect(r.provider.queryCreator).not.toHaveBeenCalled();
-    expect(r.provider.initialize).not.toHaveBeenCalled();
-    expect(r.fetchMock).not.toHaveBeenCalled();
-  });
-  it('rejects multiple videos and missing authorization before START', async () => {
-    const r = tikTokRuntime();
-    r.publication.creative_asset_ids = ['video', 'second'];
-    expect((await r.assess()).body.data.blockers).toContain('TIKTOK_SINGLE_VIDEO_REQUIRED');
-    r.publication.creative_asset_ids = ['video'];
-    r.provider.authorizedScopes = [];
-    expect((await r.assess()).body.data.blockers).toContain('TIKTOK_VIDEO_PUBLISH_SCOPE_REQUIRED');
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    expect(r.attempts).toHaveLength(0);
-    expect(r.provider.queryCreator).not.toHaveBeenCalled();
-  });
-  it('assessment and CREATE never call provider; accepted processing stays IN_PROGRESS with durable evidence', async () => {
-    const r = tikTokRuntime();
-    expect((await r.assess()).body.data.nextAction).toBe('CREATE_PUBLICATION_ATTEMPT');
-    expect((await r.confirm('CREATE_PUBLICATION_ATTEMPT')).status).toBe(200);
-    expect(r.provider.queryCreator).not.toHaveBeenCalled();
-    expect(r.provider.initialize).not.toHaveBeenCalled();
-    const response = await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
-    expect(response.body.error).toBe('TIKTOK_RECONCILIATION_REQUIRED');
-    expect(response.body.externalPublication).toBe(false);
-    expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
-    expect(r.attempts[0]?.provider_evidence).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ kind: 'CONSENT', privacy: 'SELF_ONLY', consent: true }),
-        { kind: 'ACCEPTED', publishId: 'test-publish-id' },
-        { kind: 'PROCESSING', publishId: 'test-publish-id' },
-      ]),
-    );
-    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
-    expect(r.attempts).toHaveLength(1);
-    expect(r.fetchMock).not.toHaveBeenCalled();
-  });
-  it.each(['TIKTOK_PUBLICATION_ENABLED', 'TIKTOK_ACCESS_TOKEN', 'TIKTOK_VERIFIED_URL_PREFIX'])(
-    'blocks missing %s before START',
-    async (key) => {
-      const r = tikTokRuntime();
-      await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-      delete r.env[key];
-      expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(400);
-      expect(r.attempts[0]?.status).toBe('PENDING');
-      expect(r.rpc.mock.calls.some(([name]) => name.startsWith('start_'))).toBe(false);
-      expect(r.provider.queryCreator).not.toHaveBeenCalled();
-    },
-  );
-  it.each(['missing', 'archived', 'wrong-product', 'image'])(
-    'blocks %s video and browser URL bypass',
-    async (problem) => {
-      const r = tikTokRuntime();
-      if (problem === 'missing') r.publication.creative_asset_ids = [];
-      if (problem === 'archived') r.setVideoStatus('ARCHIVED');
-      if (problem === 'wrong-product') r.setVideoProduct('other');
-      if (problem === 'image') r.setVideoMime('image/png');
-      expect((await r.assess()).body.data.blockers.length).toBeGreaterThan(0);
-      await r.call('EXECUTE_PUBLICATION_ATTEMPT', {
-        preparedPublicationId: 'publication',
-        productId: 'product',
-        videoUrl: 'https://attacker.invalid/video.mp4',
-        confirmedAction: 'EXECUTE_PUBLICATION_ATTEMPT',
+    if (scenario === 'missing-enabled') delete r.env.TIKTOK_PUBLICATION_ENABLED;
+    if (scenario === 'missing-token') delete r.env.TIKTOK_ACCESS_TOKEN;
+    if (scenario === 'missing-prefix') delete r.env.TIKTOK_VERIFIED_URL_PREFIX;
+    if (scenario === 'missing-media') r.publication.creative_asset_ids = [];
+    if (scenario === 'archived') r.setVideoStatus('ARCHIVED');
+    if (scenario === 'wrong-product') r.setVideoProduct('other');
+    if (scenario === 'image') r.setVideoMime('image/png');
+    if (scenario === 'no-scope') r.provider.authorizedScopes = [];
+    if (scenario === 'unmeasurable') r.provider.physicalVerificationAvailable = false;
+    if (['pending', 'concurrent'].includes(scenario))
+      r.attempts.push({
+        id: 'attempt',
+        status: 'PENDING',
+        prepared_publication_id: r.publication.id,
       });
-      expect(r.provider.initialize).not.toHaveBeenCalled();
-      expect(r.rpc.mock.calls.some(([name]) => name.startsWith('start_'))).toBe(false);
-    },
-  );
-  it('requires fresh explicit confirmation including privacy and consent', async () => {
-    const r = tikTokRuntime();
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    const before = await r.assess();
-    const payload = {
-      preparedPublicationId: 'publication',
-      productId: 'product',
-      attemptId: 'publication',
-      expectedSnapshot: before.body.data.snapshot,
-    };
-    expect((await r.call('EXECUTE_PUBLICATION_ATTEMPT', payload)).status).toBe(400);
-    r.publication.copy = 'changed';
-    expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT', before.body.data.snapshot)).status).toBe(
-      400,
-    );
+    expect((await r.call('READ_TIKTOK_CREATOR_INFO')).status).toBe(409);
+    expect((await r.assess()).body.error).toBe('TIKTOK_ON_HOLD');
+    expect((await r.confirm('CREATE_PUBLICATION_ATTEMPT')).body.error).toBe('TIKTOK_ON_HOLD');
+    const actions =
+      scenario === 'concurrent'
+        ? [r.confirm('EXECUTE_PUBLICATION_ATTEMPT'), r.confirm('EXECUTE_PUBLICATION_ATTEMPT')]
+        : [
+            r.call('EXECUTE_PUBLICATION_ATTEMPT', {
+              preparedPublicationId: r.publication.id,
+              productId: 'product',
+              attemptId: 'attempt',
+              videoUrl: 'https://attacker.invalid/video.mp4',
+            }),
+          ];
+    for (const response of await Promise.all(actions))
+      expect(response.body.externalPublication).toBe(false);
+    expect(
+      r.rpc.mock.calls.some(([name]) => name.startsWith('start_') || name.startsWith('create_')),
+    ).toBe(false);
+    expect(r.provider.queryCreator).not.toHaveBeenCalled();
     expect(r.provider.initialize).not.toHaveBeenCalled();
-  });
-  it('uses only durable video URL and succeeds only from verified terminal completion', async () => {
-    const r = tikTokRuntime();
-    r.provider.status.mockResolvedValue({
-      state: 'COMPLETE',
-      publicationRef: 'verified-final-ref',
-    });
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    const a = (await r.assess()).body.data;
-    const result = await r.call('EXECUTE_PUBLICATION_ATTEMPT', {
-      preparedPublicationId: 'publication',
-      productId: 'product',
-      attemptId: 'publication',
-      expectedSnapshot: a.snapshot,
-      confirmedAction: a.nextAction,
-      tiktokChoices: a.tiktokChoices,
-      tiktokCreatorContext: a.tiktokCreatorContext,
-      videoUrl: 'https://attacker.invalid/a.mp4',
-    });
-    expect(result.body.externalPublication).toBe(true);
-    expect(r.attempts[0]?.status).toBe('SUCCEEDED');
-    expect(r.attempts[0]?.external_publication_ref).toBe('verified-final-ref');
-    expect(r.provider.initialize.mock.calls[0]).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ videoUrl: 'https://example.invalid/reel.mp4' }),
-      ]),
-    );
     expect(r.fetchMock).not.toHaveBeenCalled();
-  });
-  it('records a terminal failure and never reuses the attempt', async () => {
-    const r = tikTokRuntime();
-    r.provider.status.mockResolvedValue({ state: 'FAILED', code: 'TEST_TERMINAL_FAILURE' });
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).body.externalPublication).toBe(false);
-    expect(r.attempts[0]?.status).toBe('FAILED');
-    await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
-    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
-  });
-  it.each(['UNKNOWN', 'malformed', 'exception', 'evidence', 'completion'])(
-    'requires reconciliation after %s',
-    async (problem) => {
-      const r = tikTokRuntime();
-      await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-      if (problem === 'UNKNOWN') r.provider.status.mockResolvedValue({ state: 'UNKNOWN' });
-      if (problem === 'malformed')
-        r.provider.status.mockResolvedValue({ state: 'COMPLETE' } as tiktok.TikTokStatus);
-      if (problem === 'exception')
-        r.provider.status.mockRejectedValue(new Error('network timeout'));
-      if (problem === 'evidence')
-        r.provider.initialize.mockImplementation(async () => {
-          r.failEvidence();
-          return { publishId: 'test-publish-id' };
-        });
-      if (problem === 'completion') {
-        r.provider.status.mockResolvedValue({ state: 'COMPLETE', publicationRef: 'verified-ref' });
-        r.failCompletion();
-      }
-      expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(409);
-      expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
-      await r.confirm('EXECUTE_PUBLICATION_ATTEMPT');
-      expect(r.provider.initialize).toHaveBeenCalledTimes(1);
-    },
-  );
-  it('only one concurrent execution can initialize and replay cannot initialize again', async () => {
-    const r = tikTokRuntime();
-    await r.confirm('CREATE_PUBLICATION_ATTEMPT');
-    await Promise.all([
-      r.confirm('EXECUTE_PUBLICATION_ATTEMPT'),
-      r.confirm('EXECUTE_PUBLICATION_ATTEMPT'),
-    ]);
-    expect(r.provider.initialize).toHaveBeenCalledTimes(1);
-    expect(r.attempts[0]?.status).toBe('IN_PROGRESS');
   });
 });
 
@@ -574,9 +450,9 @@ describe('governed operational closure — real handler, local doubles only', ()
     async (channel) => {
       const r = runtime();
       r.publication.channel = channel;
-      expect((await r.assess()).body.data.blockers).toContain(
-        channel === 'TIKTOK' ? 'TIKTOK_PUBLICATION_DISABLED' : 'CHANNEL_UNAVAILABLE',
-      );
+      const assessed = await r.assess();
+      if (channel === 'TIKTOK') expect(assessed.body.error).toBe('TIKTOK_ON_HOLD');
+      else expect(assessed.body.data.blockers).toContain('CHANNEL_UNAVAILABLE');
       expect((await r.confirm('CREATE_PUBLICATION_ATTEMPT')).status).toBe(400);
       expect(r.attempts).toHaveLength(0);
       expect(r.fetchMock).not.toHaveBeenCalled();
@@ -591,6 +467,15 @@ describe('governed operational closure — real handler, local doubles only', ()
     );
     expect(r.attempts).toHaveLength(0);
   });
+  it('blocks multi-image publication instead of silently publishing only the first asset', async () => {
+    const r = runtime();
+    r.publication.creative_asset_ids = ['image', 'other-image'];
+    const result = await r.assess();
+    expect(result.body.data.blockers).toContain('CAROUSEL_PROVIDER_CONTRACT_NOT_VERIFIED');
+    expect(result.body.data.nextAction).toBeNull();
+    expect(r.attempts).toHaveLength(0);
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
   it.each(['INSTAGRAM_FEED', 'INSTAGRAM_STORY'])(
     'uses the existing %s image runtime with a fake provider only',
     async (channel) => {
@@ -602,6 +487,8 @@ describe('governed operational closure — real handler, local doubles only', ()
       r.env.META_PUBLICATION_ENABLED = 'true';
       expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(200);
       expect(r.fetchMock).toHaveBeenCalledTimes(3);
+      for (const [url] of r.fetchMock.mock.calls)
+        expect(String(url)).toMatch(/^https:\/\/graph\.facebook\.com\//);
       expect(r.attempts[0]?.status).toBe('SUCCEEDED');
     },
   );
@@ -617,6 +504,8 @@ describe('governed operational closure — real handler, local doubles only', ()
     expect((await r.confirm('EXECUTE_PUBLICATION_ATTEMPT')).status).toBe(200);
     const createCall = r.fetchMock.mock.calls[0] as unknown as [string | URL, RequestInit];
     const createBody = String(createCall[1]?.body ?? '');
+    for (const [url] of r.fetchMock.mock.calls)
+      expect(String(url)).toMatch(/^https:\/\/graph\.facebook\.com\//);
     expect(createBody).toContain('media_type=REELS');
     expect(createBody).toContain('video_url=https%3A%2F%2Fexample.invalid%2Freel.mp4');
     expect(r.attempts[0]?.status).toBe('SUCCEEDED');
@@ -703,18 +592,13 @@ describe('governed operational closure — real handler, local doubles only', ()
     r.env.META_PUBLICATION_ENABLED = 'true';
     r.env.TEST_SCHEDULED_AUTHORITY = 'DENY';
 
-    const result = await r.call(
-      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
-      {
-        preparedPublicationId: r.publication.id,
-        attemptId: 'scheduled-attempt',
-      },
-    );
+    const result = await r.call('EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT', {
+      preparedPublicationId: r.publication.id,
+      attemptId: 'scheduled-attempt',
+    });
 
     expect(result.status).toBe(409);
-    expect(result.body.error).toBe(
-      'LIHEN_MARKETING_SOCIAL_SCHEDULED_EXECUTION_NOT_AUTHORIZED',
-    );
+    expect(result.body.error).toBe('LIHEN_MARKETING_SOCIAL_SCHEDULED_EXECUTION_NOT_AUTHORIZED');
     expect(r.attempts[0]?.status).toBe('PENDING');
     expect(r.fetchMock).not.toHaveBeenCalled();
   });
@@ -728,18 +612,13 @@ describe('governed operational closure — real handler, local doubles only', ()
     });
     r.env.META_PUBLICATION_ENABLED = 'true';
 
-    const result = await r.call(
-      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
-      {
-        preparedPublicationId: r.publication.id,
-        attemptId: 'scheduled-attempt',
-      },
-    );
+    const result = await r.call('EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT', {
+      preparedPublicationId: r.publication.id,
+      attemptId: 'scheduled-attempt',
+    });
 
     const authorityReads = r.rpc.mock.calls.filter(
-      ([name]) =>
-        name ===
-        'get_marketing_scheduled_execution_authority_server_controlled',
+      ([name]) => name === 'get_marketing_scheduled_execution_authority_server_controlled',
     );
 
     expect(result.status).toBe(200);
@@ -758,24 +637,17 @@ describe('governed operational closure — real handler, local doubles only', ()
     r.env.META_PUBLICATION_ENABLED = 'true';
     r.env.TEST_SCHEDULED_AUTHORITY = 'REVOKE_AFTER_FIRST';
 
-    const result = await r.call(
-      'EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT',
-      {
-        preparedPublicationId: r.publication.id,
-        attemptId: 'scheduled-attempt',
-      },
-    );
+    const result = await r.call('EXECUTE_SCHEDULED_PUBLICATION_ATTEMPT', {
+      preparedPublicationId: r.publication.id,
+      attemptId: 'scheduled-attempt',
+    });
 
     const authorityReads = r.rpc.mock.calls.filter(
-      ([name]) =>
-        name ===
-        'get_marketing_scheduled_execution_authority_server_controlled',
+      ([name]) => name === 'get_marketing_scheduled_execution_authority_server_controlled',
     );
 
     expect(result.status).toBe(409);
-    expect(result.body.error).toBe(
-      'LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED',
-    );
+    expect(result.body.error).toBe('LIHEN_MARKETING_SOCIAL_SCHEDULED_AUTHORITY_REVOKED');
     expect(authorityReads).toHaveLength(2);
     expect(r.attempts[0]?.status).toBe('PENDING');
     expect(r.fetchMock).not.toHaveBeenCalled();
@@ -835,22 +707,43 @@ describe('operational client', () => {
 });
 
 describe('configuration-only provider diagnostics through real handler', () => {
- it('returns sanitized readiness with no RPC mutation or provider fetch', async () => {
-   const r=runtime();
-   const response=await r.call('READ_PROVIDER_READINESS');
-   expect(response.status).toBe(200);
-   expect(response.body.externalPublication).toBe(false);
-   expect(response.body.data.providerCalls).toBe(0);
-   expect(response.body.data.executionAllowed).toBe(false);
-   expect(JSON.stringify(response.body)).not.toContain('fake');
-   expect(r.rpc).not.toHaveBeenCalled();
-   expect(r.fetchMock).not.toHaveBeenCalled();
- });
- it('denies unauthenticated and non-admin diagnostic requests', async () => {
-   const r=runtime();
-   expect((await r.call('READ_PROVIDER_READINESS',{},false)).status).toBe(401);
-   r.setRole('STAFF');
-   expect((await r.call('READ_PROVIDER_READINESS')).status).toBe(403);
-   expect(r.fetchMock).not.toHaveBeenCalled();
- });
+  it('requires authenticated OWNER/ADMIN for Meta verification and blocks non-DEV before transport', async () => {
+    const r = runtime();
+    expect((await r.call('VERIFY_META_ACCOUNTS', {}, false)).status).toBe(401);
+    r.setRole('STAFF');
+    expect((await r.call('VERIFY_META_ACCOUNTS')).status).toBe(403);
+    r.setRole('OWNER');
+    r.env.SUPABASE_URL = 'https://gqitoossdbiohqegjvlh.supabase.co';
+    expect((await r.call('VERIFY_META_ACCOUNTS')).body.error).toBe(
+      'META_VERIFICATION_DEV_REQUIRED',
+    );
+    expect(r.rpc).not.toHaveBeenCalled();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it('rejects TikTok creator and execution paths on HOLD without reaching a provider or START', async () => {
+    const r = runtime();
+    r.publication.channel = 'TIKTOK';
+    expect((await r.call('READ_TIKTOK_CREATOR_INFO')).status).toBe(409);
+    expect((await r.assess()).body.error).toBe('TIKTOK_ON_HOLD');
+    expect(r.rpc).not.toHaveBeenCalled();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it('returns sanitized readiness with no RPC mutation or provider fetch', async () => {
+    const r = runtime();
+    const response = await r.call('READ_PROVIDER_READINESS');
+    expect(response.status).toBe(200);
+    expect(response.body.externalPublication).toBe(false);
+    expect(response.body.data.providerCalls).toBe(0);
+    expect(response.body.data.executionAllowed).toBe(false);
+    expect(JSON.stringify(response.body)).not.toContain('fake');
+    expect(r.rpc).not.toHaveBeenCalled();
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
+  it('denies unauthenticated and non-admin diagnostic requests', async () => {
+    const r = runtime();
+    expect((await r.call('READ_PROVIDER_READINESS', {}, false)).status).toBe(401);
+    r.setRole('STAFF');
+    expect((await r.call('READ_PROVIDER_READINESS')).status).toBe(403);
+    expect(r.fetchMock).not.toHaveBeenCalled();
+  });
 });
