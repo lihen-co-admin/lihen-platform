@@ -60,6 +60,7 @@ export function SocialContentPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [libraryError, setLibraryError] = useState('');
   const [notice, setNotice] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [selected, setSelected] = useState('');
@@ -86,6 +87,7 @@ export function SocialContentPage() {
     async (quiet = false, publicationId?: string) => {
       const request = ++readRequest.current;
       if (!canOperate) {
+        setLibraryError('Conexión autenticada a DEV requerida.');
         setItems([]);
         setProducts([]);
         setError(
@@ -98,6 +100,7 @@ export function SocialContentPage() {
       if (quiet) setLoading(false);
       else setLoading(true);
       setError('');
+      setLibraryError('');
       try {
         const remoteItems = await editorialReadDeadline(
           readEditorialWorkspace(undefined, publicationId),
@@ -146,6 +149,9 @@ export function SocialContentPage() {
         }
       } catch (cause) {
         if (request !== readRequest.current) return;
+        setLibraryError(
+          cause instanceof Error ? cause.message : 'Lectura editorial no confirmada.',
+        );
         setItems([]);
         setProducts([]);
         setError(
@@ -374,8 +380,8 @@ export function SocialContentPage() {
           <p>
             {loading
               ? 'Leyendo agenda…'
-              : error
-                ? 'La agenda estará disponible cuando la lectura de DEV esté habilitada.'
+              : libraryError
+                ? 'No se pudo actualizar la agenda desde DEV. Revisa el error de lectura y vuelve a actualizar.'
                 : 'No hay contenido previsto para hoy.'}
           </p>
         )}

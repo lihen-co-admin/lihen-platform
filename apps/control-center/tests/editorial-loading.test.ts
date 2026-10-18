@@ -15,6 +15,8 @@ vi.mock('../src/auth/auth-context', () => ({
 }));
 vi.mock('../src/composition/products', () => ({ productsComposition: { source: 'supabase' } }));
 import { SocialContentPage } from '../src/pages/SocialContentPage';
+import { EditorialComposer } from '../src/components/EditorialComposer';
+import { createEditorialDraft } from '../src/composition/editorial-workspace';
 
 beforeEach(() => {
   operator.authorized = true;
@@ -34,6 +36,44 @@ const button = (html: string, label: string) =>
   html.match(new RegExp(`<button[^>]*>[^<]*${label}[^<]*</button>`))?.[0];
 
 describe('editorial controls in the published production-mode DEV configuration', () => {
+  it.each(['without-product', 'product-without-media', 'product-with-media'])(
+    'explains durable product association for %s',
+    (scenario) => {
+      let id = 0;
+      const item = createEditorialDraft(
+        {
+          copy: 'EDITORIAL TEST',
+          callToAction: '',
+          hashtags: '',
+          channels: ['INSTAGRAM_FEED'],
+          productId: scenario === 'without-product' ? '' : 'product',
+          creativeAssetIds: scenario === 'product-with-media' ? ['image'] : [],
+          campaignName: '',
+          date: '',
+        },
+        new Date(),
+        () => `fixture-${++id}`,
+      )[0]!;
+      const html = renderToStaticMarkup(
+        createElement(
+          MemoryRouter,
+          {},
+          createElement(EditorialComposer, {
+            item,
+            products: [],
+            busy: false,
+            onSave: () => undefined,
+            onClose: () => undefined,
+          }),
+        ),
+      );
+      expect(html.includes('Seleccionar un producto no conserva su asociación por sí solo')).toBe(
+        scenario === 'product-without-media',
+      );
+      if (scenario === 'without-product')
+        expect(html).toContain('Puedes guardar un borrador sin producto asociado');
+    },
+  );
   it('lets OWNER open creation and diagnostics during the initial library read', () => {
     const html = markup();
     expect(html).toContain('Cargando productos');

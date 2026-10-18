@@ -373,6 +373,13 @@ export function EditorialComposer({
         </fieldset>
         <fieldset>
           <legend>Media del producto</legend>
+          {draft.productId && activeVariant.creativeAssetIds.length === 0 && (
+            <p role="alert">
+              Seleccionar un producto no conserva su asociación por sí solo. Selecciona una imagen o
+              vídeo autorizado de ese producto, o quita el producto para guardar un borrador sin
+              asociación.
+            </p>
+          )}
           <p>
             Selecciona media durable autorizada para este producto. Reel y TikTok requieren un
             video. La selección no autoriza publicación. Este editor no carga archivos.
@@ -399,7 +406,11 @@ export function EditorialComposer({
                 </select>
               </label>
               {!videos.length && (
-                <p>Sin videos autorizados disponibles; puedes guardar el borrador.</p>
+                <p>
+                  {draft.productId
+                    ? 'Sin vídeos autorizados disponibles. Para guardar sin media, quita primero el producto asociado.'
+                    : 'Puedes guardar un borrador sin producto asociado y completar la media después.'}
+                </p>
               )}
             </>
           ) : (
@@ -426,7 +437,9 @@ export function EditorialComposer({
               </div>
               {!images.length && (
                 <p>
-                  Sin imágenes disponibles. Puedes guardar el borrador y completar la media después.
+                  {draft.productId
+                    ? 'Sin imágenes disponibles. Para guardar sin media, quita primero el producto asociado.'
+                    : 'Puedes guardar un borrador sin producto asociado y completar la media después.'}
                 </p>
               )}
             </>
