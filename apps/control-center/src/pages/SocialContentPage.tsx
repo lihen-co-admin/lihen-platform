@@ -1,4 +1,5 @@
 import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
+import { editorialReadDeadline } from '../composition/editorial-read-deadline';
 import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -65,6 +66,7 @@ export function SocialContentPage() {
   const [filter, setFilter] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
   const feedbackRef = useRef<HTMLDivElement>(null);
+  const readRequest = useRef(0);
   useEffect(() => {
     if (!busy && (error || notice)) {
       feedbackRef.current?.focus();
@@ -82,6 +84,7 @@ export function SocialContentPage() {
 
   const refresh = useCallback(
     async (quiet = false, publicationId?: string) => {
+      const request = ++readRequest.current;
       if (!canOperate) {
         setItems([]);
         setProducts([]);
@@ -91,11 +94,16 @@ export function SocialContentPage() {
         setLoading(false);
         return;
       }
-      if (quiet) setRefreshing(true);
+      setRefreshing(true);
+      if (quiet) setLoading(false);
       else setLoading(true);
       setError('');
       try {
-        const remoteItems = await readEditorialWorkspace(undefined, publicationId);
+        const remoteItems = await editorialReadDeadline(
+          readEditorialWorkspace(undefined, publicationId),
+          'la biblioteca editorial',
+        );
+        if (request !== readRequest.current) return;
         const updateItems = (next: EditorialItem[]) =>
           setItems((previous) =>
             publicationId
@@ -103,21 +111,33 @@ export function SocialContentPage() {
               : next,
           );
         updateItems(remoteItems);
+        setLoading(false);
         setNotice('Biblioteca editorial leída desde DEV.');
+        let catalogRead = false;
         try {
-          const catalog = await productsComposition.getProducts.execute(createGetProductsQuery());
+          const catalog = await editorialReadDeadline(
+            productsComposition.getProducts.execute(createGetProductsQuery()),
+            'Product Master',
+          );
+          if (request !== readRequest.current) return;
           setProducts(catalog.filter((product) => product.status === 'ACTIVE'));
+          catalogRead = true;
           if (productsComposition.canReadImages) {
-            const linked = await resolveProductAssociationsFromMedia(
-              remoteItems,
-              catalog,
-              async (productId) => productsComposition.getProductImages.execute({ productId }),
-              readEditorialVideoAssets,
+            const linked = await editorialReadDeadline(
+              resolveProductAssociationsFromMedia(
+                remoteItems,
+                catalog,
+                async (productId) => productsComposition.getProductImages.execute({ productId }),
+                readEditorialVideoAssets,
+              ),
+              'la asociación de media',
             );
+            if (request !== readRequest.current) return;
             updateItems(linked);
           }
         } catch (cause) {
-          setProducts([]);
+          if (request !== readRequest.current) return;
+          if (!catalogRead) setProducts([]);
           setNotice(
             cause instanceof Error
               ? `Biblioteca leída desde DEV. Product Master/media no está disponible: ${cause.message}`
@@ -125,6 +145,7 @@ export function SocialContentPage() {
           );
         }
       } catch (cause) {
+        if (request !== readRequest.current) return;
         setItems([]);
         setProducts([]);
         setError(
@@ -133,8 +154,10 @@ export function SocialContentPage() {
             : 'No se pudo leer el contenido compartido desde DEV.',
         );
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (request === readRequest.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [canOperate],
@@ -142,7 +165,12 @@ export function SocialContentPage() {
 
   useEffect(() => {
     let active = true;
-    const savedGoals = localStorage.getItem(`${cacheKey}:goals`);
+    let savedGoals: string | null = null;
+    try {
+      savedGoals = localStorage.getItem(`${cacheKey}:goals`);
+    } catch {
+      /* Personal preferences must never prevent the server library from loading. */
+    }
     if (savedGoals) {
       try {
         setGoals({ ...initialGoals, ...(JSON.parse(savedGoals) as Partial<EditorialGoals>) });
@@ -158,6 +186,7 @@ export function SocialContentPage() {
     const timer = window.setInterval(() => setNow(new Date()), 60000);
     return () => {
       active = false;
+      readRequest.current++;
       window.clearInterval(timer);
     };
   }, [cacheKey, refresh]);
@@ -167,6 +196,10 @@ export function SocialContentPage() {
       setError('Persistencia editorial bloqueada o acción en curso.');
       return;
     }
+    // A pending library snapshot must never replace a subsequently confirmed save.
+    readRequest.current++;
+    setLoading(false);
+    setRefreshing(false);
     setBusy(true);
     setError('');
     setNotice('');
@@ -236,14 +269,7 @@ export function SocialContentPage() {
 
   return (
     <div className="stack editorial-workspace">
-      <SocialProviderReadiness
-        allowed={Boolean(
-          import.meta.env.DEV &&
-          auth.enabled &&
-          auth.authorized &&
-          ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? ''),
-        )}
-      />
+      <SocialProviderReadiness allowed={canOperate} />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO | Beauty Care • Style</p>
@@ -265,11 +291,7 @@ export function SocialContentPage() {
           >
             {refreshing ? 'Actualizando…' : 'Actualizar desde DEV'}
           </button>
-          <button
-            type="button"
-            disabled={!canOperate || loading || busy}
-            onClick={() => setEditing('new')}
-          >
+          <button type="button" disabled={!canOperate || busy} onClick={() => setEditing('new')}>
             + Crear contenido
           </button>
         </div>
