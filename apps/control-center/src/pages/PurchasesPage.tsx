@@ -1,3 +1,5 @@
+import { useUnsavedChanges } from '../drafts/UnsavedChanges';
+import { purchaseLinesHaveChanges, type PurchaseFormLine as DraftLine } from '../drafts/purchase-form';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import type { Purchase } from '@lihen/procurement';
@@ -9,13 +11,6 @@ import { SummaryStrip } from '../components/SummaryStrip';
 import { procurementComposition } from '../composition/procurement';
 import { suppliersComposition } from '../composition/suppliers';
 import { productsComposition } from '../composition/products';
-
-interface DraftLine {
-  readonly key: string;
-  readonly productId: string;
-  readonly quantity: string;
-  readonly cost: string;
-}
 
 const createDraftLine = (): DraftLine => ({
   key: crypto.randomUUID(),
@@ -44,6 +39,7 @@ export function PurchasesPage() {
   const [lines, setLines] = useState<DraftLine[]>([createDraftLine()]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  useUnsavedChanges(Boolean(number || supplierId || purchaseDate || expectedDate || notes || purchaseLinesHaveChanges(lines)));
 
   async function refresh() {
     const [purchases, supplierRows, productRows] = await Promise.all([

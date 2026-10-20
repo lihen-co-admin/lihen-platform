@@ -1,3 +1,4 @@
+import { useUnsavedChanges, useUnsavedValue } from '../drafts/UnsavedChanges';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { FinancialAccount } from '@lihen/finance';
@@ -53,6 +54,7 @@ export function SalesPage() {
   const [number, setNumber] = useState('');
   const [accountId, setAccountId] = useState('');
   const [channel, setChannel] = useState('IN_PERSON');
+  const channelGuard = useUnsavedValue(channel);
   const [customer, setCustomer] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [lines, setLines] = useState<PosLine[]>([createEmptyLine()]);
@@ -61,6 +63,7 @@ export function SalesPage() {
   const [orderAccountId, setOrderAccountId] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  useUnsavedChanges(Boolean(number || customer || selectedCustomerId || lines.length > 1 || lines.some(line => line.productId || line.quantity !== '1' || line.unitPrice) || orderSaleNumber));
   const [commerceChecks, setCommerceChecks] = useState<readonly CommerceCheck[]>([]);
   const [cancellationChecks, setCancellationChecks] = useState<readonly CancellationCheck[]>([]);
 
@@ -171,6 +174,7 @@ export function SalesPage() {
         })),
       });
       setMessage('Venta POS completada. Inventario y finanzas se actualizaron mediante una sola operación controlada.');
+      channelGuard.markSaved(channel);
       setNumber('');
       setCustomer('');
       setSelectedCustomerId('');

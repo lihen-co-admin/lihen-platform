@@ -70,6 +70,7 @@ async function main() {
     const page = await browser.newPage();
     await page.route('**/*.supabase.co/**', (r) => r.abort());
     page.on('pageerror', (e) => report.checks.push('PAGE_ERROR:' + e.message));
+    page.on('dialog', (dialog) => dialog.accept());
     await page.goto('http://127.0.0.1:4201/');
     await expect(page.locator('input')).toBeVisible();
     const origin = await page.evaluate(() => performance.timeOrigin);
@@ -91,7 +92,11 @@ async function main() {
       report.checks.push('CONFIRMED_REACT_REMOUNT_AND_UNSAVED_STATE_LOSS_WITHOUT_DOCUMENT_RELOAD');
     } else {
       await expect(page.locator('input')).toHaveValue('UNSAVED');
-      const routes = await page.evaluate(() => window.__authTest.routes);
+      const allRoutes = await page.evaluate(() => window.__authTest.routes);
+      const routes = process.argv[3]
+        ? allRoutes.filter((route) => route === process.argv[3])
+        : allRoutes;
+      if (!routes.length) throw Error('Unknown targeted route');
       for (const route of routes) {
         await page.goto('http://127.0.0.1:4201/#' + route);
         await expect(page.getByTestId('route')).toHaveText(route);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
 import { ConversationPreparation } from '../components/ConversationPreparation';
 import { Link } from 'react-router-dom';
 import {
@@ -15,6 +16,7 @@ import '../styles/editorial.css';
 
 export function ConversationsPage() {
   const auth = useAuth();
+  const confirmExit = useConfirmUnsavedExit();
   const [conversations, setConversations] = useState<readonly Conversation[]>([]);
   const [messages, setMessages] = useState<readonly ConversationMessage[]>([]);
   const [customers, setCustomers] = useState<readonly Customer[]>([]);
@@ -84,8 +86,7 @@ export function ConversationsPage() {
         {loaded && !conversations.length && (
           <p>
             Sin conversaciones visibles para esta sesión. Los permisos de lectura compartida están
-            pendientes; una lista vacía no demuestra que no existan
-            conversaciones.
+            pendientes; una lista vacía no demuestra que no existan conversaciones.
           </p>
         )}
         {conversations.map((item) => (
@@ -93,7 +94,7 @@ export function ConversationsPage() {
             className="editorial-event"
             key={item.id}
             onClick={() => {
-              setSelected(item.id);
+              if (item.id === selected || confirmExit()) setSelected(item.id);
             }}
           >
             <strong>
@@ -150,7 +151,21 @@ export function ConversationsPage() {
             ))}
         </section>
       )}
-      {current ? <ConversationPreparation key={current.id} conversationId={current.id} allowed={auth.enabled && auth.authorized && ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '')} /> : <p>Selecciona una conversación durable para preparar respuestas y seguimientos. Sin enviar.</p>}
+      {current ? (
+        <ConversationPreparation
+          key={current.id}
+          conversationId={current.id}
+          allowed={
+            auth.enabled &&
+            auth.authorized &&
+            ['OWNER', 'ADMIN'].includes(auth.profile?.roleCode ?? '')
+          }
+        />
+      ) : (
+        <p>
+          Selecciona una conversación durable para preparar respuestas y seguimientos. Sin enviar.
+        </p>
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -26,6 +27,7 @@ export function ChangeProductSalePricePage() {
   const [product, setProduct] = useState<ProductDetailDTO | null>(null);
   const [newPrice, setNewPrice] = useState('');
   const [reason, setReason] = useState('');
+  const unsaved = useUnsavedValue([newPrice, reason]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -48,6 +50,7 @@ export function ChangeProductSalePricePage() {
         }
         setProduct(result);
         setNewPrice(String(result.salePrice.amount));
+        unsaved.markSaved([String(result.salePrice.amount), '']);
       })
       .catch(() => { if (active) setError('No fue posible cargar el producto.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -98,6 +101,7 @@ export function ChangeProductSalePricePage() {
           reason: reason.trim(),
         }),
       );
+      unsaved.markSaved([newPrice, reason]);
       navigate(`/products/${id}`);
     } catch (caught) {
       if (caught instanceof ProductNotFoundError) setNotFound(true);

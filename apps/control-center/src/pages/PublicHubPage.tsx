@@ -1,3 +1,4 @@
+import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useMemo, useState } from 'react';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
 import {
@@ -102,6 +103,7 @@ export function PublicHubPage() {
   const [blocks, setBlocks] = useState<readonly PublicHubBlockProps[]>([]);
   const [products, setProducts] = useState<readonly ProductListItemDTO[]>([]);
   const [draft, setDraft] = useState<PublicHubBlockDraft>(emptyDraft);
+  const unsaved = useUnsavedValue(draft);
   const [editing, setEditing] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,6 +153,7 @@ export function PublicHubPage() {
   function resetEditor() {
     setEditing(null);
     setDraft(emptyDraft);
+    unsaved.markSaved(emptyDraft);
     setProductQuery('');
   }
 
@@ -206,8 +209,10 @@ export function PublicHubPage() {
   }
 
   function editBlock(block: PublicHubBlockProps) {
+    if (!unsaved.confirmDiscard()) return;
     setEditing(block.id);
     setDraft({ ...block, id: block.id });
+    unsaved.markSaved({ ...block, id: block.id });
     setProductQuery('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -278,7 +283,7 @@ export function PublicHubPage() {
               <p className="hub-eyebrow">Edición</p>
               <h2>{editing ? 'Editar bloque' : 'Agregar bloque'}</h2>
             </div>
-            {editing ? <button type="button" className="secondary-button" onClick={resetEditor}>Cancelar</button> : null}
+            {editing ? <button type="button" className="secondary-button" onClick={() => { if (unsaved.confirmDiscard()) resetEditor(); }}>Cancelar</button> : null}
           </div>
 
           <label>Tipo

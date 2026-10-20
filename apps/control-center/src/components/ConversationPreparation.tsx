@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '../drafts/UnsavedChanges';
 import { useRef, useState } from 'react';
 import { conversationPreparationRepository, type ReplyDraft, type FollowUp } from '../composition/conversation-preparation';
 
@@ -10,6 +11,7 @@ export function ConversationPreparation({ conversationId, allowed }: { conversat
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const unsaved = useUnsavedChanges(body !== (draft?.body ?? '') || reason !== (followUp?.reason ?? '') || Boolean(dueAt));
   const pending = useRef<{ fingerprint: string; id: string } | null>(null);
   function operationId(payload: unknown) {
     const fingerprint = JSON.stringify(payload);
@@ -23,6 +25,7 @@ export function ConversationPreparation({ conversationId, allowed }: { conversat
     finally { setBusy(false); }
   }
   async function read() {
+    if (!unsaved.confirmDiscard()) return;
     const saved = await conversationPreparationRepository().read(conversationId);
     setDraft(saved.draft); setFollowUp(saved.followUp); setBody(saved.draft?.body ?? ''); setReason(saved.followUp?.reason ?? ''); setDueAt(''); setLoaded(true);
   }
@@ -37,7 +40,7 @@ export function ConversationPreparation({ conversationId, allowed }: { conversat
     const date = dueAt ? new Date(dueAt).toISOString() : followUp?.due_at ?? null;
     const id = operationId(['followUp', conversationId, previous, reason, date, status]);
     const saved = await conversationPreparationRepository().saveFollowUp(id, conversationId, previous, reason, date, status);
-    setFollowUp(saved); setReason(saved.reason);
+    setFollowUp(saved); setReason(saved.reason); setDueAt('');
   }
   return <section className="card stack"><h2>Preparación durable · Sin enviar</h2>
     <p>WHATSAPP_SENDING_ENABLED=false. Aprobar guarda una revisión; no crea intentos ni envía mensajes. Requiere la migración de preparación instalada.</p>

@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '../drafts/UnsavedChanges';
 import { FormEvent, useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -68,6 +69,7 @@ export function ProductImagesPage() {
   const [staged, setStaged] = useState<readonly StagedImage[]>([]);
   const [stagedMessage, setStagedMessage] = useState('');
   const [optimizing, setOptimizing] = useState(false);
+  useUnsavedChanges(Boolean(staged.length || optimizing || webpSaveBusy));
   const [authorized, setAuthorized] = useState(false);
   const [altText, setAltText] = useState('');
   const [makeMain, setMakeMain] = useState(false);

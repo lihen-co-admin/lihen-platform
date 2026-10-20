@@ -1,3 +1,4 @@
+import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   INVENTORY_ADJUSTMENT_REASONS,
@@ -40,6 +41,7 @@ export function InventoryPage() {
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const unsaved = useUnsavedValue([selectedId, quantity, reason, notes]);
   const [loading, setLoading] = useState(true);
 
   async function refresh() {
@@ -130,6 +132,7 @@ export function InventoryPage() {
         movementId: inventoryComposition.ids.generate(), productId: selectedId, quantityDelta: delta,
         reason, occurredAt: new Date(), notes: notes.trim() || null,
       });
+      unsaved.markSaved([selectedId, '', reason, '']);
       setQuantity(''); setNotes(''); setMessage('Ajuste registrado en el ledger inmutable.');
       await refresh();
       if (traceProductId === selectedId) setMovements(await inventoryComposition.getMovements.execute(selectedId));

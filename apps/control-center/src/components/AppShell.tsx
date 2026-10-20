@@ -1,3 +1,4 @@
+import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { CapabilityModeNotice } from './CapabilityModeNotice';
 import { useAuth } from '../auth/auth-context';
@@ -61,6 +62,7 @@ const navigation: readonly NavigationGroup[] = [
 export function AppShell() {
   const location = useLocation();
   const auth = useAuth();
+  const confirmExit = useConfirmUnsavedExit();
   const isDev = import.meta.env.DEV;
   const configuration = configurationReadiness(import.meta.env);
 
@@ -123,15 +125,29 @@ export function AppShell() {
           </div>
           <div className="topbar-actions">
             <span className="environment-pill">DEV seguro</span>
-            <button type="button" className="button-ghost" onClick={() => void auth.signOut()}>
+            <button
+              type="button"
+              className="button-ghost"
+              onClick={() => {
+                if (confirmExit()) void auth.signOut();
+              }}
+            >
               Cerrar sesión
             </button>
           </div>
         </header>
 
         <main className="content">
-          {configuration.source === 'memory' && <div className="info-state" role="status">SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.</div>}
-          {configuration.auth === 'disabled' && <div className="info-state" role="status">Autenticación deshabilitada · preview local.</div>}
+          {configuration.source === 'memory' && (
+            <div className="info-state" role="status">
+              SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.
+            </div>
+          )}
+          {configuration.auth === 'disabled' && (
+            <div className="info-state" role="status">
+              Autenticación deshabilitada · preview local.
+            </div>
+          )}
           <CapabilityModeNotice pathname={location.pathname} env={import.meta.env} />
           <Outlet />
         </main>

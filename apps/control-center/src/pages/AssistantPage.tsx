@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '../drafts/UnsavedChanges';
 import { useState } from 'react';
 import { useAuth } from '../auth/auth-context';
 import { AdminPageHero } from '../components/AdminPageHero';
@@ -21,6 +22,7 @@ export function AssistantPage() {
   const [contextSource, setContextSource] = useState<string | null>(null);
   const [messages, setMessages] = useState<readonly string[]>([]);
   const [answer, setAnswer] = useState<string | null>(null);
+  useUnsavedChanges(Boolean(prompt.trim() || productId || answer));
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

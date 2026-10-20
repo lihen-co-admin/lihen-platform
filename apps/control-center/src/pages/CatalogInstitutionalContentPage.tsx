@@ -1,3 +1,4 @@
+import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
@@ -63,6 +64,7 @@ function QrPreview({ value }: { value: string }) {
 
 export function CatalogInstitutionalContentPage() {
   const [content, setContent] = useState<CatalogInstitutionalContent>(EMPTY_CONTENT);
+  const unsaved = useUnsavedValue(content);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -72,7 +74,7 @@ export function CatalogInstitutionalContentPage() {
   useEffect(() => {
     catalogInstitutionalComposition
       .getCurrent()
-      .then(setContent)
+      .then((loaded) => { setContent(loaded); unsaved.markSaved(loaded); })
       .catch((cause: unknown) =>
         setError(cause instanceof Error ? cause.message : 'No fue posible cargar la configuración.'),
       )
@@ -94,6 +96,7 @@ export function CatalogInstitutionalContentPage() {
     setMessage('');
     try {
       await catalogInstitutionalComposition.save(content);
+      unsaved.markSaved(content);
       setMessage('Contenido institucional guardado. Las versiones ACTIVE existentes no cambian.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No fue posible guardar.');

@@ -22,6 +22,9 @@ const fixtures = vi.hoisted(() => ({
 vi.mock('react', async (original) => ({
   ...(await original<typeof import('react')>()),
   useEffect: vi.fn(),
+  // This handler-only harness has no app provider; navigation is covered in Chromium.
+  useContext: () => null,
+  useId: () => 'manual-intake-fixture',
   useMemo: (factory: () => unknown) => factory(),
   useRef: (current: unknown) => ({ current }),
   useState: (initial: unknown) => {

@@ -1,4 +1,5 @@
 import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
+import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
 import { editorialReadDeadline } from '../composition/editorial-read-deadline';
 import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -44,6 +45,7 @@ const initialGoals: EditorialGoals = {
 const allowedOperatorRoles = ['OWNER', 'ADMIN'];
 
 export function SocialContentPage() {
+  const confirmExit = useConfirmUnsavedExit();
   const auth = useAuth();
   const cacheKey = `lihen:editorial:v1:${auth.user?.id ?? 'local'}`;
   const canOperate =
@@ -248,6 +250,7 @@ export function SocialContentPage() {
   const current = items.find((item) => item.publication.id === selected);
   function open(id: string) {
     if (busy) return;
+    if (id !== selected && !confirmExit()) return;
     setSelected(id);
     window.setTimeout(
       () =>

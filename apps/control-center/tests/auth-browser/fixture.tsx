@@ -1,7 +1,9 @@
 // Isolated test identity only: no browser credentials or remote session are used.
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { createHashRouter, RouterProvider, Routes, Route, useLocation } from 'react-router-dom';
+import { FormDraftProvider } from '../../src/drafts/FormDraftProvider';
+import { UnsavedChangesProvider, useUnsavedChanges } from '../../src/drafts/UnsavedChanges';
 import { AuthProvider } from '../../src/auth/AuthProvider';
 import { ProtectedRoute } from '../../src/auth/ProtectedRoute';
 import { useAuth } from '../../src/auth/auth-context';
@@ -139,6 +141,7 @@ function Probe() {
   const { pathname } = useLocation(),
     auth = useAuth();
   const [value, setValue] = useState('');
+  useUnsavedChanges(Boolean(value));
   useEffect(() => {
     window.__authTest.mounts[pathname] = (window.__authTest.mounts[pathname] || 0) + 1;
     return () => {
@@ -153,10 +156,11 @@ function Probe() {
     </main>
   );
 }
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <HashRouter>
-      <AuthProvider>
+function DraftAwareRoutes() {
+  const auth = useAuth();
+  return (
+    <FormDraftProvider userId={auth.user?.id ?? null} enabled>
+      <UnsavedChangesProvider>
         <Routes>
           <Route path="/login" element={<h1>LOGIN</h1>} />
           <Route element={<ProtectedRoute />}>
@@ -165,7 +169,22 @@ createRoot(document.getElementById('root')).render(
             ))}
           </Route>
         </Routes>
+      </UnsavedChangesProvider>
+    </FormDraftProvider>
+  );
+}
+const router = createHashRouter([
+  {
+    path: '*',
+    element: (
+      <AuthProvider>
+        <DraftAwareRoutes />
       </AuthProvider>
-    </HashRouter>
+    ),
+  },
+]);
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <RouterProvider router={router} />
   </StrictMode>,
 );

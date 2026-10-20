@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useUnsavedChanges } from '../drafts/UnsavedChanges';
 import { parseEditorialDate } from '../composition/editorial-workspace';
 import {
   channelCapability,
@@ -23,6 +24,7 @@ export function EditorialScheduling({
   const [date, setDate] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const scheduled = isEditorialScheduled(item);
+  useUnsavedChanges(!scheduled && Boolean(date || confirmed));
   const approved = item.publication.status === 'APPROVED';
   const mediaPresent = item.publication.creativeAssetIds.length > 0;
   let dateError = '';

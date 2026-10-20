@@ -1,3 +1,4 @@
+import { useUnsavedChanges, useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   canReverseFinancialMovement,
@@ -28,6 +29,7 @@ export function FinancePage() {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [type, setType] = useState<FinancialAccountType>('CASH');
+  const typeGuard = useUnsavedValue(type);
   const [expenseAccount, setExpenseAccount] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseDescription, setExpenseDescription] = useState('');
@@ -40,6 +42,7 @@ export function FinancePage() {
   const [closureNotes, setClosureNotes] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  useUnsavedChanges(Boolean(code || name || expenseAmount || expenseDescription || transferAmount || transferDescription || countedBalance || closureNotes));
 
   async function refresh() {
     const [nextAccounts, nextMovements, nextLedgerMovements, nextClosures] = await Promise.all([
@@ -88,6 +91,7 @@ export function FinancePage() {
         accountType: type,
         currency: 'COP',
       });
+      typeGuard.markSaved(type);
       setCode('');
       setName('');
       return 'Cuenta creada con saldo inicial 0.';

@@ -1,3 +1,4 @@
+import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { EditorialProductSelector } from './EditorialProductSelector';
@@ -57,6 +58,7 @@ export function EditorialComposer({
         }
       : {},
   }));
+  const unsaved = useUnsavedValue(draft);
   const [variantChannel, setVariantChannel] = useState<EditorialDraft['channels'][number]>(
     (item?.publication.channel as EditorialDraft['channels'][number]) ?? 'INSTAGRAM_FEED',
   );
@@ -449,7 +451,14 @@ export function EditorialComposer({
           <button type="submit" disabled={busy || !draft.channels.length}>
             Guardar borrador
           </button>
-          <button type="button" className="button-ghost" disabled={busy} onClick={onClose}>
+          <button
+            type="button"
+            className="button-ghost"
+            disabled={busy}
+            onClick={() => {
+              if (unsaved.confirmDiscard()) onClose();
+            }}
+          >
             Cerrar editor
           </button>
         </div>

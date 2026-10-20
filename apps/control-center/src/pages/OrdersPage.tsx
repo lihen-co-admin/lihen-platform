@@ -1,3 +1,4 @@
+import { useUnsavedChanges, useUnsavedValue } from '../drafts/UnsavedChanges';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { Customer } from '@lihen/customer';
@@ -51,6 +52,7 @@ export function OrdersPage() {
   const [products, setProducts] = useState<readonly { id: string; name: string; sku: string | null; salePrice: number }[]>([]);
   const [number, setNumber] = useState('');
   const [channel, setChannel] = useState<OrderChannel>('WHATSAPP');
+  const channelGuard = useUnsavedValue(channel);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -58,6 +60,7 @@ export function OrdersPage() {
   const [lines, setLines] = useState<DraftLine[]>([createDraftLine()]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  useUnsavedChanges(Boolean(number || selectedCustomerId || customerName || customerPhone || notes || lines.length > 1 || lines.some(line => line.productId || line.quantity !== '1' || line.unitPrice || line.notes)));
 
   async function refresh() {
     const [orders, customerRows, productRows] = await Promise.all([
@@ -270,6 +273,7 @@ export function OrdersPage() {
         });
       }
 
+      channelGuard.markSaved(channel);
       setNumber('');
       setSelectedCustomerId('');
       setCustomerName('');
