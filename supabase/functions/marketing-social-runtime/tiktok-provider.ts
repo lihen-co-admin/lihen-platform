@@ -72,6 +72,32 @@ export interface TikTokEvidence {
   interactions?: Readonly<Record<string, boolean>>;
 }
 export const TIKTOK_CONTRACT_REQUIRED = 'TIKTOK_PROVIDER_CONTRACT_UNVERIFIED';
+/** Account metadata only; publication-enabled remains independent and is never overridden. */
+export async function readTikTokAccountMetadata(
+  config: TikTokConfig,
+  enabled: boolean,
+  request: typeof fetch = fetch,
+) {
+  if (!enabled) throw new Error('TIKTOK_DIAGNOSTICS_DISABLED');
+  if (!config.accessToken || !config.authorizedScopes?.includes('video.publish'))
+    throw new Error('TIKTOK_DIAGNOSTICS_NOT_CONFIGURED');
+  const creator = await createTikTokHttpTransport(config, null, request, {
+    creatorMetadataAuthorized: true,
+  }).queryCreator(AbortSignal.timeout(10000));
+  if (
+    creator.accountId.includes(config.accessToken) ||
+    creator.nickname?.includes(config.accessToken)
+  )
+    throw new Error('TIKTOK_RESPONSE_INVALID');
+  return {
+    accountId: creator.accountId,
+    nickname: creator.nickname ?? null,
+    privacyOptions: allowedTikTokPrivacy(config, creator),
+    maxVideoDurationSec: creator.maxVideoDurationSec,
+    publicationEnabled: false as const,
+    creatorConsentRequired: true as const,
+  };
+}
 export function configuredTikTokTransport(
   config: TikTokConfig,
   creator: TikTokCreator | null = null,
@@ -108,7 +134,10 @@ export function validTikTokChoices(value: unknown): value is TikTokChoices {
   if (!value || typeof value !== 'object') return false;
   const choice = value as Partial<TikTokChoices>;
   return (
-    ['consent,creatorRevision,interactions,privacy', 'consent,creatorRevision,disclosure,interactions,privacy'].includes(Object.keys(value).sort().join(',')) &&
+    [
+      'consent,creatorRevision,interactions,privacy',
+      'consent,creatorRevision,disclosure,interactions,privacy',
+    ].includes(Object.keys(value).sort().join(',')) &&
     typeof choice.creatorRevision === 'string' &&
     typeof choice.privacy === 'string' &&
     choice.consent === true &&
@@ -235,7 +264,11 @@ export async function executeTikTok(
       assessTikTok(config, { ...transport, creator }, video, choices).length
     )
       return { outcome: 'UNCERTAIN' };
-    if ((await bounded((signal) => transport.verifyVideo(video, signal, creator.maxVideoDurationSec))) !== true)
+    if (
+      (await bounded((signal) =>
+        transport.verifyVideo(video, signal, creator.maxVideoDurationSec),
+      )) !== true
+    )
       return { outcome: 'UNCERTAIN' };
     await persist({
       kind: 'CONSENT',

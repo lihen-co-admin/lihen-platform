@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   readSocialProviderReadiness,
   readMetaAccountVerification,
+  readTikTokAccount,
   type MetaAccountVerification,
   type SocialProviderReadiness as Report,
 } from '../composition/social-provider-readiness';
@@ -10,6 +11,9 @@ export function SocialProviderReadiness({ allowed }: { allowed: boolean }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [accounts, setAccounts] = useState<MetaAccountVerification | null>(null);
+  const [tikTokAccount, setTikTokAccount] = useState<Awaited<
+    ReturnType<typeof readTikTokAccount>
+  > | null>(null);
   async function verifyAccounts() {
     if (!allowed || busy) return;
     setBusy(true);
@@ -49,6 +53,33 @@ export function SocialProviderReadiness({ allowed }: { allowed: boolean }) {
       <button disabled={!allowed || busy} onClick={() => void verifyAccounts()}>
         Verificar cuentas y permisos Meta · solo lectura
       </button>
+      <button
+        disabled={!allowed || busy}
+        onClick={async () => {
+          if (!allowed || busy) return;
+          setBusy(true);
+          setError('');
+          setTikTokAccount(null);
+          try {
+            setTikTokAccount(await readTikTokAccount());
+          } catch {
+            setError(
+              'TikTok: lectura no confirmada. Requiere runtime DEV, autorización oficial y TIKTOK_DIAGNOSTICS_ENABLED; publicación continúa bloqueada.',
+            );
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Consultar cuenta TikTok · sin publicar
+      </button>
+      {tikTokAccount && (
+        <p>
+          Cuenta TikTok consultada: {tikTokAccount.nickname ?? tikTokAccount.accountId}.
+          Consentimiento por contenido pendiente; publicación no habilitada.
+        </p>
+      )}
+      <a href="#/dev-whatsapp-preflight">Verificar coexistencia WhatsApp · sin enviar</a>
       <p>
         Las variables configuradas no confirman una cuenta conectada. La verificación realiza
         únicamente consultas oficiales; no publica ni envía mensajes.

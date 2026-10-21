@@ -23,7 +23,7 @@ export async function runWhatsAppPreflight(): Promise<WhatsAppPreflightResult> {
   const client = getBrowserSupabaseClient(import.meta.env);
 
   const { data, error } = await client.functions.invoke<WhatsAppPreflightResult>(
-    'conversation-whatsapp-runtime',
+    'marketing-social-runtime',
     {
       body: {
         action: 'WHATSAPP_PREFLIGHT',

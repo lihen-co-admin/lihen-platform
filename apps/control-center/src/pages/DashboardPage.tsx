@@ -1,3 +1,4 @@
+import { PremiumDashboardOverview } from '../components/PremiumDashboardOverview';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminPageHero } from '../components/AdminPageHero';
@@ -120,6 +121,8 @@ export function DashboardPage() {
           </>
         )}
       />
+
+      <PremiumDashboardOverview summary={summary} />
 
       {experienceState.state === 'ERROR' ? (
         <div

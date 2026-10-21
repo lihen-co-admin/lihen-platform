@@ -154,9 +154,12 @@ export function createVisualIntelligenceComposition(
     async getSessionSummary(sessionId: string): Promise<VisualIntelligenceSessionSummary | null> {
       if (!enabled) return null;
       const client = getBrowserSupabaseClient(env);
-      const { data, error } = await client.rpc('get_visual_intelligence_session_summary_controlled', {
-        p_session_id: sessionId,
-      });
+      const { data, error } = await client.rpc(
+        'get_visual_intelligence_session_summary_controlled',
+        {
+          p_session_id: sessionId,
+        },
+      );
       if (error) throw new Error(`Unable to read Lens Mode session: ${error.message}`);
       const row = Array.isArray(data) ? data[0] : data;
       return row ? mapSummary(row as VisualIntelligenceSummaryRow) : null;
@@ -165,3 +168,111 @@ export function createVisualIntelligenceComposition(
 }
 
 export const visualIntelligenceComposition = createVisualIntelligenceComposition();
+
+/** Visual observations are independent of verifiedImageResearch: no SearchPort is enabled here. */
+export async function analyzeProductPhotoWithClient(
+  client: import('./editorial-research').EditorialResearchEdgeFunctionClient,
+  productId: string,
+  file: File,
+  dataTreatmentAuthorized: boolean,
+) {
+  if (!dataTreatmentAuthorized) throw new Error('BLOCKED_DATA_TREATMENT');
+  if (
+    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+    file.size > 12 * 1024 * 1024 ||
+    !file.size
+  )
+    throw new Error('BLOCKED_INVALID_IMAGE');
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  const { data, error } = await client.functions.invoke<{
+    runtime: string;
+    action: string;
+    report: import('@lihen/intelligence-core').ProviderResult<
+      readonly import('@lihen/intelligence-core').VisionObservation[]
+    >;
+  }>('intelligence-runtime', {
+    body: {
+      action: 'PRODUCT_VISUAL_ANALYSIS',
+      productId,
+      dataTreatmentAuthorized: true,
+      manualRequest: true,
+      assets: [
+        {
+          assetRef: 'manual-reference',
+          mimeType: file.type,
+          sourceUri: `data:${file.type};base64,${btoa(binary)}`,
+        },
+      ],
+    },
+  });
+  if (
+    error ||
+    !data ||
+    data.runtime !== 'LIHEN_INTELLIGENCE' ||
+    data.action !== 'PRODUCT_VISUAL_ANALYSIS' ||
+    !data.report
+  )
+    throw new Error('VISUAL_ANALYSIS_FAILED');
+  return data.report;
+}
+
+export function analyzeProductPhoto(productId: string, file: File, authorized: boolean) {
+  if (!authorized) return Promise.reject(new Error('BLOCKED_DATA_TREATMENT'));
+  return analyzeProductPhotoWithClient(
+    getBrowserSupabaseClient(import.meta.env),
+    productId,
+    file,
+    authorized,
+  );
+}
+
+/** Existing DEV image only: runtime resolves bytes with the caller's Auth/RLS. */
+export async function analyzeExistingProductPhotoWithClient(
+  client: import('./editorial-research').EditorialResearchEdgeFunctionClient,
+  productId: string,
+  imageId: string,
+  authorized: boolean,
+) {
+  if (!authorized) throw new Error('BLOCKED_DATA_TREATMENT');
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuid.test(productId) || !uuid.test(imageId)) throw new Error('BLOCKED_IMAGE_PROVENANCE');
+  const { data, error } = await client.functions.invoke<{
+    runtime: string;
+    action: string;
+    report: import('@lihen/intelligence-core').ProviderResult<
+      readonly import('@lihen/intelligence-core').VisionObservation[]
+    >;
+  }>('intelligence-runtime', {
+    body: {
+      action: 'PRODUCT_VISUAL_ANALYSIS',
+      productId,
+      imageId,
+      dataTreatmentAuthorized: true,
+      manualRequest: true,
+    },
+  });
+  if (
+    error ||
+    data?.runtime !== 'LIHEN_INTELLIGENCE' ||
+    data.action !== 'PRODUCT_VISUAL_ANALYSIS' ||
+    !data.report
+  )
+    throw new Error('VISUAL_ANALYSIS_FAILED');
+  return data.report;
+}
+
+export function analyzeExistingProductPhoto(
+  productId: string,
+  imageId: string,
+  authorized: boolean,
+) {
+  if (!authorized) return Promise.reject(new Error('BLOCKED_DATA_TREATMENT'));
+  return analyzeExistingProductPhotoWithClient(
+    getBrowserSupabaseClient(import.meta.env),
+    productId,
+    imageId,
+    authorized,
+  );
+}

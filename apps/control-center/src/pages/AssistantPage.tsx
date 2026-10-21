@@ -1,5 +1,8 @@
 import { useUnsavedChanges } from '../drafts/UnsavedChanges';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { PROVIDER_CAPABILITY_MATRIX } from '@lihen/intelligence-core';
+import { CONTROL_CENTER_MODULES } from '../domain/control-center-navigation';
 import { useAuth } from '../auth/auth-context';
 import { AdminPageHero } from '../components/AdminPageHero';
 import { OperationalNotice } from '../components/OperationalNotice';
@@ -36,18 +39,15 @@ export function AssistantPage() {
 
     if (!auth.authorized || !auth.user) {
       setUiState('PERMISSION_DENIED');
-      setMessages([
-        'CONTROL_CENTER_AUTHORIZATION_REQUIRED',
-      ]);
+      setMessages(['CONTROL_CENTER_AUTHORIZATION_REQUIRED']);
       return;
     }
 
     try {
-      const turn =
-        await assistantRuntimeInvoker.invokeProductTurn({
-          prompt,
-          productId,
-        });
+      const turn = await assistantRuntimeInvoker.invokeProductTurn({
+        prompt,
+        productId,
+      });
 
       setContextSource(turn.contextSource ?? null);
       setMessages(turn.messages);
@@ -73,15 +73,40 @@ export function AssistantPage() {
     } catch (error) {
       setUiState('DEPENDENCY_FAILED');
       setMessages([
-        error instanceof Error
-          ? error.message
-          : 'LIHEN_ASSISTANT_RUNTIME_UNKNOWN_FAILURE',
+        error instanceof Error ? error.message : 'LIHEN_ASSISTANT_RUNTIME_UNKNOWN_FAILURE',
       ]);
     }
   }
 
   return (
     <section className="stack">
+      <details className="card">
+        <summary>Capacidades existentes y módulos conectados a revisión</summary>
+        <p>
+          IMPLEMENTADO describe código local; no significa CONFIGURADO ni ACTIVADO en servidor. Los
+          módulos conservan sus permisos, fuentes canónicas y aprobación independiente.
+        </p>
+        <ul>
+          {CONTROL_CENTER_MODULES.map(([route, label]) => (
+            <li key={route}>
+              <Link to={route}>{label}</Link> · revisión local / controles existentes
+            </li>
+          ))}
+        </ul>
+        <ul>
+          {Object.entries(PROVIDER_CAPABILITY_MATRIX).map(([name, binding]) => (
+            <li key={name}>
+              {name}: {binding.implementation} · puertos obligatorios:{' '}
+              {binding.requiredPorts.join(', ') || 'Ninguno directo'} · proveedor servidor: NO
+              VERIFICADO
+            </li>
+          ))}
+        </ul>
+        <p>
+          Búsqueda externa, generación, persistencia, publicaciones y envíos requieren sus gates
+          propios. Esta vista no los activa.
+        </p>
+      </details>
       <AdminPageHero
         eyebrow="LIHEN INTELLIGENCE"
         title="LIHEN Assistant"
@@ -96,9 +121,8 @@ export function AssistantPage() {
         meta="Context → Orchestrator → Human review → Control Plane"
       >
         <p>
-          Puede consultar contexto autorizado y producir respuestas o recomendaciones.
-          No cambia precios, inventario, compras, ventas, finanzas, lifecycle ni
-          publicación por sí solo.
+          Puede consultar contexto autorizado y producir respuestas o recomendaciones. No cambia
+          precios, inventario, compras, ventas, finanzas, lifecycle ni publicación por sí solo.
         </p>
       </OperationalNotice>
 
@@ -108,8 +132,8 @@ export function AssistantPage() {
             <span className="card-label">Brand governance</span>
             <h2>LIHEN Brand Context</h2>
             <p>
-              Vista informativa de los criterios de identidad LIHEN para piezas
-              creativas, visuales y editoriales. No certifica el estado del runtime.
+              Vista informativa de los criterios de identidad LIHEN para piezas creativas, visuales
+              y editoriales. No certifica el estado del runtime.
             </p>
           </div>
         </div>
@@ -137,9 +161,9 @@ export function AssistantPage() {
         </div>
 
         <p className="muted-text">
-          Intelligence puede detectar o advertir defectos visuales reversibles,
-          como un fondo blanco accidental alrededor del logo. Nunca rediseña el
-          logo oficial ni publica, envía o ejecuta por sí sola.
+          Intelligence puede detectar o advertir defectos visuales reversibles, como un fondo blanco
+          accidental alrededor del logo. Nunca rediseña el logo oficial ni publica, envía o ejecuta
+          por sí sola.
         </p>
       </div>
 
@@ -157,8 +181,8 @@ export function AssistantPage() {
             <>
               <strong>¿Qué producto necesitas revisar?</strong>
               <p>
-                DEV resolverá primero el Product Master y sus permisos. El modelo
-                se consulta mediante el runtime; su disponibilidad se informa con la respuesta real.
+                DEV resolverá primero el Product Master y sus permisos. El modelo se consulta
+                mediante el runtime; su disponibilidad se informa con la respuesta real.
               </p>
             </>
           ) : null}
@@ -174,9 +198,7 @@ export function AssistantPage() {
             <>
               <strong>Respuesta de LIHEN Assistant</strong>
               <p>{answer || 'El modelo respondió sin contenido visible.'}</p>
-              {contextSource ? (
-                <p>{`Contexto resuelto desde ${contextSource}.`}</p>
-              ) : null}
+              {contextSource ? <p>{`Contexto resuelto desde ${contextSource}.`}</p> : null}
             </>
           ) : null}
 
@@ -184,7 +206,8 @@ export function AssistantPage() {
             <>
               <strong>El proveedor de modelo no respondió correctamente</strong>
               <p>
-                {messages.join(' ') || 'El Assistant falló de forma segura sin ejecutar operaciones.'}
+                {messages.join(' ') ||
+                  'El Assistant falló de forma segura sin ejecutar operaciones.'}
               </p>
             </>
           ) : null}
@@ -195,8 +218,8 @@ export function AssistantPage() {
               <p>
                 {contextSource
                   ? `Contexto resuelto desde ${contextSource}.`
-                  : 'El contexto gobernado fue procesado.'}
-                {' '}No se realizó ninguna llamada externa ni operación controlada.
+                  : 'El contexto gobernado fue procesado.'}{' '}
+                No se realizó ninguna llamada externa ni operación controlada.
               </p>
             </>
           ) : null}
@@ -250,10 +273,10 @@ export function AssistantPage() {
             type="submit"
             className="button-primary"
             disabled={
-              uiState === 'RUNNING'
-              || !prompt.trim()
-              || !productId.trim()
-              || auth.authorizationLoading
+              uiState === 'RUNNING' ||
+              !prompt.trim() ||
+              !productId.trim() ||
+              auth.authorizationLoading
             }
           >
             {uiState === 'RUNNING' ? 'Revisando…' : 'Enviar'}

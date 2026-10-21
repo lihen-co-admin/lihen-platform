@@ -58,7 +58,7 @@ export function UnsavedChangesProvider({ children }: PropsWithChildren) {
             blocker.reset();
           }}
           aria-label="Cambios sin guardar"
-          className="card stack"
+          className="card stack cc-confirmation"
           style={{ maxWidth: '32rem', margin: 'auto', padding: '2rem' }}
         >
           <p>Hay cambios sin guardar. Salir descartará el trabajo pendiente.</p>

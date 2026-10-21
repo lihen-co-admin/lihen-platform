@@ -4,19 +4,30 @@ import { AdminPageHero } from '../components/AdminPageHero';
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
 import { productsComposition } from '../composition/products';
+import { IntelligencePanel } from '../components/IntelligencePanel';
 
 export function CategoriesPage() {
   const [items, setItems] = useState<readonly CategoryDTO[]>([]);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    productsComposition.getCategories.execute(createGetCategoriesQuery())
-      .then((result) => { if (active) setItems(result); })
-      .catch(() => { if (active) setError('No fue posible cargar las categorías canónicas.'); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    productsComposition.getCategories
+      .execute(createGetCategoriesQuery())
+      .then((result) => {
+        if (active) setItems(result);
+      })
+      .catch(() => {
+        if (active) setError('No fue posible cargar las categorías canónicas.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const metrics = useMemo(() => {
@@ -29,6 +40,25 @@ export function CategoriesPage() {
 
   return (
     <section className="stack">
+      <IntelligencePanel
+        title="Revisión de clasificación"
+        insights={[
+          {
+            id: 'category-source',
+            severity: error ? 'WARNING' : 'INFO',
+            title: loading
+              ? 'Taxonomía cargando'
+              : error
+                ? 'Taxonomía sin lectura confirmada'
+                : `${items.length} categorías en la fuente configurada`,
+            explanation:
+              'Clasificación candidata: conservar business line y jerarquía canónicas. Una propuesta de producto no cambia su categoría ni confirma atributos automáticamente.',
+            source: `getCategories · ${productsComposition.source}`,
+            actionLabel: 'Revisar identidad antes de clasificar',
+            targetRoute: '/products/lab',
+          },
+        ]}
+      />
       <AdminPageHero
         title="Categorías"
         description="Taxonomía jerárquica del catálogo. Conserva business line y relaciones parent/child sin duplicar estructura por canal."
@@ -36,19 +66,43 @@ export function CategoriesPage() {
         status={<span className="status-badge status-badge--success">Taxonomía canónica</span>}
       />
 
-      <SummaryStrip items={[
-        { label: 'Categorías', value: items.length },
-        { label: 'Activas', value: metrics.active },
-        { label: 'Raíz', value: metrics.roots },
-        { label: 'Beauty Care', value: metrics.beauty, detail: `${metrics.style} Style` },
-      ]} />
+      <label className="cc-catalog-search">
+        Buscar categorías
+        <input
+          aria-label="Buscar categorías"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Categoría o línea"
+        />
+      </label>
+      <SummaryStrip
+        items={[
+          { label: 'Categorías', value: items.length },
+          { label: 'Activas', value: metrics.active },
+          { label: 'Raíz', value: metrics.roots },
+          { label: 'Beauty Care', value: metrics.beauty, detail: `${metrics.style} Style` },
+        ]}
+      />
 
       <OperationalNotice title="Jerarquía compartida" meta="Product Master → Publishing">
-        Las categorías se definen una vez y se reutilizan en producto, filtros, catálogos y storefront. Cambiar la taxonomía requiere preservar compatibilidad e historial.
+        Las categorías se definen una vez y se reutilizan en producto, filtros, catálogos y
+        storefront. Cambiar la taxonomía requiere preservar compatibilidad e historial.
       </OperationalNotice>
 
-      {loading ? <div className="loading-card"><span className="loading-spinner" /><div><strong>Cargando categorías</strong><p>Resolviendo business line y jerarquías en DEV…</p></div></div> : null}
-      {error ? <div className="error-state" role="alert">{error}</div> : null}
+      {loading ? (
+        <div className="loading-card">
+          <span className="loading-spinner" />
+          <div>
+            <strong>Cargando categorías</strong>
+            <p>Resolviendo business line y jerarquías en DEV…</p>
+          </div>
+        </div>
+      ) : null}
+      {error ? (
+        <div className="error-state" role="alert">
+          {error}
+        </div>
+      ) : null}
       {!loading && !error ? (
         <div className="table-card">
           <div className="table-toolbar table-toolbar--unified">
@@ -57,7 +111,46 @@ export function CategoriesPage() {
               <span>Jerarquía canónica · RLS activo</span>
             </div>
           </div>
-          <div className="table-scroll"><table className="data-table"><thead><tr><th>Categoría</th><th>Línea</th><th>Parent ID</th><th>Estado</th></tr></thead><tbody>{items.map((item) => <tr key={item.id}><td><strong>{item.name}</strong></td><td><span className="line-badge">{item.businessLine === 'BEAUTY_CARE' ? 'Beauty Care' : 'Style'}</span></td><td className="code-text">{item.parentId ?? 'Raíz'}</td><td><span className={`product-status product-status--${item.status === 'ACTIVE' ? 'active' : 'inactive'}`}>{item.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}</span></td></tr>)}</tbody></table></div>
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Categoría</th>
+                  <th>Línea</th>
+                  <th>Parent ID</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items
+                  .filter((item) =>
+                    [item.name, item.businessLine].some((v) =>
+                      v.toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es')),
+                    ),
+                  )
+                  .map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <strong>{item.name}</strong>
+                      </td>
+                      <td>
+                        <span className="line-badge">
+                          {item.businessLine === 'BEAUTY_CARE' ? 'Beauty Care' : 'Style'}
+                        </span>
+                      </td>
+                      <td className="code-text">{item.parentId ?? 'Raíz'}</td>
+                      <td>
+                        <span
+                          className={`product-status product-status--${item.status === 'ACTIVE' ? 'active' : 'inactive'}`}
+                        >
+                          {item.status === 'ACTIVE' ? 'Activa' : 'Inactiva'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : null}
     </section>

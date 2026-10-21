@@ -2,6 +2,8 @@ import { useUnsavedValue, useUnsavedChanges, useConfirmUnsavedExit } from '../dr
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import { IntelligencePanel } from '../components/IntelligencePanel';
+import { isPilotProduct } from '../domain/product-pilot-scope';
 import {
   catalogsComposition,
   inspectPdfArtifact,
@@ -23,12 +25,13 @@ export function CatalogsPage(){
  const confirmExit = useConfirmUnsavedExit();
  async function refresh(){setLoading(true);try{const [v,c]=await Promise.all([catalogsComposition.listVersions(),catalogsComposition.getCandidates()]);setVersions(v);setCandidates(c);if(!activeId&&v[0])setActiveId(v[0].id);}finally{setLoading(false);}}
  useEffect(()=>{refresh().catch(e=>setError(e instanceof Error?e.message:'No fue posible cargar catálogos.'));},[]);
- const eligible=useMemo(()=>candidates.filter(x=>x.eligible),[candidates]); const missing=candidates.length-eligible.length;
- const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return candidates.filter(x=>!q||x.productName.toLowerCase().includes(q)||x.sku?.toLowerCase().includes(q)||x.brand?.toLowerCase().includes(q)||x.category?.toLowerCase().includes(q));},[candidates,query]);
+ const pilotCandidates=useMemo(()=>candidates.filter(x=>isPilotProduct({id:x.productId,sku:x.sku,businessLine:x.businessLine})),[candidates]);
+ const eligible=useMemo(()=>pilotCandidates.filter(x=>x.eligible),[pilotCandidates]); const missing=pilotCandidates.length-eligible.length;
+ const filtered=useMemo(()=>{const q=query.trim().toLowerCase();return pilotCandidates.filter(x=>!q||x.productName.toLowerCase().includes(q)||x.sku?.toLowerCase().includes(q)||x.brand?.toLowerCase().includes(q)||x.category?.toLowerCase().includes(q));},[pilotCandidates,query]);
  const active=versions.find(v=>v.id===activeId)??null;
  useEffect(()=>{if(!activeId){setCutover(null);return;}catalogsComposition.getLatestStorefrontVisibilityCutover(activeId).then(setCutover).catch(e=>setError(e instanceof Error?e.message:'No fue posible leer el cutover web.'));},[activeId]);
  async function create(e:FormEvent){e.preventDefault();setError('');try{const id=await catalogsComposition.createDraft(form);formGuard.markSaved(form);setActiveId(id);setMessage('Versión DRAFT creada.');await refresh();}catch(x){setError(x instanceof Error?x.message:'No fue posible crear la versión.');}}
- async function saveSelection(){if(!activeId)return;try{const count=await catalogsComposition.replaceSelection(activeId,[...selected]);selectionGuard.markSaved([...selected].sort());setMessage(`Snapshot guardado: ${count} productos.`);await refresh();}catch(x){setError(x instanceof Error?x.message:'No fue posible guardar la selección.');}}
+ async function saveSelection(){if(!activeId)return;if(!active||active.totalEntries>0||[...selected].some(id=>!eligible.some(candidate=>candidate.productId===id))){setError('PILOT_SNAPSHOT_PROTECTED: no reemplazar selecciones históricas; requiere un DRAFT vacío y sólo pilotos elegibles.');return;}try{const count=await catalogsComposition.replaceSelection(activeId,[...selected]);selectionGuard.markSaved([...selected].sort());setMessage(`Snapshot guardado: ${count} productos.`);await refresh();}catch(x){setError(x instanceof Error?x.message:'No fue posible guardar la selección.');}}
  async function validate(){if(!activeId)return;try{const result=await catalogsComposition.validate(activeId);setChecks(result);setMessage(result.every(x=>x.status==='PASS')?'Validación PASS.':'La versión tiene validaciones pendientes.');}catch(x){setError(x instanceof Error?x.message:'No fue posible validar.');}}
  async function captureInstitutional(){if(!activeId)return;try{await catalogInstitutionalComposition.captureSnapshot(activeId);setMessage('Snapshot institucional capturado para esta versión DRAFT.');setChecks([]);}catch(x){setError(x instanceof Error?x.message:'No fue posible capturar el contenido institucional.');}}
  async function activate(){if(!activeId)return;try{await catalogsComposition.activate(activeId);setMessage('Versión ACTIVE e inmutable. La versión PDF ACTIVE anterior fue archivada automáticamente.');await refresh();}catch(x){setError(x instanceof Error?x.message:'No fue posible activar.');}}
@@ -39,6 +42,11 @@ export function CatalogsPage(){
  async function verifyCutover(){if(!cutover||cutover.status!=='EXECUTED')return;setCutoverBusy(true);setError('');try{const result=await catalogsComposition.verifyStorefrontVisibilityCutover(cutover.runId);setCutover(result.status);const v=result.verification;setMessage(result.status.status==='VERIFIED'?`FASE 5.2 PASS: ${Number(v.actual_visible_count)} productos visibles en Storefront.`:'La verificación del cutover no quedó en PASS.');}catch(x){setError(x instanceof Error?x.message:'No fue posible verificar el cutover web.');}finally{setCutoverBusy(false);}}
  function toggle(id:string){setSelected(prev=>{const next=new Set(prev);if(next.has(id)){next.delete(id);}else{next.add(id);}return next;});}
  return <section className="stack"><PageHeader title="Catálogos" description="FASE 4 · catálogo PDF canónico, versionado e inmutable. El PDF se renderiza desde snapshots, no desde Product Master en vivo."/>
+  <IntelligencePanel title="Readiness de catálogo" insights={[{
+    id:'catalog-source',severity:error?'WARNING':'INFO',title:loading?'Catálogo cargando':error?'Lectura de catálogo no confirmada':`${eligible.length} candidatos elegibles según el contrato existente; ${missing} con bloqueos`,
+    explanation:'La elegibilidad consultada no aprueba nombres, variantes ni derechos de imágenes. Conservar los snapshots de versiones; las propuestas de PRODUCT MASTER no se sincronizan ni publican automáticamente.',
+    source:'getCandidates · listVersions · contratos de catálogo existentes',actionLabel:'Revisar producto candidato',targetRoute:'/products/lab',
+  }]} />
   <div className="info-state"><strong>Estado de candidatos</strong><p>{loading?'Cargando candidatos…':`${eligible.length} elegibles · ${missing} bloqueados por estado, precio o imagen. Seleccionar todo nunca incluye los bloqueados.`}</p><Link to="/catalogs/content">Editar contenido institucional, redes, QR y medios de pago</Link></div>
   {message?<div className="info-state" role="status">{message}</div>:null}{error?<div className="error-state" role="alert">{error}</div>:null}
   <form className="card stack" onSubmit={create}><h2>Nueva versión PDF</h2><div className="form-grid"><label><span>Código</span><input required placeholder="LIHEN-PDF-2026-08" value={form.code} onChange={e=>setForm({...form,code:e.target.value})}/></label><label><span>Título</span><input required value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label><label><span>Versión</span><input required placeholder="V1" value={form.versionLabel} onChange={e=>setForm({...form,versionLabel:e.target.value})}/></label><label><span>Referencia origen</span><input value={form.sourceReference} onChange={e=>setForm({...form,sourceReference:e.target.value})}/></label></div><button type="submit">Crear DRAFT</button></form>

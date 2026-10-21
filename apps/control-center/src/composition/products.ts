@@ -1,4 +1,5 @@
 import { SystemClock, UuidGenerator } from '@lihen/core';
+import { isPilotProduct, isPilotProductId, pilotScopeEnabled } from '../domain/product-pilot-scope';
 import { getBrowserSupabaseClient, parseBrowserEnv, type ProductReadSource } from '@lihen/database';
 import {
   AddProductImageHandler,
@@ -139,6 +140,7 @@ export function createProductsComposition(
   env: Record<string, unknown> = import.meta.env,
 ): ProductsComposition {
   const parsedEnv = parseBrowserEnv(env);
+  const pilotWriteScope = pilotScopeEnabled(env);
   const controlledCreateEnabled = parsedEnv.VITE_PRODUCT_WRITE_MODE === 'controlled';
   const controlledUpdateEnabled = parsedEnv.VITE_PRODUCT_UPDATE_WRITE_MODE === 'controlled';
   const controlledPriceChangeEnabled = parsedEnv.VITE_PRODUCT_PRICE_WRITE_MODE === 'controlled';
@@ -164,6 +166,25 @@ export function createProductsComposition(
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
       ? new SupabaseBrandRepository(getBrowserSupabaseClient(env))
       : new InMemoryBrandRepository(developmentBrands);
+  if (pilotWriteScope) {
+    const changeSalePrice = repository.changeSalePrice.bind(repository);
+    repository.changeSalePrice = async (product, history, context) => {
+      if (!isPilotProduct(product)) throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
+      return changeSalePrice(product, history, context);
+    };
+    const create = repository.create.bind(repository),
+      update = repository.update.bind(repository);
+    repository.create = async (product, context) => {
+      if (!isPilotProduct(product)) throw new Error('PILOT_CREATE_OUTSIDE_SCOPE');
+      return create(product, context);
+    };
+    repository.update = async (product, context) => {
+      if (!isPilotProduct(product)) throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
+      const current = await repository.findById(product.id);
+      if (!current || current.name !== product.name) throw new Error('PILOT_NAME_REVIEW_REQUIRED');
+      return update(product, context);
+    };
+  }
 
   const categoryRepository: CategoryRepository =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
@@ -176,6 +197,18 @@ export function createProductsComposition(
           controlledWriteEnabled: productImageWriteEnabled,
         })
       : new InMemoryProductImageRepository();
+  if (pilotWriteScope) {
+    const add = imageRepository.add.bind(imageRepository),
+      setMain = imageRepository.setMain.bind(imageRepository);
+    imageRepository.add = async (image, operationKey) => {
+      if (!isPilotProductId(image.productId)) throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
+      return add(image, operationKey);
+    };
+    imageRepository.setMain = async (productId, imageId, operationKey) => {
+      if (!isPilotProductId(productId)) throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
+      return setMain(productId, imageId, operationKey);
+    };
+  }
   const webpStore =
     parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase'
       ? new SupabaseProductImageStorage(getBrowserSupabaseClient(env), {
@@ -194,6 +227,8 @@ export function createProductsComposition(
     readonly operationKey: string;
     readonly ownerId: string;
   }> {
+    if (pilotWriteScope && !isPilotProductId(productId))
+      throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
     if (!webpStorageEnabled || !webpStore) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(productId)) throw new Error('Invalid product ID');
     if (file.type !== 'image/webp' || file.size <= 0 || file.size > PRODUCT_IMAGE_WEB_MAX_BYTES) {
@@ -233,6 +268,8 @@ export function createProductsComposition(
     altText: string;
     makeMain: boolean;
   }): Promise<void> {
+    if (pilotWriteScope && !isPilotProductId(input.productId))
+      throw new Error('PILOT_PRODUCT_OUTSIDE_SCOPE');
     if (!webpStorageEnabled) throw new Error('WEBP_STORAGE_WRITE_BLOCKED');
     const client = getBrowserSupabaseClient(env);
     const { data, error: authError } = await client.auth.getUser();
@@ -257,8 +294,9 @@ export function createProductsComposition(
   return {
     source: parsedEnv.VITE_PRODUCT_READ_SOURCE,
     canCreate:
-      parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
-      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledCreateEnabled),
+      !pilotWriteScope &&
+      (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
+        (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledCreateEnabled)),
     canUpdate:
       parsedEnv.VITE_PRODUCT_READ_SOURCE === 'memory' ||
       (parsedEnv.VITE_PRODUCT_READ_SOURCE === 'supabase' && controlledUpdateEnabled),

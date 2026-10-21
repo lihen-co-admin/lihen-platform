@@ -309,7 +309,6 @@ export function OperationsPage() {
 
   return (
     <section className="stack operation-console">
-      <ControlCenterReadiness env={import.meta.env} authorized={auth.authorized} role={auth.profile?.roleCode} integrity={checks} />
       <AdminPageHero
         eyebrow="CONTROL Y GOBERNANZA"
         title="Integridad y auditoría"
@@ -317,6 +316,8 @@ export function OperationsPage() {
         accent="lilac"
         status={<span className={controlPlaneHealthy ? 'status-pass' : 'status-alert'}>{controlPlaneHealthy ? 'CONTROL PLANE PASS' : 'REVISAR'}</span>}
       />
+
+      <ControlCenterReadiness env={import.meta.env} authorized={auth.authorized} role={auth.profile?.roleCode} integrity={checks} />
 
       <SummaryStrip items={[
         { label: 'Operaciones', value: catalog.length, detail: 'Catálogo controlado' },

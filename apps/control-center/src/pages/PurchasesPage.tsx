@@ -37,6 +37,7 @@ export function PurchasesPage() {
   const [expectedDate, setExpectedDate] = useState('');
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<DraftLine[]>([createDraftLine()]);
+  const [tableQuery, setTableQuery] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   useUnsavedChanges(Boolean(number || supplierId || purchaseDate || expectedDate || notes || purchaseLinesHaveChanges(lines)));
@@ -272,6 +273,15 @@ export function PurchasesPage() {
           <div className="table-summary-copy">
             <span className="card-label">Historial operativo</span>
             <h2>Compras registradas</h2>
+            <label className="cc-table-filter">
+              <span>Buscar compras</span>
+              <input
+                type="search"
+                value={tableQuery}
+                onChange={(event) => setTableQuery(event.target.value)}
+                placeholder="Número, cliente/proveedor o estado"
+              />
+            </label>
             <span>{rows.length} registro{rows.length === 1 ? '' : 's'}</span>
           </div>
         </div>
@@ -281,7 +291,23 @@ export function PurchasesPage() {
               <tr><th>Número</th><th>Proveedor</th><th>Estado</th><th>Compra</th><th>Esperada</th></tr>
             </thead>
             <tbody>
-              {rows.map((purchase) => (
+              {rows
+                .filter((purchase) =>
+                  [
+                    purchase.purchaseNumber,
+                    supplierNames.get(purchase.supplierId),
+                    purchase.supplierId,
+                    purchase.status,
+                    purchaseStatusLabel[purchase.status],
+                    purchase.purchaseDate,
+                    purchase.expectedDate,
+                  ].some((value) =>
+                    String(value ?? '')
+                      .toLocaleLowerCase('es')
+                      .includes(tableQuery.trim().toLocaleLowerCase('es')),
+                  ),
+                )
+                .map((purchase) => (
                 <tr key={purchase.id}>
                   <td><Link className="text-link" to={`/purchases/${purchase.id}`}><strong>{purchase.purchaseNumber}</strong></Link></td>
                   <td>{supplierNames.get(purchase.supplierId) ?? purchase.supplierId}</td>

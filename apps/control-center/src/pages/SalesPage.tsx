@@ -61,6 +61,7 @@ export function SalesPage() {
   const [orderId, setOrderId] = useState('');
   const [orderSaleNumber, setOrderSaleNumber] = useState('');
   const [orderAccountId, setOrderAccountId] = useState('');
+  const [tableQuery, setTableQuery] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   useUnsavedChanges(Boolean(number || customer || selectedCustomerId || lines.length > 1 || lines.some(line => line.productId || line.quantity !== '1' || line.unitPrice) || orderSaleNumber));
@@ -485,11 +486,28 @@ export function SalesPage() {
       )}
 
       <div className="card stack">
-        <div><span className="eyebrow">HISTORIAL</span><h2>Ventas registradas</h2></div>
+        <div><span className="eyebrow">HISTORIAL</span><h2>Ventas registradas</h2>
+            <label className="cc-table-filter">
+            <span>Buscar ventas</span>
+            <input
+              type="search"
+              value={tableQuery}
+              onChange={(event) => setTableQuery(event.target.value)}
+              placeholder="Número, cliente/proveedor o estado"
+            />
+          </label></div>
         <div className="table-wrap">
           <table>
             <thead><tr><th>Número</th><th>Fecha</th><th>Canal</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Reverso</th></tr></thead>
-            <tbody>{sales.map((sale) => { const reversal = evaluateSaleReversalPolicy(sale); return <tr key={sale.id}><td><strong>{sale.saleNumber}</strong></td><td>{sale.occurredAt.toLocaleString()}</td><td>{sale.channel}</td><td>{sale.customerName ?? '—'}</td><td>${sale.totalAmount.toLocaleString('es-CO')}</td><td>{sale.status}</td><td>{reversal.capability === 'HISTORICAL_REVERSED' ? 'Histórico · auditar' : 'Workflow dedicado requerido'}</td></tr>; })}</tbody>
+            <tbody>{sales
+                .filter((sale) =>
+                  [sale.saleNumber, sale.customerName, sale.channel, sale.status].some((value) =>
+                    String(value ?? '')
+                      .toLocaleLowerCase('es')
+                      .includes(tableQuery.trim().toLocaleLowerCase('es')),
+                  ),
+                )
+                .map((sale) => { const reversal = evaluateSaleReversalPolicy(sale); return <tr key={sale.id}><td><strong>{sale.saleNumber}</strong></td><td>{sale.occurredAt.toLocaleString()}</td><td>{sale.channel}</td><td>{sale.customerName ?? '—'}</td><td>${sale.totalAmount.toLocaleString('es-CO')}</td><td>{sale.status}</td><td>{reversal.capability === 'HISTORICAL_REVERSED' ? 'Histórico · auditar' : 'Workflow dedicado requerido'}</td></tr>; })}</tbody>
           </table>
         </div>
         {sales.length === 0 ? <p>No hay ventas canónicas todavía. El estado vacío es válido mientras no se haya ejecutado ninguna venta controlada.</p> : null}

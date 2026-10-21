@@ -58,6 +58,7 @@ export function OrdersPage() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<DraftLine[]>([createDraftLine()]);
+  const [tableQuery, setTableQuery] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   useUnsavedChanges(Boolean(number || selectedCustomerId || customerName || customerPhone || notes || lines.length > 1 || lines.some(line => line.productId || line.quantity !== '1' || line.unitPrice || line.notes)));
@@ -456,6 +457,15 @@ export function OrdersPage() {
           <div className="table-summary-copy">
             <span className="card-label">Workflow comercial</span>
             <h2>Pedidos registrados</h2>
+            <label className="cc-table-filter">
+              <span>Buscar pedidos</span>
+              <input
+                type="search"
+                value={tableQuery}
+                onChange={(event) => setTableQuery(event.target.value)}
+                placeholder="Número, cliente/proveedor o estado"
+              />
+            </label>
             <span>{rows.length} registro{rows.length === 1 ? '' : 's'}</span>
           </div>
         </div>
@@ -465,7 +475,22 @@ export function OrdersPage() {
               <tr><th>Número</th><th>Cliente</th><th>Canal</th><th>Estado</th><th>Solicitud</th><th className="align-right">Acciones</th></tr>
             </thead>
             <tbody>
-              {rows.map((order) => (
+              {rows
+                .filter((order) =>
+                  [
+                    order.orderNumber,
+                    order.customerName,
+                    order.channel,
+                    orderChannelLabel[order.channel],
+                    order.status,
+                    orderStatusLabel[order.status],
+                  ].some((value) =>
+                    String(value ?? '')
+                      .toLocaleLowerCase('es')
+                      .includes(tableQuery.trim().toLocaleLowerCase('es')),
+                  ),
+                )
+                .map((order) => (
                 <tr key={order.id}>
                   <td><strong>{order.orderNumber}</strong></td>
                   <td>{order.customerName ?? '—'}</td>

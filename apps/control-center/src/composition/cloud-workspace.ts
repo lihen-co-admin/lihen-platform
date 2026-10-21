@@ -49,12 +49,11 @@ export interface CloudWorkspaceComposition {
 export function createCloudWorkspaceComposition(
   env: Record<string, unknown> = import.meta.env,
 ): CloudWorkspaceComposition {
-  const client = getBrowserSupabaseClient(env);
-
   return {
     source: 'public.unified_asset_artifact_registry',
     readOnly: true,
     async listAssets() {
+      const client = getBrowserSupabaseClient(env);
       const { data, error } = await client
         .from('unified_asset_artifact_registry')
         .select(

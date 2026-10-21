@@ -1,6 +1,7 @@
 import { useUnsavedValue } from '../drafts/UnsavedChanges';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { isPilotProduct } from '../domain/product-pilot-scope';
 import { EditorialProductSelector } from './EditorialProductSelector';
 import { EditorialSuggestion, useEditorialSuggestions } from './EditorialSuggestions';
 import type { ProductImageDTO, ProductListItemDTO } from '@lihen/products';
@@ -22,6 +23,7 @@ export function EditorialComposer({
   onSave,
   onClose,
   readVideos = readEditorialVideoAssets,
+  initialProductId = '',
 }: {
   item: EditorialItem | null;
   products: readonly ProductListItemDTO[];
@@ -29,6 +31,7 @@ export function EditorialComposer({
   onSave: (draft: EditorialDraft) => void;
   onClose: () => void;
   readVideos?: typeof readEditorialVideoAssets;
+  initialProductId?: string;
 }) {
   const composerRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -42,7 +45,10 @@ export function EditorialComposer({
     channels: item
       ? [item.publication.channel as EditorialDraft['channels'][number]]
       : ['INSTAGRAM_FEED'],
-    productId: item?.productId ?? '',
+    productId:
+      item?.productId ??
+      products.find((product) => product.id === initialProductId && isPilotProduct(product))?.id ??
+      '',
     campaignName: item?.campaignName ?? '',
     date: item?.schedule
       ? new Date(item.schedule.scheduledFor.getTime() - 5 * 3600000).toISOString().slice(0, 16)

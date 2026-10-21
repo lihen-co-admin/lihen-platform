@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { IntelligencePanel } from '../components/IntelligencePanel';
 import type { Customer } from '@lihen/customer';
 import type { Order } from '@lihen/orders';
 import type { Sale } from '@lihen/sales';
@@ -577,6 +578,12 @@ export function CustomerBenefitsPage() {
 
   return (
     <section className="stack customer-benefits-page">
+      <IntelligencePanel title="Revisión de clientes y beneficios" insights={[{
+        id: 'benefit-review', severity: error ? 'WARNING' : 'INFO',
+        title: error ? 'Existe un error operativo pendiente' : 'Revisión independiente de beneficios',
+        explanation: 'La información de clientes, pedidos y ventas se reutiliza en los selectores existentes. Intelligence no emite, activa, aplica ni redime beneficios; esas acciones conservan su autorización independiente.',
+        source: 'Customer Master · Orders · Sales · Customer Benefits existentes',
+      }]} />
       <AdminPageHero
         eyebrow="CUSTOMER BENEFITS"
         title="Clientes · Bonos"

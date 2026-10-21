@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { evaluateRecommendationAssurance } from '@lihen/intelligence-core';
 import { Link } from 'react-router-dom';
 import { resolveIntelligencePanelEmptyState } from '../domain/admin-surface-semantics';
 
@@ -27,6 +28,26 @@ export function IntelligencePanel({
 }: IntelligencePanelProps) {
   const headingId = useId();
   const emptyState = resolveIntelligencePanelEmptyState(insights.length);
+  const assurance = evaluateRecommendationAssurance(
+    insights.length
+      ? [
+          ...insights.map((insight) => ({
+            id: insight.id,
+            source: insight.source ?? '',
+            rationale: insight.explanation.trim() ? [insight.explanation] : [],
+            ...(insight.actionLabel ? { actionLabel: insight.actionLabel } : {}),
+            ...(insight.targetRoute ? { targetRoute: insight.targetRoute } : {}),
+            executionGuard: false,
+          })),
+          {
+            id: 'lihen-panel-execution-held',
+            source: 'IntelligencePanel READ ONLY',
+            rationale: ['Este panel no ejecuta comandos ni concede aprobación comercial.'],
+            executionGuard: true,
+          },
+        ]
+      : [],
+  );
 
   return (
     <section className="intelligence-panel" aria-labelledby={headingId}>
@@ -38,7 +59,18 @@ export function IntelligencePanel({
         </div>
         <span className="intelligence-mode">READ ONLY</span>
       </div>
-
+      <details>
+        <summary>Trazabilidad de recomendaciones: {assurance.status}</summary>
+        <p>
+          Evaluación local de fuentes y explicaciones; no certifica datos DEV ni autoriza
+          operaciones.
+        </p>
+        {assurance.issues.map((issue, index) => (
+          <p key={`${issue.code}-${index}`}>
+            {issue.code}: {issue.message}
+          </p>
+        ))}
+      </details>
       <div className="intelligence-list">
         {emptyState ? (
           <div
@@ -54,7 +86,10 @@ export function IntelligencePanel({
           </div>
         ) : null}
         {insights.map((insight) => (
-          <article key={insight.id} className={`intelligence-card intelligence-card--${insight.severity.toLowerCase()}`}>
+          <article
+            key={insight.id}
+            className={`intelligence-card intelligence-card--${insight.severity.toLowerCase()}`}
+          >
             <div className="intelligence-card__signal" aria-hidden="true" />
             <div className="intelligence-card__content">
               <strong>{insight.title}</strong>
@@ -62,7 +97,9 @@ export function IntelligencePanel({
               {insight.source ? <small>Fuente: {insight.source}</small> : null}
             </div>
             {insight.targetRoute && insight.actionLabel ? (
-              <Link className="text-link" to={insight.targetRoute}>{insight.actionLabel} →</Link>
+              <Link className="text-link" to={insight.targetRoute}>
+                {insight.actionLabel} →
+              </Link>
             ) : null}
           </article>
         ))}

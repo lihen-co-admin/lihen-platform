@@ -1,8 +1,10 @@
 import { readSocialProviderReadiness, verifyMetaAccounts } from './provider-readiness.ts';
+import { readWhatsAppReadiness } from './whatsapp-readiness.ts';
 import { META_GRAPH_ORIGIN } from './meta-contract.ts';
 import { createClient } from 'supabase';
 import {
   tikTokConfig,
+  readTikTokAccountMetadata,
   configuredTikTokTransport,
   assessTikTok,
   allowedTikTokPrivacy,
@@ -25,6 +27,8 @@ const corsHeaders = {
 };
 
 type Action =
+  | 'WHATSAPP_PREFLIGHT'
+  | 'READ_TIKTOK_ACCOUNT'
   | 'READ_PROVIDER_READINESS'
   | 'VERIFY_META_ACCOUNTS'
   | 'READ_TIKTOK_CREATOR_INFO'
@@ -428,6 +432,16 @@ Deno.serve(async (req: Request) => {
     const body = (await req.json()) as RuntimeRequest;
     const action = body.action;
     const payload = body.payload;
+    if (action === 'WHATSAPP_PREFLIGHT' || action === 'READ_TIKTOK_ACCOUNT') {
+      if (supabaseUrl !== 'https://vnmkupzptujtywnnabkp.supabase.co') return json({ error: 'DEV_REQUIRED' }, 403);
+      try {
+        if (action === 'WHATSAPP_PREFLIGHT') return json(await readWhatsAppReadiness(name => Deno.env.get(name)));
+        return json({ data: await readTikTokAccountMetadata(tikTokConfig(name => Deno.env.get(name)), Deno.env.get('TIKTOK_DIAGNOSTICS_ENABLED') === 'true'), externalPublication: false });
+      } catch (error) {
+        const code = error instanceof Error && /^(?:WHATSAPP|TIKTOK)_[A-Z0-9_]+$/.test(error.message) ? error.message : 'SOCIAL_METADATA_READ_FAILED';
+        return json({ error: code, externalPublication: false }, 409);
+      }
+    }
 
     if (action === 'READ_PROVIDER_READINESS') {
       return json({ data: readSocialProviderReadiness((name) => Deno.env.get(name)), externalPublication: false });

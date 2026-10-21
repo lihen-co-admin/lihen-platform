@@ -3,6 +3,10 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { AppShell } from '../components/AppShell';
 
+const ProductMasterLabPage = lazy(async () => ({
+  default: (await import('../pages/ProductMasterLabPage')).ProductMasterLabPage,
+}));
+
 const ProductsPage = lazy(async () => {
   const module = await import('../pages/ProductsPage');
   return { default: module.ProductsPage };
@@ -159,6 +163,7 @@ export function App() {
           <Route element={<AppShell />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/lab" element={<ProductMasterLabPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/suppliers" element={<SuppliersPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />

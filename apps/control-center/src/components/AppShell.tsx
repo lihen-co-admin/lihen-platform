@@ -1,157 +1,67 @@
-import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ControlCenterShell } from './ControlCenterShell';
 import { CapabilityModeNotice } from './CapabilityModeNotice';
-import { useAuth } from '../auth/auth-context';
-import logo from '../assets/brand/lihen-logo-official.png';
 import { configurationReadiness } from '../domain/configuration-readiness';
-
-interface NavigationItem {
-  readonly to: string;
-  readonly label: string;
-  readonly icon: string;
-  readonly end?: boolean;
-}
-
-interface NavigationGroup {
-  readonly label: string;
-  readonly items: readonly NavigationItem[];
-}
-
-const navigation: readonly NavigationGroup[] = [
-  { label: 'Inicio', items: [{ to: '/', label: 'Dashboard', icon: '⌂', end: true }] },
-  {
-    label: 'Catálogo',
-    items: [
-      { to: '/products', label: 'Productos', icon: '◇' },
-      { to: '/brands', label: 'Marcas', icon: '✦' },
-      { to: '/categories', label: 'Categorías', icon: '⌘' },
-      { to: '/catalogs', label: 'Catálogos', icon: '▤' },
-    ],
-  },
-  {
-    label: 'Operación',
-    items: [
-      { to: '/inventory', label: 'Inventario', icon: '▦' },
-      { to: '/suppliers', label: 'Proveedores', icon: '♢' },
-      { to: '/purchases', label: 'Compras', icon: '↓' },
-      { to: '/orders', label: 'Pedidos', icon: '◎' },
-      { to: '/customers/benefits', label: 'Clientes / Bonos', icon: '%' },
-      { to: '/sales', label: 'Ventas / POS', icon: '◈' },
-    ],
-  },
-  {
-    label: 'Administración',
-    items: [
-      { to: '/finance', label: 'Caja y finanzas', icon: '$' },
-      { to: '/content/public-hub', label: 'Hub público', icon: '↗' },
-      { to: '/content/social', label: 'Contenido y calendario', icon: '◎' },
-      { to: '/conversations', label: 'Conversaciones / WhatsApp', icon: '◇' },
-    ],
-  },
-  {
-    label: 'LIHEN Cloud',
-    items: [{ to: '/cloud', label: 'Workspace', icon: '☁' }],
-  },
-  {
-    label: 'Intelligence',
-    items: [{ to: '/assistant', label: 'Assistant', icon: '✧' }],
-  },
-  { label: 'Control', items: [{ to: '/operations', label: 'Integridad y auditoría', icon: '✓' }] },
-];
-
+import { THEMED_GROUPS, visualGroup } from '../domain/control-center-navigation';
+import { PremiumIcon } from './PremiumIcon';
 export function AppShell() {
   const location = useLocation();
-  const auth = useAuth();
-  const confirmExit = useConfirmUnsavedExit();
-  const isDev = import.meta.env.DEV;
   const configuration = configurationReadiness(import.meta.env);
-
+  const group = visualGroup(location.pathname);
+  const lab = location.pathname === '/products/lab';
+  const themed =
+    THEMED_GROUPS.includes(group) &&
+    (group !== 'editorial' ||
+      ['/content/public-hub', '/content/social', '/conversations'].includes(location.pathname)) &&
+    (group !== 'intelligence' ||
+      ['/cloud', '/assistant', '/operations'].includes(location.pathname));
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-block">
-          <div className="brand-mark">
-            <img src={logo} alt="" />
-          </div>
-          <div>
-            <strong>LIHEN</strong>
-            <span>Control Center · DEV</span>
-          </div>
+    <ControlCenterShell
+      developmentNavigation={
+        import.meta.env.DEV ? (
+          <details className="cc-dev-navigation">
+            <summary aria-label="Rutas de desarrollo">
+              <PremiumIcon name="shield" />
+            </summary>
+            <div>
+              <Link to="/dev-auth-probe">Auth + RLS Probe</Link>
+              <Link to="/dev-whatsapp-preflight">WhatsApp Preflight</Link>
+            </div>
+          </details>
+        ) : null
+      }
+    >
+      {!lab && (
+        <div className="cc-mode-bar">
+          <span className="cc-mode-critical">
+            {configuration.source === 'memory'
+              ? 'SIMULACIÓN · cambios locales no durables'
+              : 'DEV · permisos y modos configurados'}
+          </span>
+          <details>
+            <summary>Estado y permisos</summary>
+            <div className="cc-mode-details">
+              {configuration.source === 'memory' && (
+                <p>SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.</p>
+              )}
+              {configuration.auth === 'disabled' && (
+                <p>Autenticación deshabilitada · preview local.</p>
+              )}
+              <CapabilityModeNotice pathname={location.pathname} env={import.meta.env} />
+              <p>
+                El diseño no confirma conectividad ni autoriza operaciones. Se mantienen las
+                restricciones de cada módulo.
+              </p>
+            </div>
+          </details>
         </div>
-
-        <nav className="nav-list" aria-label="Navegación principal">
-          {navigation.map((group) => (
-            <div className="nav-group" key={group.label}>
-              <span className="nav-group__label">{group.label}</span>
-              {group.items.map((item) => (
-                <NavLink key={item.to} to={item.to} end={item.end ?? false}>
-                  <span className="nav-icon" aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
-
-          {isDev ? (
-            <div className="nav-group nav-group--dev">
-              <span className="nav-group__label">Desarrollo</span>
-              <NavLink to="/dev-auth-probe">
-                <span className="nav-icon" aria-hidden="true">
-                  ⚙
-                </span>
-                <span>Auth + RLS Probe</span>
-              </NavLink>
-              <NavLink to="/dev-whatsapp-preflight">
-                <span className="nav-icon" aria-hidden="true">
-                  ◇
-                </span>
-                <span>WhatsApp Preflight</span>
-              </NavLink>
-            </div>
-          ) : null}
-        </nav>
-      </aside>
-
-      <div className="app-main">
-        <header className="topbar">
-          <div className="topbar-identity">
-            <span className="topbar-kicker">LIHEN CONTROL CENTER</span>
-            <strong>Administración central</strong>
-            <small>
-              {auth.user?.email ?? 'Sesión autenticada'} · {auth.profile?.roleCode ?? 'sin rol'}
-            </small>
-          </div>
-          <div className="topbar-actions">
-            <span className="environment-pill">DEV seguro</span>
-            <button
-              type="button"
-              className="button-ghost"
-              onClick={() => {
-                if (confirmExit()) void auth.signOut();
-              }}
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        </header>
-
-        <main className="content">
-          {configuration.source === 'memory' && (
-            <div className="info-state" role="status">
-              SIMULACIÓN · Datos en memoria; los cambios no son durables en Supabase.
-            </div>
-          )}
-          {configuration.auth === 'disabled' && (
-            <div className="info-state" role="status">
-              Autenticación deshabilitada · preview local.
-            </div>
-          )}
-          <CapabilityModeNotice pathname={location.pathname} env={import.meta.env} />
-          <Outlet />
-        </main>
-      </div>
-    </div>
+      )}
+      <main
+        className={`cc-module cc-module--${group}${themed && !lab ? ' cc-themed' : ''}${lab ? ' cc-module--lab' : ''}`}
+        data-visual-group={group}
+      >
+        <Outlet />
+      </main>
+    </ControlCenterShell>
   );
 }

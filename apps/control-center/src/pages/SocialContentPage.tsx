@@ -1,9 +1,11 @@
 import { SocialProviderReadiness } from '../components/SocialProviderReadiness';
 import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
+import { IntelligencePanel } from '../components/IntelligencePanel';
+import { isPilotProduct } from '../domain/product-pilot-scope';
 import { editorialReadDeadline } from '../composition/editorial-read-deadline';
 import { editorialDevSyncEnabled } from '../domain/editorial-persistence-mode';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createGetProductsQuery, type ProductListItemDTO } from '@lihen/products';
 import { useAuth } from '../auth/auth-context';
 import { productsComposition } from '../composition/products';
@@ -45,6 +47,7 @@ const initialGoals: EditorialGoals = {
 const allowedOperatorRoles = ['OWNER', 'ADMIN'];
 
 export function SocialContentPage() {
+  const [parameters] = useSearchParams();
   const confirmExit = useConfirmUnsavedExit();
   const auth = useAuth();
   const cacheKey = `lihen:editorial:v1:${auth.user?.id ?? 'local'}`;
@@ -68,14 +71,7 @@ export function SocialContentPage() {
   const [selected, setSelected] = useState('');
   const [filter, setFilter] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
-  const feedbackRef = useRef<HTMLDivElement>(null);
   const readRequest = useRef(0);
-  useEffect(() => {
-    if (!busy && (error || notice)) {
-      feedbackRef.current?.focus();
-      feedbackRef.current?.scrollIntoView({ block: 'center' });
-    }
-  }, [busy, error, notice]);
 
   const resolveProducts = (entries: readonly EditorialItem[]) =>
     resolveProductAssociationsFromMedia(
@@ -221,6 +217,10 @@ export function SocialContentPage() {
   }
 
   async function save(draft: EditorialDraft) {
+    if (!products.some(product => product.id === draft.productId && isPilotProduct(product))) {
+      setError('PILOT_PRODUCT_OUTSIDE_SCOPE: conservar la biblioteca histórica; sólo BC-20550 y ST-019 pueden preparar cambios.');
+      return;
+    }
     await perform(async () => {
       const created = createEditorialDraft(draft, new Date(), () => crypto.randomUUID());
       const next = created.map((fresh) => {
@@ -278,7 +278,10 @@ export function SocialContentPage() {
 
   return (
     <div className="stack editorial-workspace">
-      <SocialProviderReadiness allowed={canOperate} />
+      <IntelligencePanel title="Revisión de contenido y calendario" insights={[
+        { id: 'editorial-source', severity: error ? 'WARNING' : 'INFO', title: loading ? 'Agenda cargando' : error ? 'Lectura con errores' : `${items.length} piezas en la agenda actual`, explanation: 'La agenda y sus referencias de producto se reutilizan; preparar contenido no programa envíos ni publica. No se aplican atributos candidatos como datos aprobados.', source: 'planEditorial · biblioteca editorial existente' },
+        ...plan.recommendations.map((explanation, index) => ({ id: `editorial-plan-${index}`, severity: 'INFO' as const, title: 'Propuesta de planificación', explanation, source: 'planEditorial · datos de la agenda actual' })),
+      ]} />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO | Beauty Care • Style</p>
@@ -305,6 +308,7 @@ export function SocialContentPage() {
           </button>
         </div>
       </section>
+      <SocialProviderReadiness allowed={canOperate} />
       <div className="info-state">
         <strong>
           {canOperate
@@ -335,7 +339,7 @@ export function SocialContentPage() {
           Operación en curso en DEV. Espera su resultado antes de decidir otra acción.
         </div>
       )}
-      <div ref={feedbackRef} tabIndex={-1}>
+      <div>
         {error && (
           <div role="alert" className="error-state">
             {error}
@@ -424,7 +428,8 @@ export function SocialContentPage() {
         <EditorialComposer
           key={editing}
           item={items.find((item) => item.publication.id === editing) ?? null}
-          products={products}
+          products={products.filter(isPilotProduct)}
+          initialProductId={parameters.get('product') ?? ''}
           busy={busy}
           onSave={(draft) => void save(draft)}
           onClose={() => setEditing(null)}
@@ -583,7 +588,7 @@ export function SocialContentPage() {
             <EditorialOperationalActions
               key={current.publication.id}
               item={current}
-              disabled={!canOperate || busy || loading || refreshing}
+              disabled={!canOperate || busy || loading || refreshing || !products.some(product => product.id === current.productId && isPilotProduct(product))}
               onRefresh={() => refresh(true, current.publication.id)}
               onBusyChange={setBusy}
             />

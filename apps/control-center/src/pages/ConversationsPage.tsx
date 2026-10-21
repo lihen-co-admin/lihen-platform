@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IntelligencePanel } from '../components/IntelligencePanel';
 import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
 import { ConversationPreparation } from '../components/ConversationPreparation';
 import { Link } from 'react-router-dom';
@@ -43,6 +44,25 @@ export function ConversationsPage() {
   }
   return (
     <div className="stack conversation-workspace">
+      <IntelligencePanel
+        title="Contexto de conversación"
+        insights={[
+          {
+            id: 'conversation-context',
+            severity: error ? 'WARNING' : 'INFO',
+            title: busy
+              ? 'Lectura en curso'
+              : error
+                ? 'Lectura no confirmada'
+                : loaded
+                  ? `${conversations.length} conversaciones consultadas`
+                  : 'Conversaciones sin consultar',
+            explanation:
+              'El resumen y la preparación existentes usan el contexto seleccionado. Una respuesta preparada o aprobada no equivale a envío; SEND continúa bloqueado.',
+            source: 'readConversations · sesión autorizada · resumen existente',
+          },
+        ]}
+      />
       <section className="page-hero">
         <div>
           <p className="eyebrow">LIHEN.CO · Conversation</p>

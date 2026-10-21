@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './auth-context';
+import { RevalidationBoundary } from './RevalidationBoundary';
 
 export function ProtectedRoute() {
   const auth = useAuth();
@@ -37,9 +38,9 @@ export function ProtectedRoute() {
   }
   return (
     <>
-      <div style={{ display: 'contents' }} inert={auth.authorizationLoading || undefined}>
+      <RevalidationBoundary pending={auth.authorizationLoading} identity={auth.session.user.id}>
         <Outlet />
-      </div>
+      </RevalidationBoundary>
       {auth.authorizationLoading && <p role="status">Validando sesión y autorización…</p>}
     </>
   );

@@ -7,6 +7,9 @@ import { IntelligencePanel, type IntelligenceInsight } from '../components/Intel
 import { OperationalNotice } from '../components/OperationalNotice';
 import { SummaryStrip } from '../components/SummaryStrip';
 import { productsComposition } from '../composition/products';
+import { inventoryComposition } from '../composition/inventory';
+import { ProductWorkbookPanel } from '../components/ProductWorkbookPanel';
+import { DEV_SUPABASE_ORIGIN, isPilotProduct } from '../domain/product-pilot-scope';
 
 const PAGE_SIZE = 25;
 
@@ -35,6 +38,7 @@ export function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pilotOnly, setPilotOnly] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -58,29 +62,37 @@ export function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('es-CO');
-    if (!query) return products;
-
-    return products.filter((product) => [
-      product.name,
-      product.sku,
-      product.catalogCode,
-      product.brandName,
-      product.categoryName,
-    ].some((value) => value?.toLocaleLowerCase('es-CO').includes(query)));
-  }, [products, search]);
+    return products
+      .filter((product) => !pilotOnly || isPilotProduct(product))
+      .filter((product) =>
+        [
+          product.name,
+          product.sku,
+          product.catalogCode,
+          product.brandName,
+          product.categoryName,
+        ].some((value) => value?.toLocaleLowerCase('es-CO').includes(query)),
+      );
+  }, [products, search, pilotOnly]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const visibleProducts = filteredProducts.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  const productStats = useMemo(() => ({
-    active: products.filter((product) => product.status === 'ACTIVE').length,
-    inactive: products.filter((product) => product.status === 'INACTIVE').length,
-    archived: products.filter((product) => product.status === 'ARCHIVED' || product.status === 'DISCONTINUED').length,
-    taxonomyPending: products.filter((product) => !product.brandName || !product.categoryName).length,
-    beautyCare: products.filter((product) => product.businessLine === 'BEAUTY_CARE').length,
-    style: products.filter((product) => product.businessLine === 'STYLE').length,
-  }), [products]);
+  const productStats = useMemo(
+    () => ({
+      active: products.filter((product) => product.status === 'ACTIVE').length,
+      inactive: products.filter((product) => product.status === 'INACTIVE').length,
+      archived: products.filter(
+        (product) => product.status === 'ARCHIVED' || product.status === 'DISCONTINUED',
+      ).length,
+      taxonomyPending: products.filter((product) => !product.brandName || !product.categoryName)
+        .length,
+      beautyCare: products.filter((product) => product.businessLine === 'BEAUTY_CARE').length,
+      style: products.filter((product) => product.businessLine === 'STYLE').length,
+    }),
+    [products],
+  );
 
   const intelligenceInsights = useMemo<readonly IntelligenceInsight[]>(() => {
     const insights: IntelligenceInsight[] = [];
@@ -90,7 +102,8 @@ export function ProductsPage() {
         id: 'taxonomy',
         severity: 'WARNING',
         title: `${productStats.taxonomyPending} productos requieren normalización`,
-        explanation: 'Falta marca o categoría canónica. Conviene resolver taxonomía antes de evaluar publicación y generación de catálogos.',
+        explanation:
+          'Falta marca o categoría canónica. Conviene resolver taxonomía antes de evaluar publicación y generación de catálogos.',
         source: 'Product Master',
       });
     }
@@ -100,7 +113,8 @@ export function ProductsPage() {
         id: 'lifecycle',
         severity: 'INFO',
         title: `${productStats.inactive + productStats.archived} productos fuera de oferta activa`,
-        explanation: 'INACTIVE, DISCONTINUED y ARCHIVED conservan identidad e historia. No deben tratarse como candidatos publicables solo por existir en Product Master.',
+        explanation:
+          'INACTIVE, DISCONTINUED y ARCHIVED conservan identidad e historia. No deben tratarse como candidatos publicables solo por existir en Product Master.',
         source: 'Product lifecycle',
       });
     }
@@ -108,7 +122,9 @@ export function ProductsPage() {
     insights.push({
       id: 'write-mode',
       severity: productsComposition.canUpdate ? 'SUCCESS' : 'INFO',
-      title: productsComposition.canUpdate ? 'Edición controlada disponible' : 'Edición protegida por configuración',
+      title: productsComposition.canUpdate
+        ? 'Edición controlada disponible'
+        : 'Edición protegida por configuración',
       explanation: productsComposition.canUpdate
         ? 'Los cambios usan el flujo controlado de Product Master y mantienen pricing, media e inventario como responsabilidades separadas.'
         : 'La lectura funciona, pero el modo de actualización no está habilitado en esta sesión. No es ausencia de CRUD.',
@@ -119,7 +135,8 @@ export function ProductsPage() {
       id: 'archive-policy',
       severity: 'INFO',
       title: 'Conservar historia antes que borrar',
-      explanation: 'LIHEN prioriza inactivar, descontinuar o archivar productos frente a un DELETE físico que rompa trazabilidad.',
+      explanation:
+        'LIHEN prioriza inactivar, descontinuar o archivar productos frente a un DELETE físico que rompa trazabilidad.',
       source: 'Regla de dominio',
     });
 
@@ -133,12 +150,40 @@ export function ProductsPage() {
 
   return (
     <section className="stack products-page">
+      <Link className="button-link" to="/products/lab">
+        Product Master 2.0 · Laboratorio visual
+      </Link>
+      <label>
+        <input
+          type="checkbox"
+          checked={pilotOnly}
+          onChange={(event) => {
+            setPilotOnly(event.target.checked);
+            setPage(1);
+          }}
+        />
+        Vista aislada: BC-20550 y ST-019. Desmarcar sólo amplía la lectura; no borra ni habilita
+        operaciones masivas.
+      </label>
+      {!loading && !error && (
+        <ProductWorkbookPanel
+          products={products}
+          onReadInventory={async () => {
+            if (
+              import.meta.env.VITE_SUPABASE_URL !== DEV_SUPABASE_ORIGIN ||
+              productsComposition.source !== 'supabase'
+            )
+              throw new Error('DEV_ONLY');
+            return inventoryComposition.getInventory.execute();
+          }}
+        />
+      )}
       <AdminPageHero
         eyebrow="PRODUCT MASTER"
         title="Productos"
         description="Administra identidad, taxonomía y lifecycle desde una sola base canónica. Pricing, media, inventario y publicación permanecen separados y trazables."
         accent="pink"
-        actions={(
+        actions={
           <Link
             className={`button-link${productsComposition.canCreate ? '' : ' button-link--disabled'}`}
             to={productsComposition.canCreate ? '/products/new' : '/products'}
@@ -147,7 +192,7 @@ export function ProductsPage() {
             <span aria-hidden="true">＋</span>
             Nuevo producto
           </Link>
-        )}
+        }
         status={<span className="status-badge">PRODUCT MASTER</span>}
       />
 
@@ -164,8 +209,16 @@ export function ProductsPage() {
         />
       ) : null}
 
-      <OperationalNotice title="Product Master no equivale a publicación" tone="info" meta="Identity + lifecycle">
-        <p>Un producto puede estar correctamente registrado y aun así no estar listo para catálogo o storefront. Precio, media, elegibilidad, snapshot y gates de publicación se evalúan por separado.</p>
+      <OperationalNotice
+        title="Product Master no equivale a publicación"
+        tone="info"
+        meta="Identity + lifecycle"
+      >
+        <p>
+          Un producto puede estar correctamente registrado y aun así no estar listo para catálogo o
+          storefront. Precio, media, elegibilidad, snapshot y gates de publicación se evalúan por
+          separado.
+        </p>
       </OperationalNotice>
 
       {!loading && !error && products.length > 0 ? (
@@ -182,7 +235,11 @@ export function ProductsPage() {
         </div>
       ) : null}
 
-      {error ? <div className="error-state" role="alert">{error}</div> : null}
+      {error ? (
+        <div className="error-state" role="alert">
+          {error}
+        </div>
+      ) : null}
 
       {!loading && !error && products.length === 0 ? (
         <div className="empty-state">
@@ -196,7 +253,12 @@ export function ProductsPage() {
           <div className="table-toolbar">
             <div className="table-summary-copy">
               <strong>{products.length} productos</strong>
-              <span>Fuente: {productsComposition.source === 'supabase' ? 'Supabase DEV' : 'repositorio en memoria'}</span>
+              <span>
+                Fuente:{' '}
+                {productsComposition.source === 'supabase'
+                  ? 'Supabase DEV'
+                  : 'repositorio en memoria'}
+              </span>
             </div>
             <label className="table-search">
               <span className="sr-only">Buscar productos</span>
@@ -221,21 +283,33 @@ export function ProductsPage() {
                   <th scope="col">Marca</th>
                   <th scope="col">Categoría</th>
                   <th scope="col">Estado</th>
-                  <th scope="col" className="align-right">Precio</th>
-                  <th scope="col" className="align-right">Acciones</th>
+                  <th scope="col" className="align-right">
+                    Precio
+                  </th>
+                  <th scope="col" className="align-right">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {visibleProducts.map((product) => (
                   <tr key={product.id}>
-                    <td><span className="code-text">{product.sku ?? '—'}</span></td>
-                    <td><strong><Link to={`/products/${product.id}`}>{product.name}</Link></strong></td>
+                    <td>
+                      <span className="code-text">{product.sku ?? '—'}</span>
+                    </td>
+                    <td>
+                      <strong>
+                        <Link to={`/products/${product.id}`}>{product.name}</Link>
+                      </strong>
+                    </td>
                     <td>{product.businessLine === 'BEAUTY_CARE' ? 'Beauty Care' : 'Style'}</td>
                     <td>{product.catalogCode ?? '—'}</td>
                     <td>{product.brandName ?? 'Pendiente normalización'}</td>
                     <td>{product.categoryName ?? 'Pendiente normalización'}</td>
                     <td>
-                      <span className={`product-status product-status--${product.status.toLowerCase()}`}>
+                      <span
+                        className={`product-status product-status--${product.status.toLowerCase()}`}
+                      >
                         {statusLabel(product.status)}
                       </span>
                     </td>
@@ -244,8 +318,14 @@ export function ProductsPage() {
                     </td>
                     <td className="align-right">
                       <div className="row-actions">
-                        <Link className="table-action" to={`/products/${product.id}`}>Ver</Link>
-                        {productsComposition.canUpdate ? <Link className="table-action" to={`/products/${product.id}/edit`}>Editar</Link> : null}
+                        <Link className="table-action" to={`/products/${product.id}`}>
+                          Ver
+                        </Link>
+                        {productsComposition.canUpdate && isPilotProduct(product) ? (
+                          <Link className="table-action" to={`/products/${product.id}/edit`}>
+                            Editar
+                          </Link>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -261,7 +341,10 @@ export function ProductsPage() {
                 : `${(safePage - 1) * PAGE_SIZE + 1}–${Math.min(safePage * PAGE_SIZE, filteredProducts.length)} de ${filteredProducts.length}`}
             </span>
 
-            <div className="pagination-actions product-pagination__actions" aria-label="Paginación de productos">
+            <div
+              className="pagination-actions product-pagination__actions"
+              aria-label="Paginación de productos"
+            >
               <button
                 type="button"
                 className="product-pagination__button"

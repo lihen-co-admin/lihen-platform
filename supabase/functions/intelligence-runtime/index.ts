@@ -1,7 +1,10 @@
+import { createGroqVisionPort } from './providers/groq-vision.ts';
 import { createClient } from 'supabase';
 import {
   fetchResolvedProductImageBytes,
   resolveAuthorizedProductImageAsset,
+  prepareProductVisionAsset,
+  isProductVisionPilot,
 } from './product-image-asset-resolver.ts';
 import { createRemoveBgTransformationProvider } from './providers/remove-bg-image-transformation.ts';
 import { persistTransformedCandidate } from './persist-transformed-candidate.ts';
@@ -188,6 +191,39 @@ Deno.serve(async (req: Request) => {
         convert: convertExternalPng,
       });
       return json({ result });
+    }
+
+    if (action === 'PRODUCT_VISUAL_ANALYSIS') {
+      if (body.dataTreatmentAuthorized !== true || body.manualRequest !== true) {
+        return json({ error: 'BLOCKED_DATA_TREATMENT_OR_MANUAL_REQUEST' }, 403);
+      }
+      const productId = typeof body.productId === 'string' ? body.productId : '';
+      const product = productId ? await readAssistantProductContext(supabase, productId) : null;
+      if (!product || !isProductVisionPilot(product)) return json({ error: 'BLOCKED_PILOT_ONLY' }, 403);
+      let assets = Array.isArray(body.assets) ? body.assets.map((asset: Record<string, unknown>) => ({ assetRef: typeof asset?.assetRef === 'string' ? asset.assetRef : '', mimeType: typeof asset?.mimeType === 'string' ? asset.mimeType : undefined, sourceUri: typeof asset?.sourceUri === 'string' ? asset.sourceUri : undefined })) : [];
+      if (typeof body.imageId === 'string') {
+        if (Deno.env.get('LIHEN_GROQ_VISION_ENABLED') !== 'true' || Deno.env.get('LIHEN_GROQ_DATA_TREATMENT_AUTHORIZED') !== 'true' || !Deno.env.get('GROQ_API_KEY')) return json({ error: 'BLOCKED_VISUAL_CONFIGURATION' }, 403);
+        if (assets.length) return json({ error: 'BLOCKED_SINGLE_MANUAL_IMAGE_REQUIRED' }, 400);
+        try {
+          assets = [await prepareProductVisionAsset(supabase, { productId: product.id, productImageId: body.imageId })];
+        } catch (error) {
+          const known = ['BLOCKED_IMAGE_PROVENANCE', 'BLOCKED_INVALID_IMAGE', 'VISION_IMAGE_SIZE_LIMIT', 'LIHEN_PRODUCT_IMAGE_NOT_AUTHORIZED_OR_NOT_FOUND'];
+          const code = error instanceof Error && known.includes(error.message) ? error.message : 'BLOCKED_IMAGE_RESOLUTION';
+          return json({ error: code }, 403);
+        }
+      }
+      const vision = createGroqVisionPort({
+        apiKey: Deno.env.get('GROQ_API_KEY') ?? '',
+        enabled: Deno.env.get('LIHEN_GROQ_VISION_ENABLED') === 'true',
+        treatmentAuthorized: Deno.env.get('LIHEN_GROQ_DATA_TREATMENT_AUTHORIZED') === 'true',
+      });
+      const report = await vision.analyze({
+        correlationId: crypto.randomUUID(), requestedBy: user.id,
+        context: { contextId: `product:${product.id}`, type: 'PRODUCT', entityId: product.id,
+          attributes: { dataTreatmentAuthorized: true, manualRequest: true } },
+        assets, tasks: ['VISIBLE_FEATURES_AND_OCR'],
+      });
+      return json({ runtime: 'LIHEN_INTELLIGENCE', action, report });
     }
 
     if (action === 'EDITORIAL_RESEARCH_PREFLIGHT') {

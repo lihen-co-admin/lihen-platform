@@ -20,6 +20,21 @@ const reportSchema = z.object({
   ),
 });
 export type SocialProviderReadiness = z.infer<typeof reportSchema>;
+const tikTokAccountSchema = z.object({
+  accountId: z.string(),
+  nickname: z.string().nullable(),
+  privacyOptions: z.array(z.string()),
+  maxVideoDurationSec: z.number().positive(),
+  publicationEnabled: z.literal(false),
+  creatorConsentRequired: z.literal(true),
+});
+export async function readTikTokAccount(client = getBrowserSupabaseClient(import.meta.env)) {
+  const { data, error } = await client.functions.invoke('marketing-social-runtime', {
+    body: { action: 'READ_TIKTOK_ACCOUNT', payload: {} },
+  });
+  if (error || data?.externalPublication !== false) throw new Error('TIKTOK_ACCOUNT_READ_BLOCKED');
+  return tikTokAccountSchema.parse(data.data);
+}
 const accountReportSchema = z.object({
   schemaVersion: z.literal(1),
   providerCalls: z.number().int().min(0).max(4),

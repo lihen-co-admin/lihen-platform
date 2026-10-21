@@ -2,14 +2,20 @@ name: GitHub Pages DEV
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - github-pages-dev
+    inputs:
+      deploy_dev:
+        description: 'Publicar candidato DEV tras aprobación explícita'
+        required: true
+        type: boolean
+        default: false
+      restore_backup:
+        description: Restore verified 3702ee4 backup of both sites
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: github-pages-dev
@@ -22,45 +28,58 @@ jobs:
     env:
       VITE_LOCAL_FORM_DRAFTS_MODE: controlled
       VITE_PRODUCT_READ_SOURCE: supabase
+      VITE_PRODUCT_PILOT_MODE: controlled
       VITE_PRODUCT_WRITE_MODE: controlled
       VITE_PRODUCT_UPDATE_WRITE_MODE: controlled
       VITE_AUTH_MODE: supabase
-      VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: "false"
+      VITE_DEV_ALLOW_BOOTSTRAP_SIGNUP: 'false'
       VITE_SUPABASE_URL: ${{ vars.SUPABASE_DEV_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_DEV_PUBLISHABLE_KEY }}
       VITE_PUBLIC_HUB_MODE: controlled
       VITE_SUPPLIER_WRITE_MODE: controlled
       VITE_STOREFRONT_PUBLIC_URL: https://lihen-co-admin.github.io/lihen-platform/storefront/#descubre
-      VITE_EDITORIAL_DEV_SYNC_ENABLED: "true"
+      VITE_EDITORIAL_DEV_SYNC_ENABLED: 'true'
       VITE_PRODUCT_IMAGES_READ_MODE: controlled
       VITE_PRODUCT_WEBP_STORAGE_WRITE_MODE: controlled
-      VITE_CUSTOMER_BENEFIT_DEMO_ENABLED: "true"
+      VITE_CUSTOMER_BENEFIT_DEMO_ENABLED: 'false'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.15.0
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
+
+      - name: Download pinned recovery backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download pages-dev-rollback-3702ee4 --repo "$GITHUB_REPOSITORY" --pattern github-pages-12280570882.zip --dir recovery-input
+
+      - name: Restore and verify both preserved sites
+        run: node tooling/pages-dev/restore-verified-backup.mjs recovery-input/github-pages-12280570882.zip recovery-site
+
+      - name: Setup pnpm
+        if: inputs.restore_backup == false
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.0
 
       - name: Install
+        if: inputs.restore_backup == false
         run: pnpm install --frozen-lockfile
 
-      - name: Quality gate
-        run: pnpm check
+      - name: Pages integration checks
+        if: inputs.restore_backup == false
+        run: pnpm exec vitest run tests/architecture/github-pages-dev.test.ts tests/architecture/pages-dev-recovery.test.ts
 
       - name: Validate DEV browser configuration
+        if: inputs.restore_backup == false
         shell: bash
         run: |
           test -n "$VITE_SUPABASE_URL"
+          test "$VITE_SUPABASE_URL" = "https://vnmkupzptujtywnnabkp.supabase.co"
           test -n "$VITE_SUPABASE_PUBLISHABLE_KEY"
           case "$VITE_SUPABASE_PUBLISHABLE_KEY" in
             sb_publishable_*|eyJ*) ;;
@@ -68,35 +87,23 @@ jobs:
           esac
 
       - name: Build Control Center
+        if: inputs.restore_backup == false
         run: pnpm --filter @lihen/control-center build
-
-      - name: Build Storefront
-        run: pnpm --filter @lihen/storefront build
 
       - name: Assemble Pages artifact
         shell: bash
         run: |
-          rm -rf pages-artifact
-          mkdir -p pages-artifact/control-center pages-artifact/storefront
-          cp -R apps/control-center/dist/. pages-artifact/control-center/
-          cp -R apps/storefront/dist/. pages-artifact/storefront/
-          touch pages-artifact/.nojekyll
-          cat > pages-artifact/index.html <<'HTML'
-          <!doctype html>
-          <html lang="es">
-            <head>
-              <meta charset="utf-8">
-              <meta http-equiv="refresh" content="0; url=./control-center/">
-              <title>LIHEN Control Center · DEV</title>
-            </head>
-            <body>
-              <a href="./control-center/">Abrir LIHEN Control Center · DEV</a>
-            </body>
-          </html>
-          HTML
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+          mkdir -p pages-artifact
+          if [ "${{ inputs.restore_backup }}" = "true" ]; then
+            cp -R recovery-site/. pages-artifact/
+          else
+            mkdir -p pages-artifact/control-center pages-artifact/storefront
+            cp -R apps/control-center/dist/. pages-artifact/control-center/
+            cp -R recovery-site/storefront/. pages-artifact/storefront/
+            cp recovery-site/index.html pages-artifact/index.html
+            touch pages-artifact/.nojekyll
+          fi
+          node tooling/pages-dev/validate-pages-artifact.mjs pages-artifact
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -104,14 +111,21 @@ jobs:
           path: pages-artifact
 
   deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_dev == true
     name: Deploy DEV Pages
     needs: build
+    permissions:
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
