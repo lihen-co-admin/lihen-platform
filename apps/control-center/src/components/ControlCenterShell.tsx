@@ -3,11 +3,13 @@ import {
   useContext,
   useMemo,
   useState,
+  useRef,
+  useLayoutEffect,
   type PropsWithChildren,
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import { NavLink, Link, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 import { useConfirmUnsavedExit } from '../drafts/UnsavedChanges';
 import { CONTROL_CENTER_MODULES } from '../domain/control-center-navigation';
@@ -32,6 +34,16 @@ export function ControlCenterShell({
   const [toolbar, setToolbar] = useState<ModuleToolbar | null>(null);
   const auth = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const contentRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [location.pathname]);
+  const currentModule = CONTROL_CENTER_MODULES.find(([to]) =>
+    to === '/'
+      ? location.pathname === '/'
+      : location.pathname === to || location.pathname.startsWith(to + '/'),
+  );
   const confirmExit = useConfirmUnsavedExit();
   const filtered = useMemo(
     () =>
@@ -84,6 +96,21 @@ export function ControlCenterShell({
                 </NavLink>
               ))}
             </nav>
+            <select
+              className="cc-compact-navigation"
+              aria-label="Navegación compacta de módulos"
+              value={currentModule?.[0] ?? '/'}
+              onChange={(event) => {
+                if (confirmLeave()) navigate(event.target.value);
+                else event.target.value = currentModule?.[0] ?? '/';
+              }}
+            >
+              {CONTROL_CENTER_MODULES.map(([to, label]) => (
+                <option key={to} value={to}>
+                  {label}
+                </option>
+              ))}
+            </select>
             {developmentNavigation}
             <small className="pm2-rail-foot">DEV</small>
           </aside>
@@ -159,14 +186,18 @@ export function ControlCenterShell({
                 </button>
               </details>
             </header>
-            <div className="cc-current-module" aria-live="polite">
-              {CONTROL_CENTER_MODULES.find(([to]) =>
-                to === '/'
-                  ? location.pathname === '/'
-                  : location.pathname === to || location.pathname.startsWith(to + '/'),
-              )?.[1] ?? 'Control Center'}
+            <div
+              className="cc-content-scroll"
+              ref={contentRef}
+              tabIndex={0}
+              role="region"
+              aria-label="Contenido del módulo"
+            >
+              <div className="cc-current-module" aria-live="polite">
+                {currentModule?.[1] ?? 'Control Center'}
+              </div>
+              {children}
             </div>
-            {children}
           </div>
         </div>
       </div>

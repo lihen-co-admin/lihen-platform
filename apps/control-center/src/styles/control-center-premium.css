@@ -2903,3 +2903,72 @@
     width: auto;
   }
 }
+
+/* Viewport shell: the rail and header are outside the sole content scroller. */
+html:has(.cc-frame),
+body:has(.cc-frame) {
+  overflow: hidden;
+}
+.pm2-backdrop:has(> .cc-frame) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.pm2-backdrop > .cc-frame {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.cc-frame .pm2-rail {
+  position: relative;
+  top: 0;
+  height: 100%;
+  min-height: 0;
+}
+.cc-frame .pm2-workspace {
+  display: grid;
+  grid-template-rows: max-content minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+.cc-frame .cc-content-scroll {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 4px;
+}
+.cc-frame .cc-compact-navigation {
+  display: none;
+}
+@media (max-width: 900px), (max-height: 600px) {
+  .pm2-backdrop > .cc-frame,
+  .pm2-backdrop > .cc-frame.pm2-shell--expanded {
+    min-height: 0;
+    grid-template-rows: max-content minmax(0, 1fr);
+  }
+  .cc-frame .pm2-rail {
+    height: auto;
+  }
+}
+/* Native module picker keeps every destination reachable in short viewports. */
+@media (max-height: 600px) {
+  .cc-frame .pm2-rail nav,
+  .cc-frame .pm2-rail-toggle {
+    display: none;
+  }
+  .cc-frame .cc-compact-navigation {
+    display: block;
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--pm2-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--pm2-ink);
+    padding: 8px;
+  }
+}
